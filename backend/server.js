@@ -49,8 +49,9 @@ wss.on("connection", (ws) => {
 });
 
 async function handleNewMessage(ws, data) {
-    let { sessionId, prompt, files, model, useWebSearch } = data;
-
+    let { sessionId, prompt, files, model, useWebSearch } = data; // 确保 useWebSearch 被解构出来
+    console.log(useWebSearch)
+    console.log(typeof useWebSearch)
     // 1. 会话和历史记录管理
     if (!sessionId) {
         sessionId = `${Date.now()}.json`;
@@ -78,7 +79,20 @@ async function handleNewMessage(ws, data) {
         const generationConfig = {
             // temperature: 0.7, // 可以根据需要调整
         };
-        const geminiModel = genAI.getGenerativeModel({ model, generationConfig });
+
+        // 构建模型参数对象
+        const modelParams = {
+            model,
+            generationConfig,
+        };
+
+        // 根据 useWebSearch 条件添加 tools
+        if (useWebSearch) {
+            modelParams.tools = [{ google_search: {} }];
+            console.log("Web Search"); // 调试信息
+        }
+
+        const geminiModel = genAI.getGenerativeModel(modelParams);
 
         const chat = geminiModel.startChat({
             history: history,
