@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+        .sender {
+            height: 35px;
+            width: 100px;
+            display: flex;
+            justify-items: center;
+            gap: 8px;
+            position: relative;
+            margin: 300px auto;
+        }
+
+        .sender img {
+            display: block;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            /* border: 1px solid #000; */
+        }
+
+        .sender p {
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+       
+
+        .sender::before {
+            box-sizing: border-box;
+            content: '';
+            display: block;
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 39px;
+            height: 39px;
+            /* outline: 3px solid #3f82ff; */
+            border-left: 2px solid #3f82ff;
+            border-bottom: 2px solid #ff50f9;
+            border-top: 2px solid #ff6b6b;
+            border-right: 2px solid #29ff82;
+            border-radius: 50%;
+            animation: simpleRotate 1s linear infinite;
+        }
+
+        @keyframes simpleRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sender">
+        <img src="backend/public/img/user.png" alt="">
+        <p>User</p>
+    </div>
+</body>
+
+</html>
