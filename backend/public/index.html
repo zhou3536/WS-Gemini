@@ -45,6 +45,8 @@
                 </div>
             </div>
         </main>
+        <img src="" alt="">
+        <p></p>
     </div>
     <script>
         let selectedFiles = []; // 用于存储选择的文件
@@ -152,14 +154,20 @@
         }
 
         function appendMessage(text, sender) {
+            console.log(typeof sender)
             const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-
+            messageElement.classList.add('message-box');
             const sendinfo = document.createElement('div');
-            sendinfo.classList.add(`sender-${sender}`);
+            sendinfo.classList.add(`sender`);
+            // sendinfo.innerHTML = `<img src="img/${sender}.png" alt=""><p>${sender}</p>`;
+            if(sender === 'user'){
+                sendinfo.innerHTML = '<img src="img/user.png" alt=""><p>User</p>'
+            }else{
+                sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>'
+            };
             const message = document.createElement('div');
             message.innerHTML = marked.parse(text);
-            message.classList.add(`${sender}-message`);
+            message.classList.add(`${sender}-message`, 'message');
             // pre.appendChild(code);
             messageElement.appendChild(sendinfo);
             messageElement.appendChild(message);
@@ -174,23 +182,23 @@
             if (!currentModelResponseElement) {
                 // 如果是流的开始，创建一个新的消息元素
                 const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
+                messageElement.classList.add('message-box');
                 const sendinfo = document.createElement('div');
-                sendinfo.classList.add(`sender-model`);
+                sendinfo.classList.add('sender-model', 'message');
                 const message = document.createElement('div');
                 message.classList.add('model-message');
                 messageElement.appendChild(sendinfo);
                 messageElement.appendChild(message);
-
-
                 chatWindow.appendChild(messageElement);
-                currentModelResponseElement = message; // 设置当前响应元素
+                currentModelResponseElement = message;
+                accumulatedStreamText = '';
             }
-            // 将新的块附加到当前响应中
-            currentModelResponseElement.innerHTML += marked.parse(chunk);
+            // 将新的原始块附加到累积文本中
+            accumulatedStreamText += chunk;
+            // **核心改变：每次都对累积的完整文本进行解析和渲染**
+            currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-
 
         // --- 发送消息 ---
         sendBtn.addEventListener('click', sendMessage);
