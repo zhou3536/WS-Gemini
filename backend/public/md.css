@@ -23,36 +23,36 @@
 }
 
 /* AI回复内容的Markdown样式优化 */
-.gemini-message h1,
-.gemini-message h2,
-.gemini-message h3,
-.gemini-message h4,
-.gemini-message h5,
-.gemini-message h6 {
+.model-message h1,
+.model-message h2,
+.model-message h3,
+.model-message h4,
+.model-message h5,
+.model-message h6 {
     /* color: #2c3e50; */
     font-weight: 600;
     margin: 16px 0 8px 0;
     line-height: 1.4;
 }
 
-.gemini-message h1 {
+.model-message h1 {
     font-size: 1.6em;
     border-bottom: 2px solid #3498db;
     padding-bottom: 8px;
 }
 
-.gemini-message h2 {
+.model-message h2 {
     font-size: 1.4em;
     border-bottom: 1px solid #3498db;
     padding-bottom: 6px;
 }
 
-.gemini-message h3 {
+.model-message h3 {
     font-size: 1.2em;
     /* color: #34495e; */
 }
 
-.gemini-message p {
+.model-message p {
     /* margin: 12px 0; */
     line-height: 1.6;
     word-break: break-word;
@@ -60,7 +60,7 @@
 }
 
 /* 代码块样式 */
-.gemini-message pre {
+.model-message pre {
     background-color: var(--perbgc);
     /* border: 1px solid var(--df-01); */
     border-radius: 5px;
@@ -74,7 +74,7 @@
     position: relative;
 }
 
-.gemini-message pre code {
+.model-message pre code {
     background: none;
     border: none;
     padding: 0;
@@ -83,7 +83,7 @@
 }
 
 /* 行内代码样式 */
-.gemini-message code {
+.model-message code {
     background-color: var(--df-005);
     color: var(--code);
     padding: 1px 3px;
@@ -96,7 +96,7 @@
 }
 
 /* 引用块样式 */
-.gemini-message blockquote {
+.model-message blockquote {
     border-left: 4px solid #3498db;
     background-color: #f8f9fa;
     margin: 16px 0;
@@ -106,38 +106,38 @@
     font-style: italic;
 }
 
-.gemini-message blockquote p {
+.model-message blockquote p {
     margin: 0;
 }
 
 /* 列表样式 */
-.gemini-message ul,
-.gemini-message ol {
+.model-message ul,
+.model-message ol {
     margin: 12px 0;
     padding-left: 24px;
 }
 
-.gemini-message li {
+.model-message li {
     margin: 6px 0;
     line-height: 1.6;
 }
 
-.gemini-message ul li {
+.model-message ul li {
     list-style-type: disc;
 }
 
-.gemini-message ol li {
+.model-message ol li {
     list-style-type: decimal;
 }
 
 /* 表格样式 */
-.gemini-message .table-box {
+.model-message .table-box {
     overflow: hidden;
     overflow-x: auto;
     margin: 5px 0;
 }
 
-.gemini-message table {
+.model-message table {
     border-collapse: collapse;
     width: 100%;
     margin: 5px 0;
@@ -147,15 +147,15 @@
     /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
-.gemini-message th,
-.gemini-message td {
+.model-message th,
+.model-message td {
     border: 1px solid var(--df-01);
     padding: 5px;
     text-align: left;
     min-width: 180px;
 }
 
-.gemini-message th {
+.model-message th {
     background-color: var(--tr-2);
     font-weight: 600;
     /* color: #2c3e50; */
@@ -163,47 +163,47 @@
 
 
 /* 设置奇数行背景色 */
-.gemini-message tr:nth-child(odd) {
+.model-message tr:nth-child(odd) {
     background-color: var(--tr-1);
 }
 
 /* 设置偶数行背景色 */
-.gemini-message tr:nth-child(even) {
+.model-message tr:nth-child(even) {
     background-color: var(--tr-2);
 }
 
 /* 链接样式 */
-.gemini-message a {
+.model-message a {
     color: #3498db;
     text-decoration: none;
     border-bottom: 1px solid transparent;
     transition: all 0.3s ease;
 }
 
-.gemini-message a:hover {
+.model-message a:hover {
     color: #2980b9;
     border-bottom-color: #2980b9;
 }
 
 /* 分割线样式 */
-.gemini-message hr {
+.model-message hr {
     border-top: 1px solid var(--df-01);
     margin: 24px 0;
 }
 
 /* 强调文本样式 */
-.gemini-message strong {
+.model-message strong {
     /* color: #222; */
     font-weight: 550;
 }
 
-.gemini-message em {
+.model-message em {
     /* color: #7f8c8d; */
     font-style: italic;
 }
 
 /* 图片样式 */
-.gemini-message img {
+.model-message img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
@@ -212,7 +212,7 @@
 }
 
 /* 数学公式样式（如果使用） */
-.gemini-message .math {
+.model-message .math {
     background-color: #f8f9fa;
     padding: 4px 8px;
     border-radius: 4px;
@@ -220,32 +220,32 @@
 }
 
 /* 高亮代码的特殊样式调整 */
-.gemini-message .hljs {
+.model-message .hljs {
     /* background: #f8f9fa !important; */
     color: var(--per-df) !important;
 }
 
-.gemini-message .hljs-comment {
+.model-message .hljs-comment {
     color: #8e908c !important;
 }
 
-.gemini-message .hljs-keyword {
+.model-message .hljs-keyword {
     color: var(--hljs-keyword) !important;
 }
 
-.gemini-message .hljs-string {
+.model-message .hljs-string {
     color: var(--hljs-string) !important;
 }
 
-.gemini-message .hljs-number {
+.model-message .hljs-number {
     color: #f5871f !important;
 }
 
-.gemini-message .hljs-function {
+.model-message .hljs-function {
     color: var(--hljs-function) !important;
 }
 
-.gemini-message .copy-button {
+.model-message .copy-button {
     width: 30px;
     height: 16px;
     display: block;
@@ -260,22 +260,22 @@
     background-color: transparent;
 }
 
-.gemini-message .copy-button:hover {
+.model-message .copy-button:hover {
     border: 1px solid var(--df-02);
     background-color: var(--df-005);
 }
 
-.gemini-message .copy-button:active {
+.model-message .copy-button:active {
     border: 1px solid var(--df-04);
     background-color: var(--df-01);
 }
 
-.gemini-message .copy-button::before {
+.model-message .copy-button::before {
     content: "Copy";
     margin: auto;
 }
 
-.gemini-message .copy-button-OK::before {
+.model-message .copy-button-OK::before {
     content: "OK";
     color: #36ab55;
 }
