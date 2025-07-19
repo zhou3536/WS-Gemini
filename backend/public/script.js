@@ -22,6 +22,9 @@ ws.onmessage = (event) => {
         case 'historyLoaded':
             renderHistory(data.history);
             break;
+        case 'historiesListed':
+            renderHistoriesList(data.list);
+            break;
         case 'streamChunk':
             appendStreamChunk(data.chunk);
             break;
@@ -57,6 +60,29 @@ function renderHistory(history) {
         }
     });
     hljs.highlightAll();
+}
+
+function renderHistoriesList(list) {
+    historyList.innerHTML = ''; // 清空现有列表
+    list.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.title;
+        li.dataset.sessionId = item.sessionId;
+        if (item.sessionId === sessionId) {
+            li.classList.add('active');
+        }
+        li.addEventListener('click', () => {
+            if (sessionId !== item.sessionId) {
+                sessionId = item.sessionId;
+                localStorage.setItem('sessionId', sessionId);
+                ws.send(JSON.stringify({ type: 'loadHistory', sessionId }));
+                // 更新列表的激活状态
+                document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+            }
+        });
+        historyList.appendChild(li);
+    });
 }
 
 function appendMessage(text, sender) {
@@ -146,6 +172,7 @@ newChatBtn.addEventListener('click', () => {
     localStorage.removeItem('sessionId');
     chatWindow.innerHTML = '';
     welcome.style.display = 'block';
+    document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
 });
 
 
@@ -225,11 +252,13 @@ promptInput.addEventListener('paste', (e) => {
 Searchbtn.addEventListener("click", function () {
     const aaa = document.getElementById('Search');
     if (SearchOn) {
-        aaa.classList.remove('SearchON')
-        SearchOn = false
+        aaa.classList.remove('SearchON');
+        SearchOn = false;
+        console.log(SearchOn);
     } else if (!SearchOn) {
-        aaa.classList.add('SearchON')
-        SearchOn = true
+        aaa.classList.add('SearchON');
+        SearchOn = true;
+        console.log(SearchOn);
     }
 });
 

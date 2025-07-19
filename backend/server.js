@@ -28,6 +28,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 wss.on("connection", (ws) => {
     console.log("客户端已连接");
+    listHistories(ws); // 连接建立时发送历史记录列表
 
     ws.on("message", async (message) => {
         const data = JSON.parse(message);
@@ -102,6 +103,13 @@ async function handleNewMessage(ws, data) {
 
         ws.send(JSON.stringify({ type: "streamEnd" }));
 
+        // 在新消息处理完成后，广播更新的历史记录列表
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                listHistories(client);
+            }
+        });
+
     } catch (error) {
         console.error("Gemini API 调用失败:", error);
         ws.send(JSON.stringify({ type: "error", message: "与Gemini的通信出现问题。" }));
@@ -116,6 +124,28 @@ async function handleLoadHistory(ws, sessionId) {
     } else {
         // 如果找不到历史文件，可能需要通知前端
         ws.send(JSON.stringify({ type: "error", message: "找不到指定的会话历史。" }));
+    }
+}
+
+async function listHistories(ws) {
+    try {
+        const files = fs.readdirSync(historiesDir)
+            .filter(file => file.endsWith('.json'))
+            .sort((a, b) => b.split('.')[0] - a.split('.')[0]); // 按时间戳降序排序
+
+        const historyList = files.map(file => {
+            const filePath = path.join(historiesDir, file);
+            const content = fs.readFileSync(filePath, 'utf-8');
+            const history = JSON.parse(content);
+            const firstUserMessage = history.find(msg => msg.role === 'user');
+            const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题'; // 截取前50个字符
+            return { sessionId: file, title };
+        });
+
+        ws.send(JSON.stringify({ type: 'historiesListed', list: historyList }));
+    } catch (error) {
+        console.error("获取历史记录列表失败:", error);
+        ws.send(JSON.stringify({ type: 'error', message: '无法加载历史记录列表。' }));
     }
 }
 
