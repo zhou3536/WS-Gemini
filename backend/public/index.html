@@ -120,7 +120,8 @@
             console.error('服务器错误:', data.message);
             if (sendinfobox) sendinfobox.classList.remove('loading');
             sendBtn.disabled = false;
-            alert(`发生错误: ${data.message}`);
+            // alert(`发生错误: ${data.message}`);
+            appenderror(data.message);
         });
 
 
@@ -261,7 +262,11 @@
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-
+        function appenderror (message){
+            modelmessage.innerText = message;
+            modelmessage.style.color = '#d26161';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
         // --- 发送消息 ---
         sendBtn.addEventListener('click', sendMessage);
         promptInput.addEventListener('keydown', (event) => {

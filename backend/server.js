@@ -168,7 +168,7 @@ async function handleNewMessage(socket, data) {
         }
 
         if (statusCode) {
-            clientMessage += ` (代码: ${statusCode})`;
+            clientMessage += ` (错误代码: ${statusCode})`;
         }
 
         socket.emit("error", {
