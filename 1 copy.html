@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Right Align</title>
+    <style>
+        ul {
+            width: 300px;
+            border: 1px solid #ccc; /* 添加边框方便观察 */
+            padding: 10px;
+            box-sizing: border-box; /* 确保 padding 和 border 包含在 width 内 */
+        }
+
+        li {
+            display: flex; 
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            /* 为了让文本部分占据空间，给它一个 flex-grow: 1 */
+            /* 也可以直接让 li 成为 flex 容器，然后 button 自动推到右边 */
+        }
+
+        li button {
+            margin-left: auto; /* 将按钮推到最右边 */
+            flex-shrink: 0; /* 防止按钮被压缩 */
+            /* 如果你想让按钮也居中，可以不加 align-items: center 在 li 上，而是单独设置 */
+            /* 或者保留 align-items: center，这样按钮和文字都会垂直居中 */
+        }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li>
+            0000000000000000000000000000000000000000000000
+            <button>ok
+            </button>
+        </li>

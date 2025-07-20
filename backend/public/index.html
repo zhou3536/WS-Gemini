@@ -16,6 +16,7 @@
 <body>
 
     <div class="nav">
+        <button class="hisbtn" id="history-b"></button>
         <!-- 模型选择 -->
         <select id="gemini-v" class="send-btn1">
             <option value="gemini-2.5-flash-lite-preview-06-17">Gemini-2.5-F-Lite</option>
@@ -23,11 +24,13 @@
             <option value="gemini-2.5-pro">Gemini-2.5-Pro</option>
         </select>
         <div class="btnbox">
+            <button class="dhdhbtn" onclick="opendhdh()"></button>
             <button class="theme-toggle" id="themeToggle"></button>
         </div>
     </div>
     <div class="container">
         <ul id="history-list" class="list-1">历史记录</ul>
+        <ul id="list-dhdh" class="list-1"></ul>
         <main class="chat-area" id="chat-area">
             <div id="welcome">探索无界限</div>
             <div id="chat-window"></div>
@@ -40,6 +43,7 @@
                         <button id="new-chat-btn">新建对话</button>
                         <button id="addfile"></button>
                         <button id="Search" class="search">联网搜索</button>
+                        <div id="Connection" style="width: 12px; height: 12px; border-radius: 15px;"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
                 </div>
@@ -63,6 +67,7 @@
         const addFileBtn = document.getElementById('addfile');
         const fileInput = document.getElementById('file-input');
         const filePreviewArea = document.getElementById('file-preview-area');
+        const Connection = document.getElementById('Connection');
         const ws = new WebSocket(`ws://${window.location.host}`);
 
         let sessionId = localStorage.getItem('sessionId');
@@ -75,6 +80,8 @@
         // --- WebSocket 事件处理 ---
         ws.onopen = () => {
             console.log('WebSocket连接已建立');
+            Connection.style.background = 'green';
+            sendBtn.disabled = false;
             if (sessionId) {
                 ws.send(JSON.stringify({ type: 'loadHistory', sessionId }));
             } else {
@@ -105,12 +112,15 @@
                     break;
                 case 'streamEnd':
                     currentModelResponseElement = null;
+                    sendBtn.disabled = false;
                     sendinfobox.classList.remove('loading');
                     hljs.highlightAll();
+                    addcopy();
                     break;
                 case 'error':
                     console.error('服务器错误:', data.message);
                     sendinfobox.classList.remove('loading');
+                    sendBtn.disabled = false;
                     alert(`发生错误: ${data.message}`);
                     break;
             }
@@ -118,6 +128,8 @@
 
         ws.onclose = () => {
             console.log('WebSocket连接已关闭');
+            Connection.style.background = 'red';
+            sendBtn.disabled = true;
             // 可以在这里尝试重连
         };
 
@@ -136,6 +148,7 @@
                     appendMessage(message.parts[0].text, 'model');
                 }
             });
+            addcopy();
             hljs.highlightAll();
         }
 
@@ -143,21 +156,39 @@
             historyList.innerHTML = '';
             list.forEach(item => {
                 const li = document.createElement('li');
-                li.textContent = item.title;
+                const span = document.createElement('span');
+                span.textContent = item.title;
                 li.dataset.sessionId = item.sessionId;
                 if (item.sessionId === sessionId) {
                     li.classList.add('active');
                 }
-                li.addEventListener('click', () => {
+                li.addEventListener('click', (e) => {
+                    // Stop propagation to prevent the delete button click from triggering this
+                    if (e.target === deleteBtn) {
+                        return;
+                    }
                     if (sessionId !== item.sessionId) {
                         sessionId = item.sessionId;
                         localStorage.setItem('sessionId', sessionId);
                         ws.send(JSON.stringify({ type: 'loadHistory', sessionId }));
+                        closehislist();
+                        chatWindow.innerHTML = '';
                         // 更新列表的激活状态
                         document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
                         li.classList.add('active');
                     }
                 });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '✕';
+                deleteBtn.classList.add('delete-history-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    newChatBtn.click();
+                    ws.send(JSON.stringify({ type: 'deleteHistory', sessionId: item.sessionId }));
+                });
+                li.appendChild(span);
+                li.appendChild(deleteBtn);
                 historyList.appendChild(li);
             });
         }
@@ -194,7 +225,7 @@
             sendinfo.classList.add('sender', 'loading');
             sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
             const message = document.createElement('div');
-            message.classList.add('message','model-message');
+            message.classList.add('message', 'model-message');
             const status = document.createElement('i');
             status.classList.add('modalstatus');
             status.innerText = SearchOn ? '正在搜索...' : '正在思考...';
@@ -202,6 +233,13 @@
             messagebox.appendChild(sendinfo);
             messagebox.appendChild(message);
             chatWindow.appendChild(messagebox);
+            promptInput.style.height = '0';
+            promptInput.style.height = promptInput.scrollHeight + 'px';
+            promptInput.value = '';
+            selectedFiles = [];
+            renderFilePreviews();
+            promptInput.focus();
+
             sendinfobox = sendinfo;
             modelmessage = message;
 
@@ -234,7 +272,7 @@
             if (prompt === '' && selectedFiles.length === 0) return;
 
             welcome.style.display = 'none';
-
+            sendBtn.disabled = true;
 
             const filePromises = selectedFiles.map(file => {
                 return new Promise((resolve, reject) => {
@@ -262,10 +300,6 @@
                 useWebSearch: SearchOn
             }));
 
-            promptInput.value = '';
-            selectedFiles = [];
-            renderFilePreviews();
-            promptInput.focus();
         }
 
         // --- 新建对话 ---

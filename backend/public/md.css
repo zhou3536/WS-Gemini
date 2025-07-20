@@ -187,8 +187,9 @@
 
 /* 分割线样式 */
 .model-message hr {
+    border: none;
     border-top: 1px solid var(--df-01);
-    margin: 24px 0;
+    margin: 20px 0;
 }
 
 /* 强调文本样式 */
@@ -249,7 +250,7 @@
     width: 30px;
     height: 16px;
     display: block;
-    color: var(--df-ziti);
+    color: #888;
     margin: 16px 2px -34px auto;
     font-size: 10px;
     border: 1px solid var(--df-01);

@@ -1,4 +1,7 @@
 require("dotenv").config();
+
+// 引入密码认证模块
+import { initializeAuth } from './auth.js';
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
@@ -10,7 +13,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const PORT = process.env.PORT || 3000;
+const host = process.env.HOST || '127.0.0.1';
+const port = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {
@@ -24,11 +28,13 @@ if (!fs.existsSync(historiesDir)) {
     fs.mkdirSync(historiesDir);
 }
 
+initializeAuth(app, process.env.accessPassword, process.env.cookieSecret);
+
 app.use(express.static(path.join(__dirname, "public")));
 
 wss.on("connection", (ws) => {
-    console.log("客户端已连接");
-    listHistories(ws); // 连接建立时发送历史记录列表
+    // console.log("客户端已连接");
+    listHistories(ws);
 
     ws.on("message", async (message) => {
         const data = JSON.parse(message);
@@ -40,11 +46,14 @@ wss.on("connection", (ws) => {
             case "loadHistory":
                 await handleLoadHistory(ws, data.sessionId);
                 break;
+            case "deleteHistory":
+                await handleDeleteHistory(ws, data.sessionId);
+                break;
         }
     });
 
     ws.on("close", () => {
-        console.log("客户端已断开");
+        // console.log("客户端已断开");
     });
 });
 
@@ -53,8 +62,6 @@ async function handleNewMessage(ws, data) {
     ws.send(JSON.stringify({ type: "userMessageEcho", prompt: data.prompt, files: data.files }));
 
     let { sessionId, prompt, files, model, useWebSearch } = data; // 确保 useWebSearch 被解构出来
-    console.log(useWebSearch)
-    console.log(typeof useWebSearch)
     // 1. 会话和历史记录管理
     if (!sessionId) {
         sessionId = `${Date.now()}.json`;
@@ -79,6 +86,7 @@ async function handleNewMessage(ws, data) {
 
     // 3. 调用Gemini API
     try {
+        console.log('ID:', sessionId, ' modal:', model, ' Web search:', useWebSearch);
         const generationConfig = {
             // temperature: 0.7, // 可以根据需要调整
         };
@@ -92,7 +100,6 @@ async function handleNewMessage(ws, data) {
         // 根据 useWebSearch 条件添加 tools
         if (useWebSearch) {
             modelParams.tools = [{ google_search: {} }];
-            console.log("Web Search"); // 调试信息
         }
 
         const geminiModel = genAI.getGenerativeModel(modelParams);
@@ -160,8 +167,8 @@ async function handleNewMessage(ws, data) {
 
         ws.send(JSON.stringify({
             type: "error",
-            message: clientMessage, 
-            statusCode: statusCode 
+            message: clientMessage,
+            statusCode: statusCode
         }));
     }
 }
@@ -199,6 +206,22 @@ async function listHistories(ws) {
     }
 }
 
-server.listen(PORT, () => {
-    console.log(`服务器正在 http://localhost:${PORT} 上运行`);
+async function handleDeleteHistory(ws, sessionId) {
+    const historyPath = path.join(historiesDir, sessionId);
+    if (fs.existsSync(historyPath)) {
+        fs.unlinkSync(historyPath);
+        // Broadcast updated history list to all clients
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                listHistories(client);
+            }
+        });
+    } else {
+        ws.send(JSON.stringify({ type: "error", message: "找不到要删除的会话历史。" }));
+    }
+}
+
+server.listen(port, host, () => {
+    ""
+    console.log(`服务器正在 http://${host}:${port} 上运行`);
 });
