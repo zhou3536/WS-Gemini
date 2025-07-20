@@ -129,7 +129,40 @@ async function handleNewMessage(ws, data) {
 
     } catch (error) {
         console.error("Gemini API 调用失败:", error);
-        ws.send(JSON.stringify({ type: "error", message: "与Gemini的通信出现问题。" }));
+
+        let clientMessage = "与Gemini的通信出现问题。"; // 默认的通用错误信息
+        let statusCode = null;
+
+        // 1. 尝试从 error.errorDetails 数组中提取最具体的 message
+        if (error.errorDetails && Array.isArray(error.errorDetails)) {
+            for (const detail of error.errorDetails) {
+                if (detail.message) {
+                    clientMessage = detail.message; // 找到第一个有 message 的就用它
+                    break; // 找到后就跳出循环
+                }
+            }
+        }
+        if (clientMessage === "与Gemini的通信出现问题。" && error.message) {
+            clientMessage = error.message;
+        }
+
+        if (error.status) {
+            statusCode = error.status;
+        } else if (error.response && error.response.status) {
+            statusCode = error.response.status;
+        } else if (error.code) {
+            statusCode = error.code;
+        }
+
+        if (statusCode) {
+            clientMessage += ` (代码: ${statusCode})`;
+        }
+
+        ws.send(JSON.stringify({
+            type: "error",
+            message: clientMessage, 
+            statusCode: statusCode 
+        }));
     }
 }
 

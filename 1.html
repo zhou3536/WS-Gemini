@@ -7,10 +7,11 @@
     <title>Document</title>
     <style>
         * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         .sender {
             height: 35px;
             width: 100px;
@@ -34,7 +35,7 @@
             align-items: center;
             justify-content: center
         }
-       
+
 
         .sender::before {
             box-sizing: border-box;
@@ -58,6 +59,7 @@
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
@@ -70,6 +72,16 @@
         <img src="backend/public/img/user.png" alt="">
         <p>User</p>
     </div>
+    <script>
+//怎么获取function a() 创建的元素 aa，这两个函数会多次调用
+        function a() {
+            const aa = document.createElement('div');
+            aa.classList.add('aa1');
+        }
+        function b() {
+            //怎么获取function a() 创建的元素 aa
+        }
+    </script>
 </body>
 
 </html>
