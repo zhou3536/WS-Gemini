@@ -68,6 +68,8 @@
         let sessionId = localStorage.getItem('sessionId');
         let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
+        let sendinfobox = null;
+        let modelmessage = null;
 
 
         // --- WebSocket 事件处理 ---
@@ -96,16 +98,19 @@
                     break;
                 case 'userMessageEcho':
                     appendMessage(data.prompt, 'user');
+                    createmodelmessagebox();
                     break;
                 case 'streamChunk':
                     appendStreamChunk(data.chunk);
                     break;
                 case 'streamEnd':
                     currentModelResponseElement = null;
+                    sendinfobox.classList.remove('loading');
                     hljs.highlightAll();
                     break;
                 case 'error':
                     console.error('服务器错误:', data.message);
+                    sendinfobox.classList.remove('loading');
                     alert(`发生错误: ${data.message}`);
                     break;
             }
@@ -181,25 +186,43 @@
             return messageElement; // 返回创建的元素以便流式追加
         }
 
+
+        function createmodelmessagebox() {
+            const messagebox = document.createElement('div');
+            messagebox.classList.add('message-box');
+            const sendinfo = document.createElement('div');
+            sendinfo.classList.add('sender', 'loading');
+            sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
+            const message = document.createElement('div');
+            message.classList.add('message','model-message');
+            const status = document.createElement('i');
+            status.classList.add('modalstatus');
+            status.innerText = SearchOn ? '正在搜索...' : '正在思考...';
+            message.appendChild(status);
+            messagebox.appendChild(sendinfo);
+            messagebox.appendChild(message);
+            chatWindow.appendChild(messagebox);
+            sendinfobox = sendinfo;
+            modelmessage = message;
+
+        }
+
         function appendStreamChunk(chunk) {
+            modelmessage.innerHTML = '';
             if (!currentModelResponseElement) {
                 // 如果是流的开始，创建一个新的消息元素
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message-box');
-                const sendinfo = document.createElement('div');
-                sendinfo.classList.add('sender-model', 'message');
-                const message = document.createElement('div');
-                message.classList.add('model-message');
-                messageElement.appendChild(sendinfo);
-                messageElement.appendChild(message);
-                chatWindow.appendChild(messageElement);
-                currentModelResponseElement = message;
+                currentModelResponseElement = modelmessage;
                 accumulatedStreamText = '';
             }
+            const messageRect = modelmessage.getBoundingClientRect();
+            const containerRect = chatWindow.getBoundingClientRect();
+            const messageAtTop = messageRect.top <= containerRect.top + 150;
+
             // 将新的原始块附加到累积文本中
             accumulatedStreamText += chunk;
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            // chatWindow.scrollTop = chatWindow.scrollHeight;
+            if (!messageAtTop) { chatWindow.scrollTop = chatWindow.scrollHeight; };
         }
 
         // --- 发送消息 ---

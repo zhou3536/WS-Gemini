@@ -286,9 +286,9 @@ body {
 }
 
 .message p {
-    margin: 5px 0;
+    /* margin: 5px 0; */
     word-break: break-all;
-    line-height: 1.6;
+    /* line-height: 1.6; */
 }
 
 .user-message {
@@ -311,6 +311,8 @@ body {
     justify-items: center;
     gap: 8px;
     height: 35px;
+    position: relative;
+    margin-top: 5px;
 }
 
 .sender img {
@@ -322,8 +324,8 @@ body {
 }
 
 .sender p {
-    display: flex; 
-    align-items: center; 
+    display: flex;
+    align-items: center;
     justify-content: center
 }
 
@@ -337,13 +339,41 @@ body {
     width: 39px;
     height: 39px;
     /* outline: 3px solid #3f82ff; */
-    border-left: 3px solid #3f82ff;
-    border-bottom: 3px solid #ff50f9;
-    border-top: 3px solid #ff6b6b;
-    border-right: 3px solid #4ecdc4;
+    border-left: 2px solid #eb4236;
+    border-bottom: 2px solid #4285f6;
+    border-top: 2px solid #35a854;
+    border-right: 2px solid #fbbc06;
     border-radius: 50%;
     animation: simpleRotate 1s linear infinite;
 }
+
+@keyframes simpleRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.modalstatus {
+    padding: 12px;
+    animation: fade 1.5s infinite;
+}
+
+@keyframes fade {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
 /* .user-message::before,
 .model-message::before {
     content: "";
