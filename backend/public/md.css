@@ -98,7 +98,7 @@
 /* 引用块样式 */
 .model-message blockquote {
     border-left: 4px solid #3498db;
-    background-color: #f8f9fa;
+    background-color: var(--perbgc);
     margin: 16px 0;
     padding: 12px 16px;
     border-radius: 0 8px 8px 0;

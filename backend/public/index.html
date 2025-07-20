@@ -43,7 +43,7 @@
                         <button id="new-chat-btn">新建对话</button>
                         <button id="addfile"></button>
                         <button id="Search" class="search">联网搜索</button>
-                        <div id="Connection" style="width: 12px; height: 12px; border-radius: 15px;"></div>
+                        <div id="Connection" style="width: 10px; height: 10px; border-radius: 15px;" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
                 </div>
@@ -303,6 +303,7 @@
             sessionId = null;
             localStorage.removeItem('sessionId');
             chatWindow.innerHTML = '';
+            generateUserMessageIndex();
             welcome.style.display = 'block';
             document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
         });

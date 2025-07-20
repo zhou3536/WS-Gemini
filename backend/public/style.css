@@ -152,7 +152,7 @@ body {
 
 #history-list li {
     margin: 3px 8px;
-    padding:  5px 8px;
+    padding: 5px 8px;
     border-radius: 8px;
     display: flex;
     cursor: default;
@@ -164,9 +164,11 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-#history-list .active{
+
+#history-list .active {
     background-color: var(--df-01);
 }
+
 #history-list li button {
     display: block;
     margin-left: auto;
@@ -512,7 +514,7 @@ body {
     max-width: 700px;
     margin: 6px auto;
     margin-top: 6px;
-    padding: 10px 20px;
+    padding: 10px 16px;
     padding-bottom: 3px;
     border: 2px solid rgba(30, 173, 255, 0.3);
 }
@@ -611,7 +613,13 @@ body {
     }
 
     .message {
-        padding: 8px;
+        padding: 2px;
+    }
+
+    .input-area {
+        padding: 6px;
+        padding-bottom: 3px;
+        border-radius: 10px;
     }
 }
 
