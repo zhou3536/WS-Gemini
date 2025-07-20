@@ -373,10 +373,10 @@ body {
     content: '';
     display: block;
     position: absolute;
-    top: -2px;
-    left: -2px;
-    width: 39px;
-    height: 39px;
+    top: 0;
+    left: 0;
+    width: 35px;
+    height: 35px;
     /* outline: 3px solid #3f82ff; */
     border-left: 2px solid #eb4236;
     border-bottom: 2px solid #4285f6;

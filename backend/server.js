@@ -135,8 +135,8 @@ async function handleNewMessage(socket, data) {
 
         socket.emit("streamEnd");
 
-        // 在新消息处理完成后，广播更新的历史记录列表
-        io.emit("historiesListed", await getHistoriesList());
+        // 在新消息处理完成后，将更新的历史记录列表发送回客户端
+        await listHistories(socket);
 
 
     } catch (error) {
