@@ -326,8 +326,20 @@ body {
 .sender p {
     display: flex;
     align-items: center;
-    justify-content: center
+    justify-content: center;
+    background: linear-gradient(to right, #58AADD 0%, #DB5C7F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
 }
+
+.sender .user {
+    background: linear-gradient(to right, #c16d6f 0%, #8e374f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
 
 .loading::before {
     box-sizing: border-box;
@@ -374,6 +386,8 @@ body {
     }
 }
 
+
+
 /* .user-message::before,
 .model-message::before {
     content: "";
@@ -408,18 +422,7 @@ body {
     color: transparent;
 }
 
-.user-message::after {
-    content: "User";
-    background: linear-gradient(to right, #c16d6f 0%, #8e374f 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-}
 
-.model-message::after {
-    content: "Gemini";
-    background: linear-gradient(to right, #58AADD 0%, #DB5C7F 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
 } */
 
 .model-message.loading {
