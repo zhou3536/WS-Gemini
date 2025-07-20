@@ -699,7 +699,8 @@ button:disabled {
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
-    background-color: var(--hisbgc);
+    background-color: var(--bodybgc);
+    animation: fadeIn 0.3s ease;
 }
 
 #delhistory>button {
@@ -717,11 +718,11 @@ button:disabled {
     list-style-type: none;
     display: flex;
     align-content: center;
-    max-width: 500px;
+    max-width: 800px;
     padding: 8px;
     margin: 5px auto;
     border-radius: 8px;
-    background-color: var(--df-01);
+    background-color: var(--df-005);
 }
 
 #delhistory li span {
