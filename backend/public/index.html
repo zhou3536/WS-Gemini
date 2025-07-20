@@ -140,7 +140,7 @@
         }
 
         function renderHistoriesList(list) {
-            historyList.innerHTML = ''; // 清空现有列表
+            historyList.innerHTML = '';
             list.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.title;
@@ -214,15 +214,10 @@
                 currentModelResponseElement = modelmessage;
                 accumulatedStreamText = '';
             }
-            const messageRect = modelmessage.getBoundingClientRect();
-            const containerRect = chatWindow.getBoundingClientRect();
-            const messageAtTop = messageRect.top <= containerRect.top + 150;
-
             // 将新的原始块附加到累积文本中
             accumulatedStreamText += chunk;
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
-            // chatWindow.scrollTop = chatWindow.scrollHeight;
-            if (!messageAtTop) { chatWindow.scrollTop = chatWindow.scrollHeight; };
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
         // --- 发送消息 ---
