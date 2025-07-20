@@ -8,7 +8,7 @@ import { initializeAuth } from './auth.js';
 // 将所有 CommonJS 的 require 转换为 ES Module 的 import
 import express from "express";
 import http from "http";
-import { Server } from "socket.io";
+import { WebSocketServer } from "ws"; 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
@@ -22,7 +22,7 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const wss = new WebSocketServer({ server });
 
 const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
@@ -43,37 +43,40 @@ app.use(express.json());
 initializeAuth(app, process.env.accessPassword, process.env.cookieSecret);
 app.use(express.static(path.join(__dirname, "public"))); // __dirname 现在已定义
 
-io.on("connection", (socket) => {
+wss.on("connection", (ws) => {
     // console.log("客户端已连接");
-    listHistories(socket);
+    listHistories(ws);
 
-    socket.on("newMessage", async (data) => {
-        await handleNewMessage(socket, data);
+    ws.on("message", async (message) => {
+        const data = JSON.parse(message);
+
+        switch (data.type) {
+            case "newMessage":
+                await handleNewMessage(ws, data);
+                break;
+            case "loadHistory":
+                await handleLoadHistory(ws, data.sessionId);
+                break;
+            case "deleteHistory":
+                await handleDeleteHistory(ws, data.sessionId);
+                break;
+        }
     });
 
-    socket.on("loadHistory", async (data) => {
-        await handleLoadHistory(socket, data.sessionId);
-    });
-
-    socket.on("deleteHistory", async (data) => {
-        await handleDeleteHistory(socket, data.sessionId);
-    });
-
-
-    socket.on("disconnect", () => {
+    ws.on("close", () => {
         // console.log("客户端已断开");
     });
 });
 
-async function handleNewMessage(socket, data) {
+async function handleNewMessage(ws, data) {
     // 将收到的用户消息立即回显给发送方
-    socket.emit("userMessageEcho", { prompt: data.prompt, files: data.files });
+    ws.send(JSON.stringify({ type: "userMessageEcho", prompt: data.prompt, files: data.files }));
 
     let { sessionId, prompt, files, model, useWebSearch } = data; // 确保 useWebSearch 被解构出来
     // 1. 会话和历史记录管理
     if (!sessionId) {
         sessionId = `${Date.now()}.json`;
-        socket.emit("sessionCreated", { sessionId });
+        ws.send(JSON.stringify({ type: "sessionCreated", sessionId }));
         fs.writeFileSync(path.join(historiesDir, sessionId), JSON.stringify([]));
     }
 
@@ -125,7 +128,7 @@ async function handleNewMessage(socket, data) {
         for await (const chunk of result.stream) {
             const chunkText = chunk.text();
             fullResponse += chunkText;
-            socket.emit("streamChunk", { chunk: chunkText });
+            ws.send(JSON.stringify({ type: "streamChunk", chunk: chunkText }));
         }
 
         // 4. 保存历史记录
@@ -133,11 +136,14 @@ async function handleNewMessage(socket, data) {
         history.push({ role: "model", parts: [{ text: fullResponse }] });
         fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
 
-        socket.emit("streamEnd");
+        ws.send(JSON.stringify({ type: "streamEnd" }));
 
         // 在新消息处理完成后，广播更新的历史记录列表
-        io.emit("historiesListed", await getHistoriesList());
-
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                listHistories(client);
+            }
+        });
 
     } catch (error) {
         console.error("Gemini API 调用失败:", error);
@@ -170,25 +176,26 @@ async function handleNewMessage(socket, data) {
             clientMessage += ` (代码: ${statusCode})`;
         }
 
-        socket.emit("error", {
+        ws.send(JSON.stringify({
+            type: "error",
             message: clientMessage,
             statusCode: statusCode
-        });
+        }));
     }
 }
 
-async function handleLoadHistory(socket, sessionId) {
+async function handleLoadHistory(ws, sessionId) {
     const historyPath = path.join(historiesDir, sessionId);
     if (fs.existsSync(historyPath)) {
         const history = fs.readFileSync(historyPath, "utf-8");
-        socket.emit("historyLoaded", { history: JSON.parse(history) });
+        ws.send(JSON.stringify({ type: "historyLoaded", history: JSON.parse(history) }));
     } else {
         // 如果找不到历史文件，可能需要通知前端
-        socket.emit("error", { message: "找不到指定的会话历史。" });
+        ws.send(JSON.stringify({ type: "error", message: "找不到指定的会话历史。" }));
     }
 }
 
-async function getHistoriesList() {
+async function listHistories(ws) {
     try {
         const files = fs.readdirSync(historiesDir)
             .filter(file => file.endsWith('.json'))
@@ -202,27 +209,26 @@ async function getHistoriesList() {
             const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题'; // 截取前50个字符
             return { sessionId: file, title };
         });
-        return historyList;
+
+        ws.send(JSON.stringify({ type: 'historiesListed', list: historyList }));
     } catch (error) {
         console.error("获取历史记录列表失败:", error);
-        return [];
+        ws.send(JSON.stringify({ type: 'error', message: '无法加载历史记录列表。' }));
     }
 }
 
-
-async function listHistories(socket) {
-    const historyList = await getHistoriesList();
-    socket.emit('historiesListed', { list: historyList });
-}
-
-async function handleDeleteHistory(socket, sessionId) {
+async function handleDeleteHistory(ws, sessionId) {
     const historyPath = path.join(historiesDir, sessionId);
     if (fs.existsSync(historyPath)) {
         fs.unlinkSync(historyPath);
         // Broadcast updated history list to all clients
-        io.emit("historiesListed", await getHistoriesList());
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                listHistories(client);
+            }
+        });
     } else {
-        socket.emit("error", { message: "找不到要删除的会话历史。" });
+        ws.send(JSON.stringify({ type: "error", message: "找不到要删除的会话历史。" }));
     }
 }
 

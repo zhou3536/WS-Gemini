@@ -52,7 +52,6 @@
         <img src="" alt="">
         <p></p>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         let selectedFiles = []; // 用于存储选择的文件
         let SearchOn = false;   // 搜索开关
@@ -70,7 +69,8 @@
         const filePreviewArea = document.getElementById('file-preview-area');
         const Connection = document.getElementById('Connection');
 
-        const socket = io();
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${window.location.host}`);
 
 
         let sessionId = localStorage.getItem('sessionId');
@@ -80,56 +80,65 @@
         let modelmessage = null;
 
 
-        // --- Socket.IO 事件处理 ---
-        socket.on('connect', () => {
-            console.log('Socket.IO连接已建立');
+        // --- WebSocket 事件处理 ---
+        ws.onopen = () => {
+            console.log('WebSocket连接已建立');
             Connection.style.background = 'green';
             sendBtn.disabled = false;
             if (sessionId) {
-                socket.emit('loadHistory', { sessionId });
+                ws.send(JSON.stringify({ type: 'loadHistory', sessionId }));
             } else {
                 welcome.style.display = 'block';
             }
-        });
+        };
 
-        socket.on('sessionCreated', (data) => {
-            sessionId = data.sessionId;
-            localStorage.setItem('sessionId', sessionId);
-        });
-        socket.on('historyLoaded', (data) => {
-            renderHistory(data.history);
-        });
-        socket.on('historiesListed', (data) => {
-            renderHistoriesList(data.list);
-        });
-        socket.on('userMessageEcho', (data) => {
-            appendMessage(data.prompt, 'user');
-            createmodelmessagebox();
-        });
-        socket.on('streamChunk', (data) => {
-            appendStreamChunk(data.chunk);
-        });
-        socket.on('streamEnd', () => {
-            currentModelResponseElement = null;
-            sendBtn.disabled = false;
-            sendinfobox.classList.remove('loading');
-            hljs.highlightAll();
-            addcopy();
-        });
-        socket.on('error', (data) => {
-            console.error('服务器错误:', data.message);
-            sendinfobox.classList.remove('loading');
-            sendBtn.disabled = false;
-            alert(`发生错误: ${data.message}`);
-        });
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            switch (data.type) {
 
+                case 'sessionCreated':
+                    sessionId = data.sessionId;
+                    localStorage.setItem('sessionId', sessionId);
+                    break;
+                case 'historyLoaded':
+                    renderHistory(data.history);
+                    break;
+                case 'historiesListed':
+                    renderHistoriesList(data.list);
+                    break;
+                case 'userMessageEcho':
+                    appendMessage(data.prompt, 'user');
+                    createmodelmessagebox();
+                    break;
+                case 'streamChunk':
+                    appendStreamChunk(data.chunk);
+                    break;
+                case 'streamEnd':
+                    currentModelResponseElement = null;
+                    sendBtn.disabled = false;
+                    sendinfobox.classList.remove('loading');
+                    hljs.highlightAll();
+                    addcopy();
+                    break;
+                case 'error':
+                    console.error('服务器错误:', data.message);
+                    sendinfobox.classList.remove('loading');
+                    sendBtn.disabled = false;
+                    alert(`发生错误: ${data.message}`);
+                    break;
+            }
+        };
 
-        socket.on('disconnect', () => {
-            console.log('Socket.IO连接已关闭');
+        ws.onclose = () => {
+            console.log('WebSocket连接已关闭');
             Connection.style.background = 'red';
             sendBtn.disabled = true;
             // 可以在这里尝试重连
-        });
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket 错误:', error);
+        };
 
         // --- UI渲染函数 ---
         function renderHistory(history) {
@@ -164,7 +173,7 @@
                     if (sessionId !== item.sessionId) {
                         sessionId = item.sessionId;
                         localStorage.setItem('sessionId', sessionId);
-                        socket.emit('loadHistory', { sessionId });
+                        ws.send(JSON.stringify({ type: 'loadHistory', sessionId }));
                         closehislist();
                         chatWindow.innerHTML = '';
                         // 更新列表的激活状态
@@ -179,7 +188,7 @@
                 deleteBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     newChatBtn.click();
-                    socket.emit('deleteHistory', { sessionId: item.sessionId });
+                    ws.send(JSON.stringify({ type: 'deleteHistory', sessionId: item.sessionId }));
                 });
                 li.appendChild(span);
                 li.appendChild(deleteBtn);
@@ -285,13 +294,14 @@
             const files = await Promise.all(filePromises);
             const model = document.getElementById('gemini-v').value;
 
-            socket.emit('newMessage', {
+            ws.send(JSON.stringify({
+                type: 'newMessage',
                 sessionId,
                 prompt,
                 files,
                 model,
                 useWebSearch: SearchOn
-            });
+            }));
 
         }
 
