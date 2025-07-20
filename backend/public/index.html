@@ -103,7 +103,7 @@
             renderHistoriesList(data.list);
         });
         socket.on('userMessageEcho', (data) => {
-            appendMessage(data.prompt, 'user');
+            appendMessage(data.prompt, 'user', data.fileCount);
             createmodelmessagebox();
         });
         socket.on('streamChunk', (data) => {
@@ -112,13 +112,13 @@
         socket.on('streamEnd', () => {
             currentModelResponseElement = null;
             sendBtn.disabled = false;
-            sendinfobox.classList.remove('loading');
+            if (sendinfobox) sendinfobox.classList.remove('loading');
             hljs.highlightAll();
             addcopy();
         });
         socket.on('error', (data) => {
             console.error('服务器错误:', data.message);
-            sendinfobox.classList.remove('loading');
+            if (sendinfobox) sendinfobox.classList.remove('loading');
             sendBtn.disabled = false;
             alert(`发生错误: ${data.message}`);
         });
@@ -137,7 +137,8 @@
             chatWindow.innerHTML = '';
             history.forEach(message => {
                 if (message.role === 'user') {
-                    appendMessage(message.parts[0].text, 'user');
+                    const fileCount = message.parts.length > 1 ? message.parts.length - 1 : 0;
+                    appendMessage(message.parts[0].text, 'user', fileCount);
                 } else if (message.role === 'model') {
                     appendMessage(message.parts[0].text, 'model');
                 }
@@ -190,12 +191,12 @@
             });
         }
 
-        function appendMessage(text, sender) {
+        function appendMessage(text, sender, fileCount = 0) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-box');
             const sendinfo = document.createElement('div');
             sendinfo.classList.add('sender');
-            // sendinfo.innerHTML = `<img src="img/${sender}.png" alt=""><p>${sender}</p>`;
+
             if (sender === 'user') {
                 sendinfo.innerHTML = '<img src="img/user.png" alt=""><p class="user">User</p>'
             } else {
@@ -204,7 +205,13 @@
             const message = document.createElement('div');
             message.innerHTML = marked.parse(text);
             message.classList.add(`${sender}-message`, 'message');
-            // pre.appendChild(code);
+            if (fileCount > 0) {
+                const fileCountElement = document.createElement('i');
+                fileCountElement.classList.add('fileCount');
+                fileCountElement.textContent = `+${fileCount} 个文件`;
+                message.appendChild(fileCountElement);
+            }
+
             messageElement.appendChild(sendinfo);
             messageElement.appendChild(message);
 

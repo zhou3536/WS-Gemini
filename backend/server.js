@@ -67,8 +67,9 @@ io.on("connection", (socket) => {
 
 async function handleNewMessage(socket, data) {
     // 将收到的用户消息立即回显给发送方
-    socket.emit("userMessageEcho", { prompt: data.prompt, files: data.files });
-
+    const fileCount = data.files ? data.files.length : 0;//接收到文件数量
+    socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
+    
     let { sessionId, prompt, files, model, useWebSearch } = data;
     // 1. 会话和历史记录管理
     if (!sessionId) {

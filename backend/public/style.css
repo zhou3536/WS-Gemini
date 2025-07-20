@@ -315,11 +315,13 @@ body {
 }
 
 .message p {
-    /* margin: 5px 0; */
     word-break: break-all;
-    /* line-height: 1.6; */
 }
-
+.message .fileCount{
+    display: block;
+    font-size: 12px;
+    margin-top: 6px;
+}
 .user-message {
     position: relative;
 }
