@@ -145,8 +145,8 @@ body {
     counter-reset: item-counter;
     background-color: var(--hisbgc);
     border: none;
-    border-width: 0;
-    border-right: 1px solid var(--df-01);
+    /* border-width: 0; */
+    /* border-right: 1px solid var(--df-01); */
     z-index: 1000;
 }
 

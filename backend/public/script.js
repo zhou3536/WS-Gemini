@@ -115,13 +115,13 @@ document.addEventListener('DOMContentLoaded', function () {
     opbtn.addEventListener("click", function () {
         if (!historylistdsiplay) {
             a.style.width = '300px';
-            a.style.borderWidth = '1px';
+            a.style.borderRight = '1px solid var(--df-01)';
             a.style.transition = 'all 0.3s ease';
             opbtn.classList.add('hisbtn2');
             historylistdsiplay = true;
         } else if (historylistdsiplay) {
             a.style.width = '0';
-            a.style.borderWidth = '0';
+            a.style.borderRight = 'none';
             opbtn.classList.remove('hisbtn2');
             historylistdsiplay = false;
         }
@@ -133,7 +133,7 @@ function closehislist() {
     const opbtn = document.getElementById("history-b");
     if (window.innerWidth > 800) { return }
     a.style.width = '0';
-    a.style.borderWidth = '0';
+    a.style.borderRight = 'none';
     a.style.transition = 'none';
     opbtn.classList.remove('hisbtn2');
     historylistdsiplay = false;

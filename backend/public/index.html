@@ -54,8 +54,7 @@
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        let selectedFiles = []; // 用于存储选择的文件
-        let SearchOn = false;   // 搜索开关
+
         const welcome = document.getElementById('welcome');
         const inputarea = document.getElementById('input-area');
         const Searchbtn = document.getElementById('Search');
@@ -69,18 +68,16 @@
         const fileInput = document.getElementById('file-input');
         const filePreviewArea = document.getElementById('file-preview-area');
         const Connection = document.getElementById('Connection');
-
         const socket = io();
-
-
         let sessionId = localStorage.getItem('sessionId');
         let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
         let sendinfobox = null;
         let modelmessage = null;
-
-
+        let selectedFiles = []; // 用于存储选择的文件
+        let SearchOn = false;   // 搜索开关
         // --- Socket.IO 事件处理 ---
+
         socket.on('connect', () => {
             console.log('Socket.IO连接已建立');
             Connection.style.background = 'green';
@@ -222,7 +219,6 @@
             return messageElement; // 返回创建的元素以便流式追加
         }
 
-
         function createmodelmessagebox() {
             const messagebox = document.createElement('div');
             messagebox.classList.add('message-box');
@@ -262,7 +258,7 @@
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-        function appenderror (message){
+        function appenderror(message) {
             modelmessage.innerText = message;
             modelmessage.style.color = '#d26161';
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -319,13 +315,14 @@
             welcome.style.display = 'block';
             document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
         });
-
-
     </script>
     <script src="script.js"></script>
     <script src="theme.js"></script>
 
-
+    <!-- 预加载 -->
+    <div style="display: none;">
+        <img src="img/cbl-2.png" alt="">
+    </div>
 </body>
 
 </html>
