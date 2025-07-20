@@ -205,7 +205,7 @@
 
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
-            return messageElement; // 返回创建的元素以便流式追加
+            // return messageElement; 
         }
 
         function createmodelmessagebox() {
@@ -223,12 +223,16 @@
             messagebox.appendChild(sendinfo);
             messagebox.appendChild(message);
             chatWindow.appendChild(messagebox);
-            promptInput.style.height = '0';
-            promptInput.style.height = promptInput.scrollHeight + 'px';
+
             promptInput.value = '';
             selectedFiles = [];
             renderFilePreviews();
             promptInput.focus();
+            
+            promptInput.style.height = '0';
+            promptInput.style.height = promptInput.scrollHeight + 'px';
+
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
             sendinfobox = sendinfo;
             modelmessage = message;
@@ -247,6 +251,7 @@
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
+        
         function appenderror(message) {
             modelmessage.innerText = message;
             modelmessage.style.color = '#d26161';

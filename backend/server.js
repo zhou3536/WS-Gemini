@@ -69,7 +69,7 @@ async function handleNewMessage(socket, data) {
     // 将收到的用户消息立即回显给发送方
     const fileCount = data.files ? data.files.length : 0;//接收到文件数量
     socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
-    
+
     let { sessionId, prompt, files, model, useWebSearch } = data;
     // 1. 会话和历史记录管理
     if (!sessionId) {
@@ -96,9 +96,7 @@ async function handleNewMessage(socket, data) {
     // 3. 调用Gemini API
     try {
         console.log('ID:', sessionId, ' modal:', model, ' Web search:', useWebSearch);
-        const generationConfig = {
-            // temperature: 0.7, // 可以根据需要调整
-        };
+        const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
 
         // 构建模型参数对象
         const modelParams = {
@@ -116,7 +114,7 @@ async function handleNewMessage(socket, data) {
         const chat = geminiModel.startChat({
             history: history,
             generationConfig: {
-                // maxOutputTokens: 100, // 根据需要调整
+                // 可由前端传递参数
             },
         });
 

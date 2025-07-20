@@ -96,6 +96,7 @@ renderFilePreviews();
 // if (savedValue) {
 //     modelSelect.value = savedValue;
 // }
+
 // 动态调整输入框高度
 promptInput.addEventListener('input', function () {
     this.style.height = '0';
@@ -249,7 +250,7 @@ function copycode() {
 }
 //给<table>套div
 function wrapTablesInGeminiMessages() {
-    const geminiMessages = document.querySelectorAll('div.gemini-message');
+    const geminiMessages = document.querySelectorAll('div.model-message');
 
     geminiMessages.forEach(message => {
         const tables = message.querySelectorAll('table');
