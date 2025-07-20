@@ -219,8 +219,8 @@ async function handleDeleteHistory(socket, sessionId) {
     const historyPath = path.join(historiesDir, sessionId);
     if (fs.existsSync(historyPath)) {
         fs.unlinkSync(historyPath);
-        // Broadcast updated history list to all clients
-        io.emit("historiesListed", await getHistoriesList());
+        // After deleting, get the new list and send it back to the client.
+        await listHistories(socket);
     } else {
         socket.emit("error", { message: "找不到要删除的会话历史。" });
     }

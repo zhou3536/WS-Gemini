@@ -178,7 +178,10 @@
                 deleteBtn.classList.add('delete-history-btn');
                 deleteBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    newChatBtn.click();
+
+                    if (item.sessionId === sessionId) {
+                        newChatBtn.click();
+                    }
                     socket.emit('deleteHistory', { sessionId: item.sessionId });
                 });
                 li.appendChild(span);
