@@ -149,13 +149,16 @@ body {
     /* border-right: 1px solid var(--df-01); */
     z-index: 1000;
 }
-
+#history-list h4,
 #history-list li {
     margin: 3px 8px;
     padding: 5px 8px;
     border-radius: 8px;
-    display: flex;
     cursor: default;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 #history-list li span {
@@ -169,22 +172,7 @@ body {
     background-color: var(--df-01);
 }
 
-#history-list li button {
-    display: block;
-    margin-left: auto;
-    padding: 0 5px;
-    border-radius: 5px;
-    background-color: transparent;
-    color: var(--df-ziji);
-    border: none;
-    opacity: 0;
-    font-weight: 600;
-    cursor: pointer;
-}
 
-#history-list li:hover>button {
-    opacity: 1;
-}
 
 #list-dhdh {
     position: absolute;
@@ -317,11 +305,13 @@ body {
 .message p {
     word-break: break-all;
 }
-.message .fileCount{
+
+.message .fileCount {
     display: block;
     font-size: 12px;
     margin-top: 6px;
 }
+
 .user-message {
     position: relative;
 }
@@ -696,4 +686,66 @@ body {
 button:disabled {
     cursor: not-allowed !important;
     opacity: 0.3;
+}
+
+#delhistory {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 100000;
+    padding: 12px;
+    padding-top: 40px;
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--hisbgc);
+}
+
+#delhistory>button {
+    position: absolute;
+    left: 12px;
+    top: 6px;
+    padding: 5px 15px;
+    font-size: 16px;
+    border: none;
+    background-color: var(--df-01);
+    border-radius: 8px;
+}
+
+#delhistory li {
+    list-style-type: none;
+    display: flex;
+    align-content: center;
+    max-width: 500px;
+    padding: 8px;
+    margin: 5px auto;
+    border-radius: 8px;
+    background-color: var(--df-01);
+}
+
+#delhistory li span {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+
+#delhistory li button {
+    display: block;
+    margin-left: auto;
+    padding: 0 5px;
+    border-radius: 5px;
+    background-color: transparent;
+    color: var(--df-ziji);
+    border: none;
+    /* opacity: 0; */
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#delhistory li:hover>button {
+    opacity: 1;
 }

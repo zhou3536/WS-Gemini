@@ -52,6 +52,7 @@
         <img src="" alt="">
         <p></p>
     </div>
+    <div id="delhistory"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 
@@ -68,6 +69,7 @@
         const fileInput = document.getElementById('file-input');
         const filePreviewArea = document.getElementById('file-preview-area');
         const Connection = document.getElementById('Connection');
+        const delhistorybox = document.getElementById('delhistory');
         const socket = io();
         let sessionId = localStorage.getItem('sessionId');
         let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
@@ -98,6 +100,7 @@
         });
         socket.on('historiesListed', (data) => {
             renderHistoriesList(data.list);
+            delHistories(data.list);
         });
         socket.on('userMessageEcho', (data) => {
             appendMessage(data.prompt, 'user', data.fileCount);
@@ -147,19 +150,18 @@
 
         function renderHistoriesList(list) {
             historyList.innerHTML = '';
+            const ophis = document.createElement('h4');
+            ophis.innerText = '管理记录';
+            ophis.addEventListener('click', function () { delhistorybox.style.display = 'block' });
+            historyList.appendChild(ophis);
             list.forEach(item => {
                 const li = document.createElement('li');
-                const span = document.createElement('span');
-                span.textContent = item.title;
+                li.textContent = item.title;
                 li.dataset.sessionId = item.sessionId;
                 if (item.sessionId === sessionId) {
                     li.classList.add('active');
                 }
                 li.addEventListener('click', (e) => {
-                    // Stop propagation to prevent the delete button click from triggering this
-                    if (e.target === deleteBtn) {
-                        return;
-                    }
                     if (sessionId !== item.sessionId) {
                         sessionId = item.sessionId;
                         localStorage.setItem('sessionId', sessionId);
@@ -172,19 +174,6 @@
                     }
                 });
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '✕';
-                deleteBtn.classList.add('delete-history-btn');
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-
-                    if (item.sessionId === sessionId) {
-                        newChatBtn.click();
-                    }
-                    socket.emit('deleteHistory', { sessionId: item.sessionId });
-                });
-                li.appendChild(span);
-                li.appendChild(deleteBtn);
                 historyList.appendChild(li);
             });
         }

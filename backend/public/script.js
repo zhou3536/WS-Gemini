@@ -174,7 +174,7 @@ function generateUserMessageIndex() {
     });
 };
 let dhdh = false;
-if (window.innerWidth >= 1220) {dhdh = true};
+if (window.innerWidth >= 1220) { dhdh = true };
 function opendhdh() {
     const listdhdh = document.getElementById('list-dhdh')
     if (dhdh) {
@@ -268,4 +268,34 @@ function addcopy() {
     generateUserMessageIndex()
     wrapTablesInGeminiMessages();
     copycode()
+}
+
+//删除历史
+function delHistories(list) {
+    delhistorybox.innerHTML = '';
+
+    const closebtn = document.createElement('button')
+    closebtn.innerText = '返回';
+    closebtn.addEventListener('click', function () { delhistorybox.style.display = 'none' });
+    list.forEach((item, index) => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        // span.textContent = item.title;
+        span.textContent = `${index + 1}. ${item.title}`
+        li.dataset.sessionId = item.sessionId;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕';
+        deleteBtn.classList.add('delete-history-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (item.sessionId === sessionId) {
+                newChatBtn.click();
+            }
+            socket.emit('deleteHistory', { sessionId: item.sessionId });
+        });
+        li.appendChild(span);
+        li.appendChild(deleteBtn);
+        delhistorybox.appendChild(closebtn);
+        delhistorybox.appendChild(li);
+    });
 }
