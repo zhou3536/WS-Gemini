@@ -1,17 +1,28 @@
-require("dotenv").config();
+// server.js
+import dotenv from 'dotenv';
+dotenv.config();
 
 // 引入密码认证模块
 import { initializeAuth } from './auth.js';
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fs = require("fs");
-const path = require("path");
+
+// 将所有 CommonJS 的 require 转换为 ES Module 的 import
+import express from "express";
+import http from "http";
+import { WebSocketServer } from "ws"; 
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
+import path from "path";
+
+// 在 ES Module 中，__dirname 和 __filename 不再是全局变量，需要手动获取
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ server });
 
 const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
@@ -23,14 +34,14 @@ if (!API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(API_KEY);
-const historiesDir = path.join(__dirname, "histories");
+const historiesDir = path.join(__dirname, "histories"); // __dirname 现在已定义
 if (!fs.existsSync(historiesDir)) {
     fs.mkdirSync(historiesDir);
 }
 
+app.use(express.json());
 initializeAuth(app, process.env.accessPassword, process.env.cookieSecret);
-
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"))); // __dirname 现在已定义
 
 wss.on("connection", (ws) => {
     // console.log("客户端已连接");

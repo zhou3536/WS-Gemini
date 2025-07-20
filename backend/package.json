@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for Gemini Chat",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
@@ -11,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "ws": "^8.18.3"

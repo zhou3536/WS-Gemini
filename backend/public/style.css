@@ -535,7 +535,7 @@ body {
     line-height: 18px;
     font-family: Arial, sans-serif;
     min-height: 24px;
-    max-height: 60vh;
+    max-height: 40vh;
     overflow-y: auto;
     color: var(--df-ziji);
     background-color: transparent;

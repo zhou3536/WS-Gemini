@@ -68,7 +68,10 @@
         const fileInput = document.getElementById('file-input');
         const filePreviewArea = document.getElementById('file-preview-area');
         const Connection = document.getElementById('Connection');
-        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${window.location.host}`);
+
 
         let sessionId = localStorage.getItem('sessionId');
         let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
