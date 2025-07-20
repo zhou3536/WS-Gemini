@@ -49,6 +49,9 @@ wss.on("connection", (ws) => {
 });
 
 async function handleNewMessage(ws, data) {
+    // 将收到的用户消息立即回显给发送方
+    ws.send(JSON.stringify({ type: "userMessageEcho", prompt: data.prompt, files: data.files }));
+
     let { sessionId, prompt, files, model, useWebSearch } = data; // 确保 useWebSearch 被解构出来
     console.log(useWebSearch)
     console.log(typeof useWebSearch)
