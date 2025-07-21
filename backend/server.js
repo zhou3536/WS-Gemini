@@ -206,11 +206,12 @@ async function getHistoriesList() {
 
         const historyList = files.map(file => {
             const filePath = path.join(historiesDir, file);
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const history = JSON.parse(content);
-            const firstUserMessage = history.find(msg => msg.role === 'user');
-            const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题'; // 截取前50个字符
-            return { sessionId: file, title };
+            try {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const history = JSON.parse(content);
+                const firstUserMessage = history.find(msg => msg.role === 'user');
+                const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题'; // 截取前50个字符
+                return { sessionId: file, title };
             } catch (error) {
                 console.error(`处理历史文件失败 ${file}:`, error);
                 return { sessionId: file, title: '无效的历史记录' }; // 返回一个错误提示
