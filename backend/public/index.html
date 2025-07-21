@@ -43,7 +43,7 @@
                         <button id="new-chat-btn">新建对话</button>
                         <button id="addfile"></button>
                         <button id="Search" class="search">联网搜索</button>
-                        <div id="Connection" style="width: 10px; height: 10px; border-radius: 15px;" title="连接状态"></div>
+                        <div id="Connection" style="width: 6px; height: 6px; border-radius: 15px;" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
             hljs.highlightAll();
             addcopy();
         });
-        socket.on('nothistory', (data) => {
+        socket.on('historyerror', (data) => {
             console.error(data.message);
             newChatBtn.click();
         });
@@ -288,9 +288,10 @@
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
+                        const mimeType = file.type === 'application/json' ? 'text/plain' : file.type;
                         resolve({
-                            data: e.target.result.split(',')[1], // Base64 data
-                            mimeType: file.type
+                            data: e.target.result.split(',')[1],
+                            mimeType: mimeType
                         });
                     };
                     reader.onerror = reject;

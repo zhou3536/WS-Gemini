@@ -184,11 +184,17 @@ async function handleNewMessage(socket, data) {
 async function handleLoadHistory(socket, sessionId) {
     const historyPath = path.join(historiesDir, sessionId);
     if (fs.existsSync(historyPath)) {
-        const history = fs.readFileSync(historyPath, "utf-8");
-        socket.emit("historyLoaded", { history: JSON.parse(history) });
+        try {
+            const historyData = fs.readFileSync(historyPath, "utf-8");
+            const history = JSON.parse(historyData);
+            socket.emit("historyLoaded", { history: history });
+        } catch (error) {
+            console.error(`加载历史记录失败 ${sessionId}:`, error);
+            socket.emit("historyerror", { message: `无法加载会话历史 (${sessionId})，文件可能已损坏。` });
+        }
     } else {
         // 如果找不到历史文件，可能需要通知前端
-        socket.emit("nothistory", { message: "找不到指定的会话历史,开始新的会话" });
+        socket.emit("historyerror", { message: "找不到指定的会话历史,开始新的会话" });
     }
 }
 
@@ -205,6 +211,10 @@ async function getHistoriesList() {
             const firstUserMessage = history.find(msg => msg.role === 'user');
             const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题'; // 截取前50个字符
             return { sessionId: file, title };
+            } catch (error) {
+                console.error(`处理历史文件失败 ${file}:`, error);
+                return { sessionId: file, title: '无效的历史记录' }; // 返回一个错误提示
+            }
         });
         return historyList;
     } catch (error) {
@@ -223,7 +233,6 @@ async function handleDeleteHistory(socket, sessionId) {
     const historyPath = path.join(historiesDir, sessionId);
     if (fs.existsSync(historyPath)) {
         fs.unlinkSync(historyPath);
-        // After deleting, get the new list and send it back to the client.
         await listHistories(socket);
     } else {
         socket.emit("error", { message: "找不到要删除的会话历史。" });
