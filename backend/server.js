@@ -41,7 +41,12 @@ if (!fs.existsSync(historiesDir)) {
 
 app.use(express.json());
 initializeAuth(app, process.env.accessPassword, process.env.cookieSecret);
-app.use(express.static(path.join(__dirname, "public"))); // __dirname 现在已定义
+// app.use(express.static(path.join(__dirname, "public"))); 
+const cachetime = 120 * 60 * 1000;
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: cachetime,
+    etag: true,
+}));
 
 io.on("connection", (socket) => {
     // console.log("客户端已连接");
