@@ -29,6 +29,7 @@ fileInput.addEventListener('change', (event) => {
     fileInput.value = '';
 });
 
+//更新显示
 function renderFilePreviews() {
     filePreviewArea.innerHTML = '';
     if (selectedFiles.length > 0) {
@@ -55,6 +56,7 @@ function renderFilePreviews() {
     });
 }
 
+//拖入文件
 inputarea.addEventListener('dragover', (e) => { e.preventDefault(); inputarea.classList.add('drag-over'); });
 inputarea.addEventListener('dragleave', () => inputarea.classList.remove('drag-over'));
 inputarea.addEventListener('drop', (e) => {
@@ -63,6 +65,7 @@ inputarea.addEventListener('drop', (e) => {
     processFiles(e.dataTransfer.files);
 });
 
+//输入框粘贴文件
 promptInput.addEventListener('paste', (e) => {
     const files = e.clipboardData.files;
     if (files.length > 0) {
