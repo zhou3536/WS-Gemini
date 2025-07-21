@@ -315,6 +315,9 @@ body {
 .user-message {
     position: relative;
 }
+.user-message>p {
+    line-height: 1.6;
+}
 
 .user-message .file-info {
     font-size: 12px;
@@ -406,45 +409,6 @@ body {
         opacity: 0.6;
     }
 }
-
-
-
-/* .user-message::before,
-.model-message::before {
-    content: "";
-    display: block;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    position: absolute;
-    left: 5px;
-    top: 8px;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    outline: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.user-message::before {
-    background-image: url('img/avt.png');
-}
-
-.model-message::before {
-    background-image: url('img/gmm.png');
-}
-
-.user-message::after,
-.model-message::after {
-    position: absolute;
-    left: 48px;
-    top: 17px;
-    font-size: 16px;
-    font-weight: 550;
-    color: transparent;
-}
-
-
-} */
 
 .model-message.loading {
     min-height: 90px;
@@ -605,7 +569,7 @@ body {
     }
 
     .message {
-        padding: 2px;
+        padding: 8px 2px;
     }
 
     .input-area {
