@@ -183,15 +183,17 @@
             messageElement.classList.add('message-box');
             const sendinfo = document.createElement('div');
             sendinfo.classList.add('sender');
+            const message = document.createElement('div');
+            message.classList.add(`${sender}-message`, 'message');
 
             if (sender === 'user') {
-                sendinfo.innerHTML = '<img src="img/user.png" alt=""><p class="user">User</p>'
+                sendinfo.innerHTML = '<img src="img/user.png" alt=""><p class="user">User</p>';
+                message.innerHTML = `<P>${text}<P>`;
             } else {
-                sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>'
+                sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
+                message.innerHTML = marked.parse(text);
             };
-            const message = document.createElement('div');
-            message.innerHTML = marked.parse(text);
-            message.classList.add(`${sender}-message`, 'message');
+
             if (fileCount > 0) {
                 const fileCountElement = document.createElement('i');
                 fileCountElement.classList.add('fileCount');
@@ -228,7 +230,7 @@
             selectedFiles = [];
             renderFilePreviews();
             promptInput.focus();
-            
+
             promptInput.style.height = '0';
             promptInput.style.height = promptInput.scrollHeight + 'px';
 
@@ -251,7 +253,7 @@
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-        
+
         function appenderror(message) {
             modelmessage.innerText = message;
             modelmessage.style.color = '#d26161';
