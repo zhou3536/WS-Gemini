@@ -78,8 +78,8 @@
         let modelmessage = null;
         let selectedFiles = []; // 用于存储选择的文件
         let SearchOn = false;   // 搜索开关
-        // --- Socket.IO 事件处理 ---
 
+        // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
             console.log('Socket.IO连接已建立');
             Connection.style.background = 'green';
@@ -129,7 +129,6 @@
             console.log('Socket.IO连接已关闭');
             Connection.style.background = 'red';
             sendBtn.disabled = true;
-            // 可以在这里尝试重连
         });
 
         // --- UI渲染函数 ---
@@ -271,6 +270,7 @@
         async function sendMessage() {
             const prompt = promptInput.value.trim();
             if (prompt === '' && selectedFiles.length === 0) return;
+            if (sendBtn.disabled) return;
 
             welcome.style.display = 'none';
             sendBtn.disabled = true;
