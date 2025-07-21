@@ -194,7 +194,9 @@
 
             if (sender === 'user') {
                 sendinfo.innerHTML = '<img src="img/user.png" alt=""><p class="user">User</p>';
-                message.innerHTML = `<P>${text}<P>`;
+                const messagep = document.createElement('p');
+                messagep.innerText = text;
+                message.appendChild(messagep);
             } else {
                 sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
                 message.innerHTML = marked.parse(text);
