@@ -195,6 +195,7 @@ async function handleLoadHistory(socket, sessionId) {
     } else {
         // 如果找不到历史文件，可能需要通知前端
         socket.emit("historyerror", { message: "找不到指定的会话历史,开始新的会话" });
+        await listHistories(socket);
     }
 }
 
@@ -236,6 +237,7 @@ async function handleDeleteHistory(socket, sessionId) {
         fs.unlinkSync(historyPath);
         await listHistories(socket);
     } else {
+        await listHistories(socket);
         socket.emit("error", { message: "找不到要删除的会话历史。" });
     }
 }
