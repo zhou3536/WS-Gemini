@@ -1,4 +1,3 @@
-// server.js
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -76,15 +75,22 @@ async function handleNewMessage(socket, data) {
     socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
 
     let { sessionId, prompt, files, model, useWebSearch } = data;
+    let isNewSession = false; // 标记是否为新会话
+
     // 1. 会话和历史记录管理
     if (!sessionId) {
+        isNewSession = true;
         sessionId = `${Date.now()}.json`;
         socket.emit("sessionCreated", { sessionId });
-        fs.writeFileSync(path.join(historiesDir, sessionId), JSON.stringify([]));
+        // 不再在这里创建空白文件 fs.writeFileSync(path.join(historiesDir, sessionId), JSON.stringify([]));
     }
 
     const historyPath = path.join(historiesDir, sessionId);
-    let history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
+    let history = []; // 默认历史记录为空数组
+    if (!isNewSession && fs.existsSync(historyPath)) { // 如果是旧会话且文件存在，则加载
+        history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
+    }
+    // 如果是新会话，或者旧会话但文件不存在，history 依然是 []
 
     // 2. 构建请求
     const userMessage = { role: "user", parts: [{ text: prompt }] };
@@ -116,6 +122,8 @@ async function handleNewMessage(socket, data) {
 
         const geminiModel = genAI.getGenerativeModel(modelParams);
 
+        // 如果是新会话，history 在这里是空数组
+        // 如果是旧会话，history 包含了之前的内容
         const chat = geminiModel.startChat({
             history: history,
             generationConfig: {
@@ -132,7 +140,7 @@ async function handleNewMessage(socket, data) {
             socket.emit("streamChunk", { chunk: chunkText });
         }
 
-        // 4. 保存历史记录
+        // 4. 保存历史记录 - 只有当API调用成功后才保存
         history.push(userMessage);
         history.push({ role: "model", parts: [{ text: fullResponse }] });
         fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
@@ -149,16 +157,7 @@ async function handleNewMessage(socket, data) {
         let clientMessage = "与Gemini的通信出现问题。"; // 默认的通用错误信息
         let statusCode = null;
 
-        // 1. 尝试从 error.errorDetails 数组中提取最具体的 message
-        if (error.errorDetails && Array.isArray(error.errorDetails)) {
-            for (const detail of error.errorDetails) {
-                if (detail.message) {
-                    clientMessage = detail.message; // 找到第一个有 message 的就用它
-                    break; // 找到后就跳出循环
-                }
-            }
-        }
-        if (clientMessage === "与Gemini的通信出现问题。" && error.message) {
+        if (error.message) {
             clientMessage = error.message;
         }
 
@@ -174,10 +173,11 @@ async function handleNewMessage(socket, data) {
             clientMessage += ` (错误代码: ${statusCode})`;
         }
 
-        socket.emit("error", {
+        socket.emit("APIerror", {
             message: clientMessage,
             statusCode: statusCode
         });
+        // 关键：如果API失败，且是新会话，history文件不会被创建
     }
 }
 
@@ -188,7 +188,7 @@ async function handleLoadHistory(socket, sessionId) {
         socket.emit("historyLoaded", { history: JSON.parse(history) });
     } else {
         // 如果找不到历史文件，可能需要通知前端
-        socket.emit("error", { message: "找不到指定的会话历史。" });
+        socket.emit("nothistory", { message: "找不到指定的会话历史,开始新的会话" });
     }
 }
 

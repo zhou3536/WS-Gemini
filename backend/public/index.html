@@ -116,12 +116,19 @@
             hljs.highlightAll();
             addcopy();
         });
-        socket.on('error', (data) => {
-            console.error('服务器错误:', data.message);
+        socket.on('nothistory', (data) => {
+            console.error(data.message);
+            newChatBtn.click();
+        });
+        socket.on('APIerror', (data) => {
+            console.error('API错误:', data.message);
             if (sendinfobox) sendinfobox.classList.remove('loading');
             sendBtn.disabled = false;
-            // alert(`发生错误: ${data.message}`);
             appenderror(data.message);
+        });
+        socket.on('error', (data) => {
+            console.error('服务器错误:', data.message);
+            alert(`发生错误: ${data.message}`);
         });
 
 
