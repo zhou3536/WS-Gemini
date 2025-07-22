@@ -263,7 +263,7 @@
             accumulatedStreamText += chunk;
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
 
-            if (lastmessagebox.scrollHeight > chatWindow.offsetHeight) {
+            if (lastmessagebox.offsetHeight > chatWindow.offsetHeight) {
                 lastmessagebox.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 chatWindow.scrollTop = chatWindow.scrollHeight;
