@@ -80,11 +80,9 @@ Searchbtn.addEventListener("click", function () {
     if (SearchOn) {
         aaa.classList.remove('SearchON');
         SearchOn = false;
-        console.log(SearchOn);
     } else if (!SearchOn) {
         aaa.classList.add('SearchON');
         SearchOn = true;
-        console.log(SearchOn);
     }
 });
 
@@ -284,7 +282,7 @@ function delHistories(list) {
     list.forEach((item, index) => {
         const li = document.createElement('li');
         const span = document.createElement('span');
-        // span.textContent = item.title;
+        span.title = `文件名：${item.sessionId}`;
         span.textContent = `${index + 1}. ${item.title}`
         li.dataset.sessionId = item.sessionId;
         const deleteBtn = document.createElement('button');
