@@ -712,3 +712,11 @@ button:disabled {
 #delhistory li:hover>button {
     opacity: 1;
 }
+
+#Connection {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 15px;
+    background-color: red;
+}
