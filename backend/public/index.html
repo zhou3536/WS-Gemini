@@ -45,7 +45,7 @@
                         <button id="new-chat-btn">新建对话</button>
                         <button id="addfile"></button>
                         <button id="Search" class="search">联网搜索</button>
-                        <div id="Connection" style="width: 6px; height: 6px; border-radius: 15px;" title="连接状态"></div>
+                        <div id="Connection" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
         // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
             console.log('Socket.IO连接已建立');
-            Connection.style.background = 'green';
+            Connection.style.display = 'none';
             sendBtn.disabled = false;
             if (sessionId) {
                 socket.emit('loadHistory', { sessionId });
@@ -137,7 +137,7 @@
 
         socket.on('disconnect', () => {
             console.log('Socket.IO连接已关闭');
-            Connection.style.background = 'red';
+            Connection.style.display = 'block';
             sendBtn.disabled = true;
         });
 
@@ -218,7 +218,6 @@
 
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
-            // return messageElement; 
         }
 
         function createmodelmessagebox() {
