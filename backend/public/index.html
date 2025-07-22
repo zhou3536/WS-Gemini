@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="md.css">
     <link rel="stylesheet" href="color.css">
     <script src="highlight.min.js"></script>
-    <script src="marked.min.js"></script>
+    <!-- <script src="marked.min.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script> -->
+    <script src="marked.umd.js"></script>
     <!-- <link rel="manifest" href="/manifest.json"> -->
 </head>
 
@@ -74,6 +76,7 @@
         let sessionId = localStorage.getItem('sessionId');
         let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
+        let lastmessagebox = null;
         let sendinfobox = null;
         let modelmessage = null;
         let selectedFiles = []; // 用于存储选择的文件
@@ -246,7 +249,7 @@
 
             sendinfobox = sendinfo;
             modelmessage = message;
-
+            lastmessagebox = messagebox;
         }
 
         function appendStreamChunk(chunk) {
@@ -259,7 +262,13 @@
             // 将新的原始块附加到累积文本中
             accumulatedStreamText += chunk;
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            if (lastmessagebox.scrollHeight > chatWindow.offsetHeight) {
+                lastmessagebox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
         }
 
         function appenderror(message) {
