@@ -263,8 +263,14 @@
         }
 
         function appenderror(message) {
-            modelmessage.innerText = message;
-            modelmessage.style.color = '#d26161';
+            modelmessage.innerText = '';
+            const p = document.createElement('p');
+            p.innerText = 'API错误，或发送的文件格式不支持。';
+            const div = document.createElement('div');
+            div.style.color = '#d26161';
+            div.innerText = message;
+            modelmessage.appendChild(p);
+            modelmessage.appendChild(div);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
         // --- 发送消息 ---

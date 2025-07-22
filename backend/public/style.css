@@ -149,6 +149,7 @@ body {
     /* border-right: 1px solid var(--df-01); */
     z-index: 1000;
 }
+
 #history-list h4,
 #history-list li {
     margin: 3px 8px;
@@ -315,6 +316,7 @@ body {
 .user-message {
     position: relative;
 }
+
 .user-message>p {
     line-height: 1.6;
 }
@@ -345,6 +347,7 @@ body {
     height: 35px;
     border-radius: 50%;
     border: 1px solid var(--df-01);
+    background-color: var(--bodybgc);
 }
 
 .sender p {
@@ -364,23 +367,18 @@ body {
     background-clip: text;
 }
 
-
 .loading::before {
-    box-sizing: border-box;
     content: '';
     display: block;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 35px;
-    height: 35px;
-    /* outline: 3px solid #3f82ff; */
-    border-left: 2px solid #eb4236;
-    border-bottom: 2px solid #4285f6;
-    border-top: 2px solid #35a854;
-    border-right: 2px solid #fbbc06;
+    top: -1px;
+    left: -1px;
+    width: 37px;
+    height: 37px;
+    background: conic-gradient(#4285f600, #4285f6);
     border-radius: 50%;
-    animation: simpleRotate 1s linear infinite;
+    z-index: -1;
+    animation: simpleRotate 0.7s linear infinite;
 }
 
 @keyframes simpleRotate {

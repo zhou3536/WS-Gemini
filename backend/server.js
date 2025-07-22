@@ -106,7 +106,7 @@ async function handleNewMessage(socket, data) {
 
     // 3. 调用Gemini API
     try {
-        console.log('ID:', sessionId, ' modal:', model, ' Web search:', useWebSearch);
+        console.log('ID:', sessionId, ' modal:', model, ' Websearch:', useWebSearch);
         const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
 
         // 构建模型参数对象
