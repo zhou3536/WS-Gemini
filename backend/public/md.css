@@ -3,9 +3,10 @@
     /* --perbgc: #f9f9f9; */
     --per-df: #2c3e50;
     --code: #002b82;
-    --hljs-string: #718c00;
-    --hljs-keyword: #8959a8;
+    --hljs-string: #188038;
+    --hljs-keyword: #c58af9;
     --hljs-function: #4271ae;
+    --hljs-number:#f86c00;
     --tr-1: #fff;
     --tr-2: #eee;
 }
@@ -15,9 +16,10 @@
     --perbgc: #5c626833;
     --per-df: #eee;
     --code: #abe2ff;
-    --hljs-string: #b0c461;
-    --hljs-keyword: #d5a6f4;
+    --hljs-string: #81c995;
+    --hljs-keyword: #c58af9;
     --hljs-function: #88bafc;
+    --hljs-number:#fa903e;
     --tr-1: #333;
     --tr-2: #444;
 }
@@ -239,9 +241,9 @@
 }
 
 .model-message .hljs-number {
-    color: #f5871f !important;
+    color:  var(--hljs-number)!important;
 }
-
+/* #fa903e */
 .model-message .hljs-function {
     color: var(--hljs-function) !important;
 }
