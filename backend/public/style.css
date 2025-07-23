@@ -673,6 +673,7 @@ button:disabled {
     font-size: 16px;
     border: none;
     background-color: var(--df-01);
+    color: var(--df-ziji);
     border-radius: 8px;
 }
 
