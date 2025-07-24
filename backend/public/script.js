@@ -1,25 +1,96 @@
-
-// --- 文件处理逻辑 (与之前类似，保持不变) ---
+// --- 文件处理逻辑 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
+// 允许的文本文件扩展名
+const ALLOWED_TEXT_EXTENSIONS = [
+    // 通用文本和文档
+    'txt', 'md', 'rst', 'text', 'log',
+    // 网页开发
+    'html', 'htm', 'css', 'js', 'jsx', 'tsx', 'vue', 'svelte', 'pug', 'ejs',
+    // 编程语言
+    'java', 'py', 'c', 'cpp', 'h', 'hpp', 'cs', 'go', 'rb', 'php', 'swift', 'kt', 'rs', 'scala', 'perl', 'pl', 'lua', 'ts',
+    // 配置文件和脚本
+    'properties', 'ini', 'conf', 'yml', 'yaml', 'json', 'xml', 'sql', 'sh', 'bat', 'ps1', 'bash', 'zsh', 'env', 'gitignore', 'dockerfile', 'editorconfig',
+    // 数据交换和格式
+    'csv', 'tsv',
+    // 字幕文件
+    'vtt', 'srt', 'ass', 'lrc',
+    // 其他
+    'strm'
+];
+
+// 允许的文件扩展名
+const ALLOWED_OTHER_EXTENSIONS = [
+    'jpg', 'tiff', 'jpeg', 'png', 'bmp', 'svg', 'ico', 'webp',
+    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+    'pdf', 'zip', 'rar'
+];
+
+// 获取文件扩展名
+function getFileExtension(filename) {
+    return filename.split('.').pop().toLowerCase();
+}
+
+// 检查文件类型是否允许
+function isAllowedFileType(filename) {
+    const extension = getFileExtension(filename);
+    return ALLOWED_TEXT_EXTENSIONS.includes(extension) || ALLOWED_OTHER_EXTENSIONS.includes(extension);
+}
+
+// 根据文件扩展名设置文件类型
+function setFileType(file) {
+    const extension = getFileExtension(file.name);
+
+    if (ALLOWED_TEXT_EXTENSIONS.includes(extension)) {
+        // 为文本文件创建新的File对象，设置type为'text/plain'
+        return new File([file], file.name, {
+            type: 'text/plain',
+            lastModified: file.lastModified
+        });
+    } else if (ALLOWED_OTHER_EXTENSIONS.includes(extension)) {
+        // 其他文件保持原有类型
+        return file;
+    }
+
+    return file;
+}
 
 function processFiles(files) {
     let largeFilesDetected = false;
+    let unsupportedFilesDetected = false;
     const newFiles = Array.from(files);
 
     newFiles.forEach(file => {
+        // 检查文件大小
         if (file.size > MAX_FILE_SIZE_BYTES) {
             largeFilesDetected = true;
-        } else {
-            const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
-            if (!isDuplicate) {
-                selectedFiles.push(file);
-            }
+            return;
+        }
+
+        // 检查文件类型
+        if (!isAllowedFileType(file.name)) {
+            unsupportedFilesDetected = true;
+            return;
+        }
+
+        // 检查是否重复
+        const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!isDuplicate) {
+            // 设置文件类型并添加到列表
+            const processedFile = setFileType(file);
+            selectedFiles.push(processedFile);
         }
     });
 
+    // 显示错误信息
     if (largeFilesDetected) {
         alert('请选择小于5MB的文件。');
     }
+
+    if (unsupportedFilesDetected) {
+        alert('不支持的文件格式。');
+    }
+
     renderFilePreviews();
 }
 
