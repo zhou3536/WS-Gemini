@@ -249,6 +249,7 @@
             lastmessagebox = messagebox;
         }
 
+        let isonchatWindowstart = true;
         function appendStreamChunk(chunk) {
             modelmessage.innerHTML = '';
             if (!currentModelResponseElement) {
@@ -260,10 +261,12 @@
             accumulatedStreamText += chunk;
             currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
 
-            if (lastmessagebox.offsetHeight > chatWindow.offsetHeight) {
+            if (lastmessagebox.offsetHeight >= chatWindow.offsetHeight && !isonchatWindowstart) {
                 lastmessagebox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
+                isonchatWindowstart = true;
+            } else if (lastmessagebox.offsetHeight < chatWindow.offsetHeight) {
                 chatWindow.scrollTop = chatWindow.scrollHeight;
+                isonchatWindowstart = false;
             }
 
         }
@@ -300,10 +303,10 @@
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        const mimeType = file.type === 'application/json' ? 'text/plain' : file.type;
+                        // const mimeType = file.type === 'application/json' ? 'text/plain' : file.type;
                         resolve({
                             data: e.target.result.split(',')[1],
-                            mimeType: mimeType
+                            mimeType: file.type
                         });
                     };
                     reader.onerror = reject;
