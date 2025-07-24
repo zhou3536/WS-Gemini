@@ -47,7 +47,7 @@ const loginRateLimitMiddleware = (req, res, next) => {
         const remainingTimeSeconds = Math.ceil((LOGIN_RATE_LIMIT_INTERVAL_MS - (currentTime - lastAttemptTime)) / 1000);
         // console.warn(`[RATE LIMIT] IP: ${clientIp} - Too many login attempts. Remaining: ${remainingTimeSeconds}s`);
         return res.status(429).json({
-            message: `Please try again in ${remainingTimeSeconds} seconds.`,
+            message: `请${remainingTimeSeconds}秒后重试`,
             retryAfter: remainingTimeSeconds
         });
     }
@@ -74,21 +74,35 @@ const cleanupLoginAttempts = () => {
 // --- 认证中间件和路由处理函数 ---
 
 const authenticateMiddleware = (req, res, next) => {
-    if (req.path === '/login.html' ||
-        req.path === '/api/login' ||
-        req.path === '/api/logout' ||
-        req.path === '/theme.js' ||
-        req.path === '/color.css' ||
-        req.path === '/favicon.ico' ||
-        req.path === '/manifest.json') {
+    // 白名单路径，不需要认证
+    const publicPaths = [
+        '/login.html',
+        '/api/login',
+        '/api/logout',
+        '/theme.js',
+        '/color.css',
+        '/favicon.ico',
+        '/manifest.json'
+    ];
+
+    // 如果请求路径在白名单中，直接放行
+    if (publicPaths.includes(req.path)) {
         return next();
     }
 
-    // if (!req.path.startsWith('/api')) {
-    //     return next();
-    // }
-
+    // 检查是否存在认证 Cookie
     if (req.signedCookies[AUTH_COOKIE_NAME] === 'true') {
+        // 如果认证 Cookie 存在且有效，检查是否需要续期
+        // 注意：req.signedCookies 不会直接提供 maxAge，需要依赖原始设置时的逻辑
+        // 这里的实现是基于每次请求都重新设置 maxAge 来“续期”
+        // 只要 Cookie 有效，就重新设置，使其 maxAge 重新计算
+        res.cookie(AUTH_COOKIE_NAME, 'true', {
+            maxAge: SESSION_DURATION_MS, // 重新设置完整的有效期
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            signed: true,
+            sameSite: 'Lax'
+        });
         return next();
     }
 
@@ -123,13 +137,13 @@ const loginRoute = (req, res) => {
         loginAttemptTimestamps.set(clientIp, Date.now());
         // 打印登录成功日志
         console.log(`IP: ${clientIp} - Login successful.`);
-        return res.status(200).json({ message: 'Login successful!' });
+        return res.status(200).json({ message: '登录成功' });
     } else {
         // 密码错误，更新时间戳，强制执行冷却时间
         loginAttemptTimestamps.set(clientIp, Date.now());
         // 打印登录失败日志
         console.warn(`IP: ${clientIp} - Login failed`);
-        return res.status(401).json({ message: 'Login failed' });
+        return res.status(401).json({ message: '登录失败' });
     }
 };
 
@@ -143,7 +157,7 @@ const logoutRoute = (req, res) => {
     });
     const clientIp = getClientIp(req); // 获取客户端IP
     console.log(`IP: ${clientIp} - Logged out successfully.`);
-    return res.status(200).json({ message: 'Logged out successfully.' });
+    return res.status(200).json({ message: '退出成功' });
 };
 
 
