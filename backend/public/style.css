@@ -669,7 +669,6 @@ button:disabled {
     top: 0;
     z-index: 100000;
     padding: 12px;
-    padding-top: 40px;
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
@@ -678,14 +677,16 @@ button:disabled {
 }
 
 #delhistory>button {
-    position: absolute;
-    left: 12px;
-    top: 6px;
-    padding: 5px 15px;
     font-size: 16px;
     border: none;
-    background-color: var(--df-01);
+    background-color: var(--df-005);
     color: var(--df-ziji);
+    display: flex;
+    align-content: center;
+    width: 100%;
+    max-width: 800px;
+    padding: 8px 10px;
+    margin: 5px auto;
     border-radius: 8px;
 }
 

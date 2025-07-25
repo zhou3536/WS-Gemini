@@ -348,8 +348,9 @@ function delHistories(list) {
     delhistorybox.innerHTML = '';
 
     const closebtn = document.createElement('button')
-    closebtn.innerText = '返回';
+    closebtn.innerText = '返回主页';
     closebtn.addEventListener('click', function () { delhistorybox.style.display = 'none' });
+    delhistorybox.appendChild(closebtn);
     list.forEach((item, index) => {
         const li = document.createElement('li');
         const span = document.createElement('span');
@@ -368,7 +369,6 @@ function delHistories(list) {
         });
         li.appendChild(span);
         li.appendChild(deleteBtn);
-        delhistorybox.appendChild(closebtn);
         delhistorybox.appendChild(li);
     });
 }
