@@ -161,6 +161,10 @@
             ophis.innerText = '管理记录';
             ophis.addEventListener('click', function () { delhistorybox.style.display = 'block' });
             historyList.appendChild(ophis);
+            const logout = document.createElement('h4');
+            logout.innerText = '注销登录';
+            logout.addEventListener('click', gmmlogout);
+            historyList.appendChild(logout);
             list.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.title;
