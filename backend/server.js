@@ -23,7 +23,8 @@ const server = http.createServer(app);
 const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY;
-const COOKIE_SECRET = process.env.cookieSecret || 'testingsecret'; // <--- 新增：获取 cookieSecret
+const COOKIE_SECRET = process.env.cookieSecret;
+const users = JSON.parse(process.env.users);
 
 if (!API_KEY) {
     console.error("错误：请在 .env 文件中设置您的 GEMINI_API_KEY");
@@ -37,9 +38,7 @@ if (!fs.existsSync(historiesDir)) {
 }
 
 app.use(express.json());
-// 注意：initializeAuth 已经包含了 app.use(cookieParser(COOKIE_SECRET));
-// 所以这里不需要重复 app.use(cookieParser(COOKIE_SECRET));
-initializeAuth(app, null, COOKIE_SECRET); // <--- 使用 COOKIE_SECRET 变量
+initializeAuth(app, users, COOKIE_SECRET);
 
 const cachetime = 120 * 60 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {

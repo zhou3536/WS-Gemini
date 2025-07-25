@@ -8,18 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 从环境变量获取配置
+let users = [];
 let COOKIE_SECRET; // 只需 COOKIE_SECRET
 const AUTH_COOKIE_NAME = 'access_granted';
-const SESSION_DURATION_MS = 240 * 60 * 60 * 1000; // 240小时 = 10天
-
-// --- 用户数据硬编码 (明文密码，仅供测试) ---
-const users = [
-    { username: '100', password: '1000', userId: 'user_001' },
-    { username: '200', password: '2000', userId: 'user_002' },
-    // 可以继续添加更多用户
-];
-
-const USER_ID_COOKIE_NAME = 'user_id'; // 新增一个 cookie 名称用于存储用户ID
+const SESSION_DURATION_MS = 240 * 60 * 60 * 1000; //10天
+const USER_ID_COOKIE_NAME = 'user_id';
 
 // --- 速率限制相关配置和存储 ---
 const loginAttemptTimestamps = new Map();
@@ -39,9 +32,6 @@ const getClientIp = (req) => {
     if (realIp) {
         return realIp.trim();
     }
-    // 如果都没有，使用 req.ip (Express 默认连接IP)
-    // 注意：如果 Express app.set('trust proxy') 未配置或配置不当，
-    // req.ip 可能是反向代理的IP，而不是真实客户端IP。
     return req.ip;
 };
 
@@ -80,7 +70,6 @@ const cleanupLoginAttempts = () => {
 };
 
 // --- 认证中间件和路由处理函数 ---
-
 const authenticateMiddleware = (req, res, next) => {
     // 白名单路径，不需要认证
     const publicPaths = [
@@ -127,8 +116,8 @@ const authenticateMiddleware = (req, res, next) => {
 
 // 登录路由处理函数
 const loginRoute = (req, res) => {
-    const { username, password } = req.body; // 接收 username 和 password
-    const clientIp = getClientIp(req); // 获取客户端IP
+    const { username, password } = req.body;
+    const clientIp = getClientIp(req);
 
     if (!COOKIE_SECRET) {
         console.error('Authentication configuration missing: COOKIE_SECRET not set.');
@@ -138,7 +127,7 @@ const loginRoute = (req, res) => {
 
     const foundUser = users.find(user => user.username === username);
 
-    // 直接比较明文密码
+    // 比较密码
     if (foundUser && foundUser.password === password) {
         res.cookie(AUTH_COOKIE_NAME, 'true', {
             maxAge: SESSION_DURATION_MS,
@@ -190,14 +179,14 @@ const logoutRoute = (req, res) => {
 
 
 //初始化认证模块并将其应用于Express应用。
-const initializeAuth = (app, accessPassword, cookieSecret) => {
-    COOKIE_SECRET = cookieSecret;
+const initializeAuth = (app, initialUsers, initialCookieSecret) => {
+    COOKIE_SECRET = initialCookieSecret;
+    users = initialUsers;
     if (!COOKIE_SECRET) {
         console.error('ERROR: COOKIE_SECRET environment variable is not set!');
         console.error('Please set it in your .env file.');
         process.exit(1);
     }
-
     app.use(cookieParser(COOKIE_SECRET));
     app.use(authenticateMiddleware);
     app.post('/api/login', loginRateLimitMiddleware, loginRoute);
