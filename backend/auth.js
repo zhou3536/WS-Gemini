@@ -8,10 +8,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 从环境变量获取配置
-let ACCESS_PASSWORD;
-let COOKIE_SECRET;
+let COOKIE_SECRET; // 只需 COOKIE_SECRET
 const AUTH_COOKIE_NAME = 'access_granted';
 const SESSION_DURATION_MS = 240 * 60 * 60 * 1000; // 240小时 = 10天
+
+// --- 用户数据硬编码 (明文密码，仅供测试) ---
+const users = [
+    { username: '100', password: '1000', userId: 'user_001' },
+    { username: '200', password: '2000', userId: 'user_002' },
+    // 可以继续添加更多用户
+];
+
+const USER_ID_COOKIE_NAME = 'user_id'; // 新增一个 cookie 名称用于存储用户ID
 
 // --- 速率限制相关配置和存储 ---
 const loginAttemptTimestamps = new Map();
@@ -90,14 +98,18 @@ const authenticateMiddleware = (req, res, next) => {
         return next();
     }
 
-    // 检查是否存在认证 Cookie
-    if (req.signedCookies[AUTH_COOKIE_NAME] === 'true') {
-        // 如果认证 Cookie 存在且有效，检查是否需要续期
-        // 注意：req.signedCookies 不会直接提供 maxAge，需要依赖原始设置时的逻辑
-        // 这里的实现是基于每次请求都重新设置 maxAge 来“续期”
-        // 只要 Cookie 有效，就重新设置，使其 maxAge 重新计算
+    // 检查是否存在认证 Cookie 和用户 ID Cookie
+    if (req.signedCookies[AUTH_COOKIE_NAME] === 'true' && req.signedCookies[USER_ID_COOKIE_NAME]) {
+        // 如果认证 Cookie 和用户 ID Cookie 都存在且有效，检查是否需要续期
         res.cookie(AUTH_COOKIE_NAME, 'true', {
-            maxAge: SESSION_DURATION_MS, // 重新设置完整的有效期
+            maxAge: SESSION_DURATION_MS,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            signed: true,
+            sameSite: 'Lax'
+        });
+        res.cookie(USER_ID_COOKIE_NAME, req.signedCookies[USER_ID_COOKIE_NAME], { // 续期用户ID Cookie
+            maxAge: SESSION_DURATION_MS,
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             signed: true,
@@ -115,17 +127,19 @@ const authenticateMiddleware = (req, res, next) => {
 
 // 登录路由处理函数
 const loginRoute = (req, res) => {
-    const { password } = req.body;
+    const { username, password } = req.body; // 接收 username 和 password
     const clientIp = getClientIp(req); // 获取客户端IP
 
-    if (!ACCESS_PASSWORD || !COOKIE_SECRET) {
-        console.error('Authentication configuration missing: ACCESS_PASSWORD or COOKIE_SECRET not set.');
-        // 在服务器配置错误时也打印IP，虽然此时不是登录尝试本身的问题
+    if (!COOKIE_SECRET) {
+        console.error('Authentication configuration missing: COOKIE_SECRET not set.');
         console.error(`[LOGIN ERROR] IP: ${clientIp} - Server authentication not configured.`);
         return res.status(500).json({ message: 'Server authentication not configured.' });
     }
 
-    if (password === ACCESS_PASSWORD) {
+    const foundUser = users.find(user => user.username === username);
+
+    // 直接比较明文密码
+    if (foundUser && foundUser.password === password) {
         res.cookie(AUTH_COOKIE_NAME, 'true', {
             maxAge: SESSION_DURATION_MS,
             httpOnly: true,
@@ -133,16 +147,21 @@ const loginRoute = (req, res) => {
             signed: true,
             sameSite: 'Lax'
         });
-        // 登录成功后，更新时间戳，防止立即再次尝试登录
-        loginAttemptTimestamps.set(clientIp, Date.now());
-        // 打印登录成功日志
-        console.log(`IP: ${clientIp} - Login successful.`);
+        // 设置用户 ID Cookie
+        res.cookie(USER_ID_COOKIE_NAME, foundUser.userId, {
+            maxAge: SESSION_DURATION_MS,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            signed: true,
+            sameSite: 'Lax'
+        });
+
+        loginAttemptTimestamps.set(clientIp, Date.now()); // 登录成功后，更新时间戳
+        console.log(`IP: ${clientIp} - User ${username} login successful. UserID: ${foundUser.userId}`);
         return res.status(200).json({ message: '登录成功' });
     } else {
-        // 密码错误，更新时间戳，强制执行冷却时间
-        loginAttemptTimestamps.set(clientIp, Date.now());
-        // 打印登录失败日志
-        console.warn(`IP: ${clientIp} - Login failed`);
+        loginAttemptTimestamps.set(clientIp, Date.now()); // 密码错误，更新时间戳
+        console.warn(`IP: ${clientIp} - Login failed for username: ${username}`);
         return res.status(401).json({ message: '登录失败' });
     }
 };
@@ -155,27 +174,29 @@ const logoutRoute = (req, res) => {
         signed: true,
         sameSite: 'Lax'
     });
-    const clientIp = getClientIp(req); // 获取客户端IP
-    console.log(`IP: ${clientIp} - Logged out successfully.`);
+    res.clearCookie(USER_ID_COOKIE_NAME, { // 清除用户 ID Cookie
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        signed: true,
+        sameSite: 'Lax'
+    });
+
+    const clientIp = getClientIp(req);
+    // 获取当前请求中的用户 ID，用于日志记录
+    const loggedOutUserId = req.signedCookies[USER_ID_COOKIE_NAME] || 'unknown';
+    console.log(`IP: ${clientIp} - User ${loggedOutUserId} logged out successfully.`);
     return res.status(200).json({ message: '退出成功' });
 };
 
 
 //初始化认证模块并将其应用于Express应用。
 const initializeAuth = (app, accessPassword, cookieSecret) => {
-    ACCESS_PASSWORD = accessPassword;
     COOKIE_SECRET = cookieSecret;
-    if (!ACCESS_PASSWORD || !COOKIE_SECRET) {
-        console.error('ERROR: ACCESS_PASSWORD or COOKIE_SECRET environment variables are not set!');
-        console.error('Please set them in your .env file.');
+    if (!COOKIE_SECRET) {
+        console.error('ERROR: COOKIE_SECRET environment variable is not set!');
+        console.error('Please set it in your .env file.');
         process.exit(1);
     }
-
-    // 启用 Express 对代理 IP 的信任，如果你的应用在反向代理后面
-    // 例如：app.set('trust proxy', 1); // 信任一个跳 (Nginx)
-    // 或者根据你的实际代理层数设置，或者设置为 true (如果所有代理都可信)
-    // 示例：如果你有一个Nginx在前面，可以这样设置
-    // app.set('trust proxy', 1);
 
     app.use(cookieParser(COOKIE_SECRET));
     app.use(authenticateMiddleware);
@@ -184,7 +205,6 @@ const initializeAuth = (app, accessPassword, cookieSecret) => {
 
     setInterval(cleanupLoginAttempts, CLEANUP_INTERVAL_MS);
     console.log('Authentication module initialized.');
-    // console.log(`Login rate limit: 1 request per ${LOGIN_RATE_LIMIT_INTERVAL_MS / 1000} seconds.`);
 };
 
 export { initializeAuth };

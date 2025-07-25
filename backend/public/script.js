@@ -372,3 +372,22 @@ function delHistories(list) {
         delhistorybox.appendChild(li);
     });
 }
+
+//退出登录
+async function gmmlogout() {
+    try {
+        const response = await fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            // alert('You have been logged out.');
+            window.location.href = '/login.html'; 
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+}

@@ -53,10 +53,11 @@
             white-space: nowrap;
         }
 
-        .login-container input[type="password"] {
+        .login-container input {
             width: calc(100% - 20px);
             padding: 10px;
-            margin: 18px auto;
+            margin: 15px auto;
+            margin-bottom: 0;
             border: 1px solid var(--df-02);
             border-radius: 4px;
             font-size: 16px;
@@ -81,6 +82,7 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s ease;
+            margin-top: 15px;
         }
 
         .loginbtn:hover {
@@ -112,7 +114,8 @@
     <div class="login-container">
         <h2>探索无界限</h2>
         <p>Please enter the password </p>
-        <input type="password" id="passwordInput" placeholder="password">
+        <input type="text" id="usernameInput" placeholder="username" class="inputinfo">
+        <input type="password" id="passwordInput" placeholder="password" class="inputinfo">
         <button class="loginbtn" onclick="submitPassword()">登录</button>
         <div id="message" class="message"></div>
     </div>
@@ -127,12 +130,14 @@
             }
         });
         async function submitPassword() {
+
+            const username = document.getElementById('usernameInput').value;
             const password = document.getElementById('passwordInput').value;
             const messageDiv = document.getElementById('message');
             messageDiv.textContent = '';
 
-            if (!password) {
-                messageDiv.textContent = '请输入密码';
+            if (!username || !password) {
+                messageDiv.textContent = '请输入用户名和密码';
                 return
             };
 
@@ -142,7 +147,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
