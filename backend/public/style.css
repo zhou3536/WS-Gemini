@@ -177,7 +177,7 @@ body {
 
 #list-dhdh {
     position: absolute;
-    right: 0;
+    left: calc(100% - 206px);
     top: 0;
     width: 200px;
     padding-bottom: 3px;
@@ -593,6 +593,8 @@ body {
     #list-dhdh {
         width: 0;
         border-width: 0;
+        right: 0;
+        left: auto;
     }
 
     .dhdhbtn {
