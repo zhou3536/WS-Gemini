@@ -6,7 +6,7 @@
     --hljs-string: #188038;
     --hljs-keyword: #c58af9;
     --hljs-function: #4271ae;
-    --hljs-number:#f86c00;
+    --hljs-number: #f86c00;
     --tr-1: #fff;
     --tr-2: #eee;
 }
@@ -19,7 +19,7 @@
     --hljs-string: #81c995;
     --hljs-keyword: #c58af9;
     --hljs-function: #88bafc;
-    --hljs-number:#fa903e;
+    --hljs-number: #fa903e;
     --tr-1: #333;
     --tr-2: #444;
 }
@@ -241,44 +241,44 @@
 }
 
 .model-message .hljs-number {
-    color:  var(--hljs-number)!important;
+    color: var(--hljs-number) !important;
 }
+
 /* #fa903e */
 .model-message .hljs-function {
     color: var(--hljs-function) !important;
 }
 
-.model-message .copy-button {
-    width: 30px;
+.model-message>.copy-button {
+    width: 55px;
     height: 16px;
     display: block;
     color: #888;
-    margin: 16px 2px -34px auto;
-    font-size: 10px;
-    border: 1px solid var(--df-01);
+    margin: 0 0 -16px auto;
+    font-size: 12px;
+    border: none;
     border-radius: 3px;
-    padding: 1px 3px;
+    padding: 1px;
     position: relative;
     z-index: 10;
     background-color: transparent;
 }
 
 .model-message .copy-button:hover {
-    border: 1px solid var(--df-02);
     background-color: var(--df-005);
 }
 
 .model-message .copy-button:active {
-    border: 1px solid var(--df-04);
     background-color: var(--df-01);
 }
 
 .model-message .copy-button::before {
-    content: "Copy";
+    content: "复制代码";
     margin: auto;
 }
 
 .model-message .copy-button-OK::before {
-    content: "OK";
+    content: "已复制";
     color: #36ab55;
+    vertical-align: middle;
 }
