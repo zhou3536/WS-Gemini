@@ -24,13 +24,14 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY;
 const COOKIE_SECRET = process.env.cookieSecret;
+const CUSTOM_BASE_URL = process.env.PROXYURL;
 const users = JSON.parse(process.env.users);
 
 if (!API_KEY) {
     console.error("错误：请在 .env 文件中设置您的 GEMINI_API_KEY");
     process.exit(1);
 }
-
+if(CUSTOM_BASE_URL){console.log('代理地址：',CUSTOM_BASE_URL);}
 const genAI = new GoogleGenerativeAI(API_KEY);
 const historiesDir = path.join(__dirname, "histories");
 if (!fs.existsSync(historiesDir)) {
@@ -169,7 +170,7 @@ async function handleNewMessage(socket, data) {
             modelParams.tools = [{ google_search: {} }];
         }
 
-        const geminiModel = genAI.getGenerativeModel(modelParams);
+        const geminiModel = genAI.getGenerativeModel(modelParams, { baseUrl: CUSTOM_BASE_URL },);
 
         // 如果是新会话，history 在这里是空数组
         // 如果是旧会话，history 包含了之前的内容

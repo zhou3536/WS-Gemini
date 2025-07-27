@@ -1,0 +1,20 @@
+# 输入你的api
+GEMINI_API_KEY = AIzaSy888888888888888888888888888888
+# 服务运行端口
+PORT =  33666
+# 监听的地址，只允许本机访问修改为127.0.0.1
+HOST = 0.0.0.0
+# cookie，随机字符
+cookieSecret = JXhjgjksAQl5465hjg50rWrSJfdia3Z
+# 默认用户1：100密码1000，用户2：200密码2000，可添加多个
+users = '[{"username":"100","password":"1000","userId":"user_001"},{"username":"200","password":"2000","userId":"user_002"}]'
+# 代理地址，如果地区限制，设置代理，可自定义
+# PROXYURL = https://cdn-gm-api.855655.xyz
+
+
+
+
+
+# 重要：修改文件名为.env
+# 重要：修改文件名为.env
+# 重要：修改文件名为.env
