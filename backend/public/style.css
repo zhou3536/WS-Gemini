@@ -346,7 +346,7 @@ body {
     width: 35px;
     height: 35px;
     border-radius: 50%;
-    border: 1px solid var(--df-01);
+    /* border: 1px solid var(--df-01); */
     background-color: var(--bodybgc);
 }
 
