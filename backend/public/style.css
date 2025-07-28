@@ -177,9 +177,10 @@ body {
 
 #list-dhdh {
     position: absolute;
-    left: calc(100% - 206px);
+    right: 6px;
     top: 0;
     width: 200px;
+    overflow-y: auto;
     padding-bottom: 3px;
     counter-reset: item-counter;
 }
@@ -594,7 +595,6 @@ body {
         width: 0;
         border-width: 0;
         right: 0;
-        left: auto;
     }
 
     .dhdhbtn {
