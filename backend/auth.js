@@ -9,16 +9,20 @@ const __dirname = path.dirname(__filename);
 
 // 从环境变量获取配置
 let users = [];
-let COOKIE_SECRET; // 只需 COOKIE_SECRET
+let COOKIE_SECRET;
 const AUTH_COOKIE_NAME = 'access_granted';
-const SESSION_DURATION_MS = 240 * 60 * 60 * 1000; //10天
+const SESSION_DURATION_MS = 240 * 60 * 60 * 1000;
 const USER_ID_COOKIE_NAME = 'user_id';
 
 // --- 速率限制相关配置和存储 ---
 const loginAttemptTimestamps = new Map();
-const LOGIN_RATE_LIMIT_INTERVAL_MS = 10 * 1000;
-const MAX_AGE_FOR_ATTEMPTS_MS = LOGIN_RATE_LIMIT_INTERVAL_MS * 2;
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 每5分钟清理一次
+const LOGIN_RATE_LIMIT_WINDOW_MS = 180 * 1000;
+const LOGIN_RATE_LIMIT_COUNT = 5;
+
+// 清理旧记录的周期和过期时间
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+// 保留比窗口稍长的记录，以确保在窗口边缘的请求也能被正确计算
+const MAX_AGE_FOR_ATTEMPTS_MS = LOGIN_RATE_LIMIT_WINDOW_MS * 1.5;
 
 // 辅助函数：获取客户端IP地址，考虑代理
 const getClientIp = (req) => {
@@ -32,40 +36,60 @@ const getClientIp = (req) => {
     if (realIp) {
         return realIp.trim();
     }
+    // Fallback to req.ip (Express's default, might be proxy IP without trust proxy)
     return req.ip;
 };
 
 // 速率限制中间件，专门用于登录路由
 const loginRateLimitMiddleware = (req, res, next) => {
     const clientIp = getClientIp(req);
-    const lastAttemptTime = loginAttemptTimestamps.get(clientIp);
+    let attempts = loginAttemptTimestamps.get(clientIp) || [];
     const currentTime = Date.now();
 
-    if (lastAttemptTime && (currentTime - lastAttemptTime < LOGIN_RATE_LIMIT_INTERVAL_MS)) {
-        const remainingTimeSeconds = Math.ceil((LOGIN_RATE_LIMIT_INTERVAL_MS - (currentTime - lastAttemptTime)) / 1000);
-        // console.warn(`[RATE LIMIT] IP: ${clientIp} - Too many login attempts. Remaining: ${remainingTimeSeconds}s`);
+    // 1. 过滤掉时间窗口（180秒）之外的旧尝试记录
+    attempts = attempts.filter(timestamp => (currentTime - timestamp) < LOGIN_RATE_LIMIT_WINDOW_MS);
+
+    // 2. 检查当前尝试是否会超出限制
+    if (attempts.length >= LOGIN_RATE_LIMIT_COUNT) {
+        // 如果已经达到或超过限制，计算还需要等待的时间
+        const oldestAttemptTime = attempts[0];
+        const timeToWaitMs = LOGIN_RATE_LIMIT_WINDOW_MS - (currentTime - oldestAttemptTime);
+        const remainingTimeSeconds = Math.ceil(timeToWaitMs / 1000);
+
+        console.warn(`[RATE LIMIT] IP: ${clientIp} - 登录尝试过于频繁。剩余等待时间: ${remainingTimeSeconds}s`);
         return res.status(429).json({
             message: `请${remainingTimeSeconds}秒后重试`,
             retryAfter: remainingTimeSeconds
         });
     }
 
-    loginAttemptTimestamps.set(clientIp, currentTime); // 记录当前尝试的时间
+    // 3. 如果未超出限制，记录本次尝试的时间
+    attempts.push(currentTime);
+    loginAttemptTimestamps.set(clientIp, attempts); // 更新Map中的记录
+
     next();
 };
 
 // 定期清理 loginAttemptTimestamps Map 中的旧条目
 const cleanupLoginAttempts = () => {
     const currentTime = Date.now();
-    let cleanedCount = 0;
-    for (const [ip, timestamp] of loginAttemptTimestamps.entries()) {
-        if (currentTime - timestamp > MAX_AGE_FOR_ATTEMPTS_MS) {
+    let cleanedIpCount = 0;
+    for (const [ip, timestamps] of loginAttemptTimestamps.entries()) {
+        // 过滤掉超出 MAX_AGE_FOR_ATTEMPTS_MS 的记录
+        const filteredTimestamps = timestamps.filter(t => (currentTime - t) < MAX_AGE_FOR_ATTEMPTS_MS);
+
+        if (filteredTimestamps.length === 0) {
+            // 如果该IP的所有尝试记录都已过期，则从Map中完全移除
             loginAttemptTimestamps.delete(ip);
-            cleanedCount++;
+            cleanedIpCount++;
+        } else if (filteredTimestamps.length < timestamps.length) {
+            // 如果有部分记录被清理，更新Map
+            loginAttemptTimestamps.set(ip, filteredTimestamps);
+            // 这里不增加 cleanedIpCount，因为IP条目本身还在，只是其数组变小了
         }
     }
-    if (cleanedCount > 0) {
-        console.log(`[CLEANUP] Cleaned up ${cleanedCount} expired login attempt entries. Current map size: ${loginAttemptTimestamps.size}`);
+    if (cleanedIpCount > 0) {
+        console.log(`[CLEANUP] 清理了 ${cleanedIpCount} 个已过期的登录尝试IP条目。当前Map大小: ${loginAttemptTimestamps.size}`);
     }
 };
 
@@ -78,8 +102,7 @@ const authenticateMiddleware = (req, res, next) => {
         '/api/logout',
         '/theme.js',
         '/color.css',
-        '/favicon.ico',
-        '/manifest.json'
+        '/favicon.ico'
     ];
 
     // 如果请求路径在白名单中，直接放行
@@ -145,11 +168,9 @@ const loginRoute = (req, res) => {
             sameSite: 'Lax'
         });
 
-        loginAttemptTimestamps.set(clientIp, Date.now()); // 登录成功后，更新时间戳
         console.log(`IP: ${clientIp} - User ${username} login successful. UserID: ${foundUser.userId}`);
         return res.status(200).json({ message: '登录成功' });
     } else {
-        loginAttemptTimestamps.set(clientIp, Date.now()); // 密码错误，更新时间戳
         console.warn(`IP: ${clientIp} - Login failed for username: ${username}`);
         return res.status(401).json({ message: '登录失败' });
     }
@@ -189,9 +210,11 @@ const initializeAuth = (app, initialUsers, initialCookieSecret) => {
     }
     app.use(cookieParser(COOKIE_SECRET));
     app.use(authenticateMiddleware);
+    // 对 /api/login 路由应用新的速率限制中间件
     app.post('/api/login', loginRateLimitMiddleware, loginRoute);
     app.post('/api/logout', logoutRoute);
 
+    // 启动定期清理任务
     setInterval(cleanupLoginAttempts, CLEANUP_INTERVAL_MS);
     console.log('Authentication module initialized.');
 };
