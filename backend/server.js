@@ -70,12 +70,12 @@ io.on("connection", (socket) => {
     // <--- 在这里获取用户 ID
     const userId = socket.request.signedCookies && socket.request.signedCookies.user_id;
     if (userId) {
-        console.log(`Socket.IO 客户端连接成功，用户 ID: ${userId}`);
+        console.log(`Socket.IO 客户端连接成功，用户ID: ${userId}`);
         // 你可以将 userId 存储在 socket 对象上，以便后续事件处理函数使用
         socket.userId = userId;
     } else {
         console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证。");
-        // 如果没有用户ID，你可以选择断开连接或限制功能
+        // 如果没有用户ID，断开连接
         // socket.disconnect();
         // return;
     }
@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
 
 
     socket.on("disconnect", () => {
-        console.log(`客户端已断开 ${socket.userId ? `(用户ID: ${socket.userId})` : ''}`);
+        console.log(`Socket.IO 客户端连接断开，${socket.userId ?`用户ID: ${socket.userId}` : ''}`);
     });
 });
 

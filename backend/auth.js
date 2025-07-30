@@ -194,7 +194,9 @@ const logoutRoute = (req, res) => {
     const clientIp = getClientIp(req);
     // 获取当前请求中的用户 ID，用于日志记录
     const loggedOutUserId = req.signedCookies[USER_ID_COOKIE_NAME] || 'unknown';
-    console.log(`IP: ${clientIp} - User ${loggedOutUserId} logged out successfully.`);
+    const foundUser = users.find(user => user.userId === loggedOutUserId);
+    const username = foundUser ? foundUser.username : null;
+    console.log(`IP: ${clientIp} - User ${username} logout successfully. UserID: ${loggedOutUserId}`);
     return res.status(200).json({ message: '退出成功' });
 };
 

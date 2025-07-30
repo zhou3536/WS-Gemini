@@ -29,7 +29,8 @@
         </div>
     </div>
     <div class="container">
-        <ul id="history-list" class="list-1">历史记录</ul>
+        <ul id="delhistory"></ul>
+        <ul id="history-list" class="list-1"></ul>
         <ul id="list-dhdh" class="list-1"></ul>
         <main class="chat-area" id="chat-area">
             <div id="welcome">探索无界限</div>
@@ -40,9 +41,9 @@
                 <input type="file" id="file-input" multiple style="display: none;">
                 <div class="send-box">
                     <div class="menu">
-                        <button id="new-chat-btn">新建对话</button>
+                        <button id="new-chat-btn">新对话</button>
                         <button id="addfile"></button>
-                        <button id="Search" class="search">联网搜索</button>
+                        <button id="Search" class="search">搜索网络</button>
                         <div id="Connection" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
@@ -52,7 +53,7 @@
         <img src="" alt="">
         <p></p>
     </div>
-    <div id="delhistory"></div>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
 

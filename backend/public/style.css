@@ -674,7 +674,7 @@ button:disabled {
     z-index: 100000;
     padding: 12px;
     width: 100vw;
-    height: 100vh;
+    height: var(--hhh);
     overflow-y: auto;
     background-color: var(--bodybgc);
     animation: fadeIn 0.3s ease;
