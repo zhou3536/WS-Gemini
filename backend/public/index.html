@@ -53,7 +53,7 @@
         <img src="" alt="">
         <p></p>
     </div>
-    
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
 
@@ -129,10 +129,8 @@
             appenderror(data.message);
         });
         socket.on('error', (data) => {
-            console.error('服务器错误:', data.message);
             alert(`发生错误: ${data.message}`);
         });
-
 
         socket.on('disconnect', () => {
             console.log('Socket.IO连接已关闭');

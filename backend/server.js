@@ -74,9 +74,8 @@ io.on("connection", (socket) => {
         // 你可以将 userId 存储在 socket 对象上，以便后续事件处理函数使用
         socket.userId = userId;
     } else {
-        console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证。");
+        console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，断开连接。");
         socket.emit("error", { message: "登录已过期，请刷新网页重新登录，如果你刚刚登录过了，可能是你的浏览器禁用了cookie！" });
-        // 如果没有用户ID，断开连接
         socket.disconnect();
         return;
     }
@@ -84,7 +83,6 @@ io.on("connection", (socket) => {
     listHistories(socket);
 
     socket.on("newMessage", async (data) => {
-        // 在这里使用 socket.userId
         await handleNewMessage(socket, data);
     });
 
@@ -95,12 +93,6 @@ io.on("connection", (socket) => {
     socket.on("deleteHistory", async (data) => {
         await handleDeleteHistory(socket, data.sessionId);
     });
-
-    socket.on("test", async (data) => {
-        // testfunction 不再需要参数，因为它会使用 socket.userId
-        await testfunction(socket); // <--- 传递 socket 对象
-    });
-
 
     socket.on("disconnect", () => {
         console.log(`Socket.IO 客户端连接断开，${socket.userId ?`用户ID: ${socket.userId}` : ''}`);
