@@ -75,9 +75,10 @@ io.on("connection", (socket) => {
         socket.userId = userId;
     } else {
         console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证。");
+        socket.emit("error", { message: "登录已过期，请刷新网页重新登录，如果你刚刚登录过了，可能是你的浏览器禁用了cookie！" });
         // 如果没有用户ID，断开连接
-        // socket.disconnect();
-        // return;
+        socket.disconnect();
+        return;
     }
 
     listHistories(socket);
