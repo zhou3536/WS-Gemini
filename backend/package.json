@@ -1,7 +1,7 @@
 {
-  "name": "gemini-chat-backend",
+  "name": "gemini-chat",
   "version": "1.0.0",
-  "description": "Backend for Gemini Chat",
+  "description": "Gemini Chat",
   "main": "server.js",
   "type": "module",
   "scripts": {

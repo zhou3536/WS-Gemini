@@ -128,6 +128,9 @@
             sendBtn.disabled = false;
             appenderror(data.message);
         });
+        socket.on('refresh', (url) => {
+            if (url) { window.location.href = url; } else { location.reload(); }
+        });
         socket.on('error', (data) => {
             alert(`发生错误: ${data.message}`);
         });

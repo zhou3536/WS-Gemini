@@ -31,7 +31,7 @@ if (!API_KEY) {
     console.error("错误：请在 .env 文件中设置您的 GEMINI_API_KEY");
     process.exit(1);
 }
-if(CUSTOM_BASE_URL){console.log('代理地址：',CUSTOM_BASE_URL);}
+if (CUSTOM_BASE_URL) { console.log('代理地址：', CUSTOM_BASE_URL); }
 const genAI = new GoogleGenerativeAI(API_KEY);
 const historiesDir = path.join(__dirname, "histories");
 if (!fs.existsSync(historiesDir)) {
@@ -74,7 +74,8 @@ io.on("connection", (socket) => {
         // 你可以将 userId 存储在 socket 对象上，以便后续事件处理函数使用
         socket.userId = userId;
     } else {
-        console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，断开连接。");
+        console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
+        socket.emit('refresh', '/login.html');
         socket.emit("error", { message: "登录已过期，请刷新网页重新登录，如果你刚刚登录过了，可能是你的浏览器禁用了cookie！" });
         socket.disconnect();
         return;
@@ -95,7 +96,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-        console.log(`Socket.IO 客户端连接断开，${socket.userId ?`用户ID: ${socket.userId}` : ''}`);
+        console.log(`Socket.IO 客户端连接断开，${socket.userId ? `用户ID: ${socket.userId}` : ''}`);
     });
 });
 
