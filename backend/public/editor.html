@@ -4,50 +4,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线代码编辑器 (Ace Editor + iframe)</title>
+    <title>代码编辑器</title>
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
+
     <style>
-        /* --- 基本样式重置与布局 --- */
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        html,
         body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            overflow-x: auto;
-        }
-
-        /* --- 主容器：使用Flexbox创建左右布局 --- */
-        .container {
-            display: flex;
-            height: 100%;
-        }
-
-  
-
-
-        .editor-pane {
-            background-color: #03030c;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #282a36;
+            color: #f8f8f2;
+            height: 100vh;
             overflow: hidden;
-            padding: 20px;
         }
 
-        #editor {
-            width: 100%;
-            flex-grow: 1;
-            font-size: 16px;
+        .header {
+            background: #44475a;
+            padding: 5px 20px;
+            /* border-bottom: 2px solid #6272a4; */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); */
+            height: 50px;
         }
 
-        /* Ace Editor 的光标有时会因布局问题错位，以下样式可修复 */
-        #editor .ace_gutter {
-            z-index: 1;
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background: #6272a4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background: #7c91cf;
+        }
+
+        .btn.clear {
+            background: #d44949;
+        }
+
+        .btn.clear:hover {
+            background: #ae4040;
+        }
+
+        select {
+            background: #44475a;
+            color: #f8f8f2;
+            border: 2px solid #6272a4;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #869bdd;
+        }
+
+        .editor-container {
+            height: calc(100vh - 50px);
+            position: relative;
+            background: #282a36;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #44475a;
+            color: #98a1d8;
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auto-save-indicator {
+            background: #50fa7b;
+            color: #282a36;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        .file-info {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -57,73 +165,283 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #2e9ae392;
+            background: #ffffffa0;
 
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #0064a2ee;
-        }
-
-        .ace-monokai {
-            background-color: #121211;
-        }
-
-        .ace-monokai .ace_gutter {
-            background-color: #03030c;
+            background: #ffffff74;
         }
     </style>
 </head>
 
 <body>
+    <!-- 头部工具栏 -->
+    <div class="header">
+        <h1>编辑器</h1>
+        <div class="toolbar">
+            <select id="languageSelect">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="clike">C/C++</option>
+                <option value="css">CSS</option>
+                <option value="xml">HTML/XML</option>
+                <option value="sql">SQL</option>
+                <option value="php">PHP</option>
+                <option value="shell">Shell</option>
+                <option value="markdown">Markdown</option>
+            </select>
 
-    <div class="container">
-        <div class="pane1 editor-pane">
-            <div id="editor"></div>
+            <select id="themeSelect">
+                <option value="dracula">Dracula</option>
+                <option value="monokai">Monokai</option>
+                <option value="material">Material</option>
+                <option value="default">Default</option>
+            </select>
+
+            <button class="btn" onclick="formatCode()">🎨 格式化</button>
+            <button class="btn clear" onclick="clearCode()">🗑️ 清空</button>
         </div>
-
     </div>
 
-    <!-- 引入 Ace Editor 核心库和扩展 -->
-    <!-- 核心库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
-    <!-- 语言工具扩展，用于自动补全 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ext-language_tools.js"></script>
+    <!-- 编辑器容器 -->
+    <div class="editor-container">
+        <textarea id="codeEditor"></textarea>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="file-info">
+                <span id="lineCount">行数: 1</span>
+                <span id="charCount">字符: 0</span>
+                <span id="currentLang">语言: JavaScript</span>
+            </div>
+            <div class="auto-save-indicator" id="autoSaveIndicator">✅ 自动保存</div>
+        </div>
+    </div>
+
+    <!-- CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <!-- 语言模式 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <!-- 插件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
 
     <script>
-        // 1. 初始化 Ace Editor
-        // -----------------------------------------------------------------
-        const editor = ace.edit("editor");
+        let editor;
+        let autoSaveTimer;
+        const CACHE_KEY = 'editorcode';
+        const AUTO_SAVE_DELAY = 1000; // 1秒后自动保存
 
-        // 设置主题 (例如：monokai, chrome, github, solarized_dark)
-        editor.setTheme("ace/theme/monokai");
+        // 初始化编辑器
+        function initEditor() {
+            editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+                mode: 'javascript',
+                theme: 'dracula',
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                styleActiveLine: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                lineWrapping: true,
+                extraKeys: {
+                    "Ctrl-S": function (cm) {
+                        saveCode();
+                        return false;
+                    },
+                    "Cmd-S": function (cm) {
+                        saveCode();
+                        return false;
+                    }
+                }
+            });
 
-        // 设置语言模式为 HTML (也支持 css, javascript)
-        editor.session.setMode("ace/mode/html");
+            // 从缓存加载代码
+            loadCodeFromCache();
 
-        // 设置编辑器选项
-        editor.setOptions({
-            fontSize: "14px",                 // 字体大小
-            enableBasicAutocompletion: true,  // 启用基本自动补全
-            enableLiveAutocompletion: true,   // 启用实时自动补全 (需要 ext-language_tools.js)
-            enableSnippets: true,             // 启用代码片段
-            showPrintMargin: false,           // 不显示打印边距线
-            wrap: true,                       // 自动换行
+            // 监听编辑器变化
+            editor.on('change', function (cm, change) {
+                updateStatus();
+                scheduleAutoSave();
+            });
+
+            // 监听光标变化
+            editor.on('cursorActivity', function (cm) {
+                updateStatus();
+            });
+
+            // 初始状态更新
+            updateStatus();
+        }
+
+        // 从缓存加载代码
+        function loadCodeFromCache() {
+            try {
+                const cachedCode = localStorage.getItem(CACHE_KEY);
+                if (cachedCode) {
+                    editor.setValue(cachedCode);
+                    console.log('✅ 成功从缓存加载代码');
+                } else {
+                    // 设置默认代码
+                    const defaultCode = `// 欢迎使用代码编辑器！
+// 您的代码会自动保存到浏览器缓存中
+
+function helloWorld() {
+    console.log("Hello, World!");
+    return "代码编辑器已就绪！";
+}
+
+helloWorld();`;
+                    editor.setValue(defaultCode);
+                }
+            } catch (error) {
+                console.error('❌ 从缓存加载代码失败:', error);
+                editor.setValue('// 缓存加载失败，请重新输入代码');
+            }
+        }
+
+        // 安排自动保存
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveCodeToCache();
+                showAutoSaveIndicator();
+            }, AUTO_SAVE_DELAY);
+        }
+
+        // 保存代码到缓存
+        function saveCodeToCache() {
+            try {
+                const code = editor.getValue();
+                localStorage.setItem(CACHE_KEY, code);
+                console.log('✅ 代码已自动保存到缓存');
+                return true;
+            } catch (error) {
+                console.error('❌ 保存代码到缓存失败:', error);
+                alert('保存失败：' + error.message);
+                return false;
+            }
+        }
+
+        // 手动保存代码
+        function saveCode() {
+            if (saveCodeToCache()) {
+                showAutoSaveIndicator();
+                // 可以在这里添加其他保存逻辑，比如下载文件
+            }
+        }
+
+        // 显示自动保存指示器
+        function showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // 更新状态栏
+        function updateStatus() {
+            const code = editor.getValue();
+            const cursor = editor.getCursor();
+
+            document.getElementById('lineCount').textContent = `行数: ${editor.lineCount()}`;
+            document.getElementById('charCount').textContent = `字符: ${code.length}`;
+
+            // 更新当前行列信息
+            const currentPos = `第 ${cursor.line + 1} 行, 第 ${cursor.ch + 1} 列`;
+            document.title = `代码编辑器 - ${currentPos}`;
+        }
+
+        // 更改编程语言
+        function changeLanguage() {
+            const language = document.getElementById('languageSelect').value;
+            editor.setOption('mode', language);
+            document.getElementById('currentLang').textContent = `语言: ${language}`;
+        }
+
+        // 更改主题
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            editor.setOption('theme', theme);
+        }
+
+        // 格式化代码（简单实现）
+        function formatCode() {
+            const code = editor.getValue();
+            const mode = editor.getOption('mode');
+
+            if (mode === 'javascript') {
+                // 简单的JavaScript格式化
+                try {
+                    const formatted = code
+                        .replace(/;/g, ';\n')
+                        .replace(/{/g, ' {\n')
+                        .replace(/}/g, '\n}\n')
+                        .replace(/\n\s*\n/g, '\n');
+                    editor.setValue(formatted);
+                } catch (error) {
+                    alert('格式化失败: ' + error.message);
+                }
+            } else {
+                alert('当前语言暂不支持自动格式化');
+            }
+        }
+
+        // 清空代码
+        function clearCode() {
+            if (confirm('确定要清空所有代码吗？此操作不可撤销！')) {
+                editor.setValue('');
+                localStorage.removeItem(CACHE_KEY);
+                console.log('🗑️ 代码已清空，缓存已删除');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            initEditor();
+
+            // 绑定下拉框事件
+            document.getElementById('languageSelect').addEventListener('change', changeLanguage);
+            document.getElementById('themeSelect').addEventListener('change', changeTheme);
+
+            // 页面关闭前保存
+            window.addEventListener('beforeunload', function () {
+                saveCodeToCache();
+            });
+
+            // 处理页面可见性变化（切换标签页时保存）
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) {
+                    saveCodeToCache();
+                }
+            });
         });
 
-
-        // 2. 设置编辑器初始代码内容
-        const savedCode = localStorage.getItem('editorcode');
-
-        // 如果 localStorage 中有保存的代码，则使用它；否则使用一个默认的空字符串。
-        const initialCode = savedCode || '';
-
-        // 将初始代码设置到编辑器中，-1表示光标不移动到末尾
-        editor.setValue(initialCode, -1);
-
-
-        // 3. 实现预览功能
-     
+        // 键盘快捷键
+        document.addEventListener('keydown', function (e) {
+            // Ctrl+S 或 Cmd+S 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveCode();
+            }
+        });
     </script>
 </body>
 
