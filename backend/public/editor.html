@@ -188,6 +188,7 @@
         function updatePreview() {
             // 从 Ace Editor 获取当前全部代码
             const code = editor.getValue();
+            localStorage.setItem('htmlcode', code);
 
             // 将代码内容赋值给 iframe 的 srcdoc 属性
             // 这是最安全、最直接的渲染方式，可以有效隔离主页面和预览页面的环境

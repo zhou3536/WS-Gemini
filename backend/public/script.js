@@ -320,7 +320,6 @@ function copycode() {
     // 预览按钮点击执行函数
     function preview(code) {
         localStorage.setItem('htmlcode', code);
-        console.log(localStorage.getItem('htmlcode'));
         window.open('/editor.html', '_blank');
     }
     // 复制到剪贴板的函数
