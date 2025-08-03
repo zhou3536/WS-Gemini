@@ -280,6 +280,10 @@
 .pre-buttons-container button:active {
     background-color: var(--df-01);
 }
+.editor-buttom::before{
+    content: "编辑</>";
+    margin: auto;
+}
 
 .preview-button::before {
     content: "编辑/预览";
@@ -287,7 +291,7 @@
 }
 
 .copy-button::before {
-    content: "复制</>";
+    content: "复制<>";
     margin: auto;
 }
 

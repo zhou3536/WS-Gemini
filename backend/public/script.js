@@ -292,8 +292,8 @@ function copycode() {
             copyButton.classList.add('copy-button');
             // copyButton.textContent = '复制'; 
             copyButton.addEventListener('click', () => {
-                copyToClipboard(textToProcess); // 调用复制到剪贴板函数
-                copyButton.classList.add('copy-button-OK'); // 复制成功后添加一个类名，用于视觉反馈
+                copyToClipboard(textToProcess);
+                copyButton.classList.add('copy-button-OK');
                 setTimeout(() => {
                     copyButton.classList.remove('copy-button-OK');
                 }, 1500);
@@ -305,9 +305,16 @@ function copycode() {
                 const previewCodeButton = document.createElement('button');
                 previewCodeButton.classList.add('preview-button');
                 previewCodeButton.addEventListener('click', () => {
-                    preview(textToProcess); // 调用预览函数，传递清理后的代码
+                    preview(textToProcess);
                 });
                 buttonContainer.appendChild(previewCodeButton);
+            } else {
+                const eiditorButton = document.createElement('button');
+                eiditorButton.classList.add('editor-buttom')
+                eiditorButton.addEventListener('click', () => {
+                    editor(textToProcess);
+                });
+                buttonContainer.appendChild(eiditorButton);
             }
 
             // 将创建的 div 容器插入到 pre 元素之前
@@ -320,8 +327,14 @@ function copycode() {
     // 预览按钮点击执行函数
     function preview(code) {
         localStorage.setItem('htmlcode', code);
-        window.open('/editor.html', '_blank');
+        window.open('/preview.html', '_blank');
     }
+    function editor(code) {
+        console.log(code)
+        localStorage.setItem('editorcode', code);
+        // console.log(localStorage.getItem('editorcode'))
+        window.open('/editor.html', '_blank');
+    };
     // 复制到剪贴板的函数
     function copyToClipboard(text) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
