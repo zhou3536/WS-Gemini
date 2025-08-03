@@ -26,30 +26,17 @@
             height: 100%;
         }
 
-        /* --- 左右两个面板的通用样式 --- */
-        .pane1,
-        .pane2 {
+  
+
+
+        .editor-pane {
+            background-color: #03030c;
+            width: 100%;
             display: flex;
             flex-direction: column;
             height: 100%;
             overflow: hidden;
-        }
-
-        .pane1 {
-            width: 50%;
-            min-width: 400px;
-            max-width: 800px;
-            padding-top: 20px;
-        }
-
-        .pane2 {
-            flex-grow: 1;
-            min-width: 800px;
-        }
-
-        /* --- 编辑器面板 --- */
-        .editor-pane {
-            background-color: #03030c;
+            padding: 20px;
         }
 
         #editor {
@@ -61,45 +48,6 @@
         /* Ace Editor 的光标有时会因布局问题错位，以下样式可修复 */
         #editor .ace_gutter {
             z-index: 1;
-        }
-
-        /* --- 控制栏 --- */
-        .controls {
-            padding: 6px 25px;
-            border-top: 1px solid #000000;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .controls button {
-            width: 100%;
-            padding: 8px 20px;
-            background-color: #226224;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .controls button:hover {
-            background-color: #1a9020;
-        }
-
-        .preview-pane {
-            border-left: 2px solid #ccc;
-            background-color: #fff;
-        }
-
-        #preview-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: #fff;
         }
 
         ::-webkit-scrollbar {
@@ -132,15 +80,8 @@
     <div class="container">
         <div class="pane1 editor-pane">
             <div id="editor"></div>
-            <div class="controls">
-                <button id="run-button-newwindow">新窗口预览</button>
-                <button id="run-button">快速预览</button>
-            </div>
         </div>
 
-        <div class="pane2 preview-pane">
-            <iframe id="preview-frame" title="代码预览"></iframe>
-        </div>
     </div>
 
     <!-- 引入 Ace Editor 核心库和扩展 -->
@@ -172,7 +113,7 @@
 
 
         // 2. 设置编辑器初始代码内容
-        const savedCode = localStorage.getItem('htmlcode');
+        const savedCode = localStorage.getItem('editorcode');
 
         // 如果 localStorage 中有保存的代码，则使用它；否则使用一个默认的空字符串。
         const initialCode = savedCode || '';
@@ -182,41 +123,7 @@
 
 
         // 3. 实现预览功能
-        // -----------------------------------------------------------------
-        const runButton = document.getElementById('run-button');
-        const runButtonNW = document.getElementById('run-button-newwindow');
-        const previewFrame = document.getElementById('preview-frame');
-
-        // 更新预览区域的函数
-        function updatePreview() {
-            // 从 Ace Editor 获取当前全部代码
-            const code = editor.getValue();
-            localStorage.setItem('htmlcode', code);
-
-            // 将代码内容赋值给 iframe 的 srcdoc 属性
-            // 这是最安全、最直接的渲染方式，可以有效隔离主页面和预览页面的环境
-            previewFrame.srcdoc = code;
-        }
-        function NewPreview() {
-            const code = editor.getValue();
-
-            // 1. 创建一个 Blob 对象，类型 'text/html'
-            const blob = new Blob([code], { type: 'text/html' });
-
-            // 2. 创建一个临时的 URL
-            const url = URL.createObjectURL(blob);
-
-            // 3. 打开新标签页并导航到这个 URL
-            window.open(url, '_blank');
-        }
-
-        // 为“运行”按钮添加点击事件监听
-        runButton.addEventListener('click', updatePreview);
-        runButtonNW.addEventListener('click', NewPreview);
-
-        if (savedCode) {
-            runButton.click();
-        }
+     
     </script>
 </body>
 

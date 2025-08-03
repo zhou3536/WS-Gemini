@@ -199,13 +199,11 @@
         }
         function NewPreview() {
             const code = editor.getValue();
-
+            localStorage.setItem('htmlcode', code);
             // 1. 创建一个 Blob 对象，类型 'text/html'
             const blob = new Blob([code], { type: 'text/html' });
-
             // 2. 创建一个临时的 URL
             const url = URL.createObjectURL(blob);
-
             // 3. 打开新标签页并导航到这个 URL
             window.open(url, '_blank');
         }
