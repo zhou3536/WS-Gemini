@@ -267,20 +267,58 @@ function copycode() {
         const preElements = messageElement.querySelectorAll('pre');
         preElements.forEach(preElement => {
             if (preElement.dataset.wrapped) { return; };
+
+            // 1. 获取pre元素内的所有文本，textContent 属性会自动去除 HTML 标签
+            const textToProcess = preElement.textContent;
+
+            // 2. 检查如含有 <!DOCTYPE html><head></head><body></body> 就添加一个预览按钮
+            // 为了不区分大小写，将文本转换为小写进行检查
+            const lowerCaseText = textToProcess.toLowerCase();
+            const containsHtmlBoilerplate =
+                lowerCaseText.includes('<!doctype html>') &&
+                lowerCaseText.includes('<head>') &&
+                lowerCaseText.includes('<body>');
+
+            // 3. 网页元素结构修改为先创建div，在div里创建按钮。
+            const buttonContainer = document.createElement('div');
+            buttonContainer.classList.add('pre-buttons-container'); // 可以添加一个类名以便样式化
+
+            // 创建复制按钮
             const copyButton = document.createElement('button');
             copyButton.classList.add('copy-button');
+            // copyButton.textContent = '复制'; 
             copyButton.addEventListener('click', () => {
-                // 获取pre元素内的所有文本，去除 HTML 标签
-                const textToCopy = preElement.textContent;
-                // 调用复制到剪贴板函数
-                copyToClipboard(textToCopy);
-                copyButton.classList.add('copy-button-OK');
-                setTimeout(() => { copyButton.classList.remove('copy-button-OK'); }, 1500);
+                copyToClipboard(textToProcess); // 调用复制到剪贴板函数
+                copyButton.classList.add('copy-button-OK'); // 复制成功后添加一个类名，用于视觉反馈
+                setTimeout(() => {
+                    copyButton.classList.remove('copy-button-OK');
+                }, 1500);
             });
-            preElement.parentNode.insertBefore(copyButton, preElement);  // 在pre元素之前插入
+            buttonContainer.appendChild(copyButton);
+
+            // 如果包含HTML样板，则创建预览按钮
+            if (containsHtmlBoilerplate) {
+                const previewCodeButton = document.createElement('button');
+                previewCodeButton.classList.add('preview-button');
+                previewCodeButton.addEventListener('click', () => {
+                    preview(textToProcess); // 调用预览函数，传递清理后的代码
+                });
+                buttonContainer.appendChild(previewCodeButton);
+            }
+
+            // 将创建的 div 容器插入到 pre 元素之前
+            preElement.parentNode.insertBefore(buttonContainer, preElement);
+
+            // 标记 pre 元素已被处理，防止重复添加按钮
             preElement.dataset.wrapped = 'true';
         });
     });
+    // 预览按钮点击执行函数
+    function preview(code) {
+        localStorage.setItem('htmlcode', code);
+        console.log(localStorage.getItem('htmlcode'));
+        window.open('/editor.html', '_blank');
+    }
     // 复制到剪贴板的函数
     function copyToClipboard(text) {
         if (navigator.clipboard && navigator.clipboard.writeText) {

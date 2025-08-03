@@ -249,35 +249,49 @@
     color: var(--hljs-function) !important;
 }
 
-.model-message .copy-button {
+.pre-buttons-container {
+    height: 16px;
+    display: flex;
+    gap: 5px;
+    margin-bottom: -16px;
+    justify-content: end;
+    
+}
+
+.pre-buttons-container button {
     height: 16px;
     display: block;
-    color: #888;
-    margin: 0 0 -16px auto;
     border: none;
     border-radius: 3px;
     padding: 1px;
-    font-size: 12px;
-    line-height: 12px;
     position: relative;
     z-index: 10;
     background-color: transparent;
+    color: #888;
+    font-size: 12px;
+    line-height: 12px;
 }
 
-.model-message .copy-button:hover {
+
+.pre-buttons-container button:hover {
     background-color: var(--df-005);
 }
 
-.model-message .copy-button:active {
+.pre-buttons-container button:active {
     background-color: var(--df-01);
 }
 
-.model-message .copy-button::before {
+.preview-button::before {
+    content: "预览网页";
+    margin: auto;
+}
+
+.copy-button::before {
     content: "复制代码";
     margin: auto;
 }
 
-.model-message .copy-button-OK::before {
+.copy-button-OK::before {
     content: "已复制";
     color: #36ab55;
     vertical-align: middle;
