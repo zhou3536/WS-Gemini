@@ -275,9 +275,13 @@ function copycode() {
             // 为了不区分大小写，将文本转换为小写进行检查
             const lowerCaseText = textToProcess.toLowerCase();
             const containsHtmlBoilerplate =
-                lowerCaseText.includes('<!doctype html>') &&
-                lowerCaseText.includes('<head>') &&
-                lowerCaseText.includes('<body>');
+                // lowerCaseText.includes('<!doctype html>') &&
+                lowerCaseText.includes('<html') &&
+                lowerCaseText.includes('</html>') &&
+                lowerCaseText.includes('<head') &&
+                lowerCaseText.includes('</head>') &&
+                lowerCaseText.includes('<body') &&
+                lowerCaseText.includes('</body>');
 
             // 3. 网页元素结构修改为先创建div，在div里创建按钮。
             const buttonContainer = document.createElement('div');
