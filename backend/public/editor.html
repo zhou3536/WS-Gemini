@@ -65,14 +65,15 @@
 
         /* --- 控制栏 --- */
         .controls {
-            padding: 6px 15px;
+            padding: 6px 25px;
             border-top: 1px solid #000000;
             display: flex;
+            gap: 10px;
             align-items: center;
             justify-content: flex-end;
         }
 
-        #run-button {
+        .controls button {
             width: 100%;
             padding: 8px 20px;
             background-color: #226224;
@@ -85,7 +86,7 @@
             transition: background-color 0.3s;
         }
 
-        #run-button:hover {
+        .controls button:hover {
             background-color: #1a9020;
         }
 
@@ -132,7 +133,8 @@
         <div class="pane1 editor-pane">
             <div id="editor"></div>
             <div class="controls">
-                <button id="run-button">预览 (Run)</button>
+                <button id="run-button-newwindow">新窗口预览</button>
+                <button id="run-button">快速预览</button>
             </div>
         </div>
 
@@ -182,6 +184,7 @@
         // 3. 实现预览功能
         // -----------------------------------------------------------------
         const runButton = document.getElementById('run-button');
+        const runButtonNW = document.getElementById('run-button-newwindow');
         const previewFrame = document.getElementById('preview-frame');
 
         // 更新预览区域的函数
@@ -194,9 +197,22 @@
             // 这是最安全、最直接的渲染方式，可以有效隔离主页面和预览页面的环境
             previewFrame.srcdoc = code;
         }
+        function NewPreview() {
+            const code = editor.getValue();
+
+            // 1. 创建一个 Blob 对象，类型 'text/html'
+            const blob = new Blob([code], { type: 'text/html' });
+
+            // 2. 创建一个临时的 URL
+            const url = URL.createObjectURL(blob);
+
+            // 3. 打开新标签页并导航到这个 URL
+            window.open(url, '_blank');
+        }
 
         // 为“运行”按钮添加点击事件监听
         runButton.addEventListener('click', updatePreview);
+        runButtonNW.addEventListener('click', NewPreview);
 
         if (savedCode) {
             runButton.click();

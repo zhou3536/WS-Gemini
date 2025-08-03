@@ -282,12 +282,12 @@
 }
 
 .preview-button::before {
-    content: "预览网页";
+    content: "编辑/预览";
     margin: auto;
 }
 
 .copy-button::before {
-    content: "复制代码";
+    content: "复制</>";
     margin: auto;
 }
 
