@@ -275,7 +275,7 @@ function copycode() {
             // 为了不区分大小写，将文本转换为小写进行检查
             const lowerCaseText = textToProcess.toLowerCase();
             const containsHtmlBoilerplate =
-                // lowerCaseText.includes('<!doctype html>') &&
+                lowerCaseText.startsWith('<!doctype html>') &&
                 lowerCaseText.includes('<html') &&
                 lowerCaseText.includes('</html>') &&
                 lowerCaseText.includes('<head') &&
