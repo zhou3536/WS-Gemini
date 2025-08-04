@@ -436,3 +436,18 @@ function xstongzhi(text) {
     tongzhi.style.display = 'block';
     setTimeout(() => { tongzhi.style.display = 'none'; }, 900);
 }
+//清理缓存
+function cleanOldCache() {
+    const now = Date.now();
+    const timeout = 24 * 60 * 60 * 1000; //24小时
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (/^\d{13}$/.test(key)) {
+            const timestamp = parseInt(key, 10);
+            if (!isNaN(timestamp) && now - timestamp > timeout) {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+}
+window.addEventListener('load', cleanOldCache);
