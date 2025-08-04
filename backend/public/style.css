@@ -743,3 +743,17 @@ button:disabled {
     border-radius: 15px;
     background-color: red;
 }
+
+/* 通知 */
+#tongzhi {
+    position: fixed;
+    z-index: 1000000;
+    top: 5px;
+    right: -100%;
+    padding: 10px 20px;
+    min-width: 130px;
+    background-color: var(--df-06);
+    color: var(--bodybgc);
+    border-radius: 5px;
+    transition: all 0.5s ease-in-out;
+}

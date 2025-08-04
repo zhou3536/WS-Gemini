@@ -3,7 +3,7 @@
     /* --perbgc: #3e3131e8; */
     /* --perbgc: #f9f9f9; */
     --per-df: #2c3e50;
-    --per-p:#0026c0;
+    --per-p: #0026c0;
     --code: #002b82;
     --hljs-string: #188038;
     --hljs-keyword: #c58af9;
@@ -17,7 +17,7 @@
     /* --perbgc: #282a2c; */
     --perbgc: #5c626833;
     --per-df: #eee;
-    --per-p:#5cb4ff;
+    --per-p: #5cb4ff;
     --code: #abe2ff;
     --hljs-string: #81c995;
     --hljs-keyword: #c58af9;
@@ -255,18 +255,17 @@
 
 .pre-buttons-container {
     height: 25px;
-    padding: 5px 8px 0;
+    padding: 3px 8px 0;
     display: flex;
     gap: 5px;
     margin-bottom: -16px;
     justify-content: end;
     align-items: center;
-    background-color: var(--perbgc);
+    background-color: var(--df-005);
     border-radius: 5px 5px 0 0;
-    border-bottom: 1px solid var(--df-005);
-    
 }
-.pre-buttons-container p{
+
+.pre-buttons-container p {
     margin-right: auto;
     margin-left: 5px;
     font-weight: 700;
@@ -274,6 +273,7 @@
     font-family: serif;
     color: var(--per-p);
 }
+
 .pre-buttons-container button {
     height: 16px;
     display: block;
@@ -283,11 +283,10 @@
     position: relative;
     z-index: 10;
     background-color: transparent;
-    color: #888;
+    color: var(--df-ziji);
     font-size: 12px;
     line-height: 12px;
 }
-
 
 .pre-buttons-container button:hover {
     background-color: var(--df-005);
@@ -296,7 +295,8 @@
 .pre-buttons-container button:active {
     background-color: var(--df-01);
 }
-.editor-buttom::before{
+
+.editor-buttom::before {
     content: "编辑</>";
     margin: auto;
 }

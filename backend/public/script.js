@@ -298,10 +298,6 @@ function copycode() {
             // copyButton.textContent = '复制'; 
             copyButton.addEventListener('click', () => {
                 copyToClipboard(textToProcess);
-                copyButton.classList.add('copy-button-OK');
-                setTimeout(() => {
-                    copyButton.classList.remove('copy-button-OK');
-                }, 1500);
             });
             buttonContainer.appendChild(copyButton);
 
@@ -317,7 +313,7 @@ function copycode() {
                 const eiditorButton = document.createElement('button');
                 eiditorButton.classList.add('editor-buttom')
                 eiditorButton.addEventListener('click', () => {
-                    editor(textToProcess,languagetype);
+                    editor(textToProcess, languagetype);
                 });
                 buttonContainer.appendChild(eiditorButton);
             }
@@ -335,7 +331,7 @@ function copycode() {
         localStorage.setItem(Key, code);
         window.open(`/preview.html?code=${Key}`, '_blank');
     }
-    function editor(code,type) {
+    function editor(code, type) {
         const Key = Date.now();
         localStorage.setItem(Key, code);
         window.open(`/editor.html?code=${Key}&type=${type}`, '_blank');
@@ -347,36 +343,15 @@ function copycode() {
             navigator.clipboard.writeText(text)
                 .then(() => {
                     console.log('已复制');
+                    xstongzhi('已成功复制到剪贴板');
                 })
                 .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                    // 如果 Clipboard API 失败，则使用 fallback 方法
-                    fallbackCopyToClipboard(text);
+                    console.error('复制失败: ', err);
+                    xstongzhi('复制失败');
                 });
         } else {
-            // 较旧的浏览器使用 fallback 方法
-            fallbackCopyToClipboard(text);
+            xstongzhi('复制失败');
         }
-    }
-    // Clipboard API 的 Fallback 实现
-    function fallbackCopyToClipboard(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        // 避免页面滚动
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.position = "fixed";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-            const successful = document.execCommand('copy');
-            const msg = successful ? 'successful' : 'unsuccessful';
-            console.log('Fallback: Copying text command was ' + msg);
-        } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
-        }
-        document.body.removeChild(textArea);
     }
 }
 //给<table>套div
@@ -451,4 +426,13 @@ async function gmmlogout() {
     } catch (error) {
         console.error('Error during logout:', error);
     }
+}
+
+//显示通知
+function xstongzhi(text) {
+    if (!text) { return }
+    const tongzhi = document.getElementById('tongzhi')
+    tongzhi.innerText = text;
+    tongzhi.style.right = '5px';
+    setTimeout(() => { tongzhi.style.right = '-100%'; }, 1500);
 }
