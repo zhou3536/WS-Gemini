@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线代码编辑器 (Ace Editor + iframe)</title>
+    <title>编辑预览</title>
     <style>
         /* --- 基本样式重置与布局 --- */
         * {
+            padding: 0;
+            margin: 0;
             box-sizing: border-box;
         }
 
@@ -45,6 +47,13 @@
         .pane2 {
             flex-grow: 1;
             min-width: 800px;
+        }
+
+        .pane1>p {
+            text-align: center;
+            color: #ff0000a7;
+            font-weight: 600;
+            font-size: 16px;
         }
 
         /* --- 编辑器面板 --- */
@@ -132,6 +141,7 @@
     <div class="container">
         <div class="pane1 editor-pane">
             <div id="editor"></div>
+            <p>如果网页显示不正常，尝试使用浏览器预览功能</p>
             <div class="controls">
                 <button id="run-button-newwindow">浏览器预览</button>
                 <button id="run-button">窗口预览</button>
@@ -172,12 +182,13 @@
 
 
         // 2. 设置编辑器初始代码内容
-        const savedCode = localStorage.getItem('htmlcode');
+        const params = new URLSearchParams(window.location.search);
+        const codekey = params.get('code');
+        const CACHE_KEY = codekey || 'previewcode';
+        const savedCode = localStorage.getItem(CACHE_KEY);
 
-        // 如果 localStorage 中有保存的代码，则使用它；否则使用一个默认的空字符串。
-        const initialCode = savedCode || '';
+        const initialCode = savedCode || `<h1>Hello World</h1>`;
 
-        // 将初始代码设置到编辑器中，-1表示光标不移动到末尾
         editor.setValue(initialCode, -1);
 
 
@@ -191,15 +202,16 @@
         function updatePreview() {
             // 从 Ace Editor 获取当前全部代码
             const code = editor.getValue();
-            localStorage.setItem('htmlcode', code);
+            localStorage.setItem(CACHE_KEY, code);
 
             // 将代码内容赋值给 iframe 的 srcdoc 属性
             // 这是最安全、最直接的渲染方式，可以有效隔离主页面和预览页面的环境
             previewFrame.srcdoc = code;
         }
+        updatePreview();
         function NewPreview() {
             const code = editor.getValue();
-            localStorage.setItem('htmlcode', code);
+            localStorage.setItem(CACHE_KEY, code);
             // 1. 创建一个 Blob 对象，类型 'text/html'
             const blob = new Blob([code], { type: 'text/html' });
             // 2. 创建一个临时的 URL
@@ -212,9 +224,7 @@
         runButton.addEventListener('click', updatePreview);
         runButtonNW.addEventListener('click', NewPreview);
 
-        if (savedCode) {
-            runButton.click();
-        }
+
     </script>
 </body>
 

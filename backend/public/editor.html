@@ -244,9 +244,10 @@
     <script>
         let editor;
         let autoSaveTimer;
-        const CACHE_KEY = 'editorcode';
+        const params = new URLSearchParams(window.location.search);
+        const codekey = params.get('code');
+        const CACHE_KEY = codekey || 'editorcode';
         const AUTO_SAVE_DELAY = 1000; // 1秒后自动保存
-
         // 初始化编辑器
         function initEditor() {
             editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
@@ -300,15 +301,7 @@
                     console.log('✅ 成功从缓存加载代码');
                 } else {
                     // 设置默认代码
-                    const defaultCode = `// 欢迎使用代码编辑器！
-// 您的代码会自动保存到浏览器缓存中
-
-function helloWorld() {
-    console.log("Hello, World!");
-    return "代码编辑器已就绪！";
-}
-
-helloWorld();`;
+                    const defaultCode = `// 欢迎使用代码编辑器`;
                     editor.setValue(defaultCode);
                 }
             } catch (error) {

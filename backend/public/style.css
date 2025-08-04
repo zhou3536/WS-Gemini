@@ -8,7 +8,13 @@
     --navh: 40px;
     --hhh: calc(100vh - var(--navh));
     --hhh: calc(100dvh - var(--navh));
+    --bodybgc: #FFF;
+}
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bodybgc: #1b1c1d;
+    }
 }
 
 body {
