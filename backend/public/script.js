@@ -262,15 +262,17 @@ function opendhdh() {
 }
 
 function copycode() {
-    const messageElements = document.querySelectorAll('.message');
-    messageElements.forEach(messageElement => {
-        const preElements = messageElement.querySelectorAll('pre');
-        preElements.forEach(preElement => {
-            if (preElement.dataset.wrapped) { return; };
+    const chatWindow = document.getElementById('chat-window');
+    const preElements = chatWindow.querySelectorAll('pre');
+    preElements.forEach(preElement => {
+        const codeElements = preElement.querySelectorAll('code');
+        codeElements.forEach(codeElement => {
+            if (codeElement.dataset.wrapped) { return; };
 
             // 1. 获取pre元素内的所有文本，textContent 属性会自动去除 HTML 标签
-            const textToProcess = preElement.textContent;
-
+            const textToProcess = codeElement.textContent;
+            const firstClassName = codeElement.classList.value.split(' ')[0];
+            const languagetype = firstClassName.substring(9);
             // 2. 检查如含有 <!DOCTYPE html><head></head><body></body> 就添加一个预览按钮
             // 为了不区分大小写，将文本转换为小写进行检查
             const lowerCaseText = textToProcess.toLowerCase();
@@ -286,7 +288,10 @@ function copycode() {
             // 3. 网页元素结构修改为先创建div，在div里创建按钮。
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('pre-buttons-container'); // 可以添加一个类名以便样式化
-
+            // 语言类型
+            const languagetypep = document.createElement('p');
+            languagetypep.innerText = languagetype;
+            buttonContainer.appendChild(languagetypep);
             // 创建复制按钮
             const copyButton = document.createElement('button');
             copyButton.classList.add('copy-button');
@@ -312,7 +317,7 @@ function copycode() {
                 const eiditorButton = document.createElement('button');
                 eiditorButton.classList.add('editor-buttom')
                 eiditorButton.addEventListener('click', () => {
-                    editor(textToProcess);
+                    editor(textToProcess,languagetype);
                 });
                 buttonContainer.appendChild(eiditorButton);
             }
@@ -321,19 +326,19 @@ function copycode() {
             preElement.parentNode.insertBefore(buttonContainer, preElement);
 
             // 标记 pre 元素已被处理，防止重复添加按钮
-            preElement.dataset.wrapped = 'true';
+            codeElement.dataset.wrapped = 'true';
         });
     });
     // 预览按钮点击执行函数
     function preview(code) {
-        localStorage.setItem('htmlcode', code);
-        window.open('/preview.html', '_blank');
+        const Key = Date.now();
+        localStorage.setItem(Key, code);
+        window.open(`/preview.html?code=${Key}`, '_blank');
     }
-    function editor(code) {
-        console.log(code)
-        localStorage.setItem('editorcode', code);
-        // console.log(localStorage.getItem('editorcode'))
-        window.open('/editor.html', '_blank');
+    function editor(code,type) {
+        const Key = Date.now();
+        localStorage.setItem(Key, code);
+        window.open(`/editor.html?code=${Key}&type=${type}`, '_blank');
     };
     // 复制到剪贴板的函数
     function copyToClipboard(text) {
