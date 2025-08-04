@@ -25,7 +25,9 @@
             background: #282a36;
             color: #f8f8f2;
             height: 100vh;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            min-width: 750px;
         }
 
         .header {
@@ -33,7 +35,7 @@
             padding: 5px 20px;
             /* border-bottom: 2px solid #6272a4; */
             display: flex;
-            justify-content: space-between;
+            justify-content: start;
             align-items: center;
             /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); */
             height: 50px;
@@ -43,6 +45,7 @@
             font-size: 20px;
             font-weight: 600;
             color: #ffffff;
+            margin-right: 20px;
         }
 
         .toolbar {
@@ -55,7 +58,7 @@
             background: #6272a4;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 6px 8px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
@@ -80,7 +83,7 @@
             background: #44475a;
             color: #f8f8f2;
             border: 2px solid #6272a4;
-            padding: 8px 12px;
+            padding: 5px 6px;
             border-radius: 6px;
             font-size: 14px;
             cursor: pointer;
@@ -93,7 +96,7 @@
         }
 
         .editor-container {
-            height: calc(100vh - 50px);
+            height: calc(100% - 50px);
             position: relative;
             background: #282a36;
             padding-bottom: 40px;
@@ -140,29 +143,10 @@
             gap: 20px;
         }
 
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 10px;
-                padding: 10px;
-            }
-
-            .toolbar {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-        }
 
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
-
         }
 
         ::-webkit-scrollbar-thumb {
@@ -182,6 +166,7 @@
         <h1>编辑器</h1>
         <div class="toolbar">
             <select id="languageSelect">
+                <option value="">代码类型</option>
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
                 <option value="java">Java</option>
@@ -201,8 +186,8 @@
                 <option value="default">Default</option>
             </select>
 
-            <button class="btn" onclick="formatCode()">🎨 格式化</button>
-            <button class="btn clear" onclick="clearCode()">🗑️ 清空</button>
+            <button class="btn" onclick="formatCode()">格式化</button>
+            <button class="btn clear" onclick="clearCode()">清空</button>
         </div>
     </div>
 
@@ -248,6 +233,57 @@
         const codekey = params.get('code');
         const CACHE_KEY = codekey || 'editorcode';
         const AUTO_SAVE_DELAY = 1000; // 1秒后自动保存
+
+        //自动匹配语言
+        const languagetype = params.get('type');
+        if (languagetype) {
+            const languageValueMap = {
+                "javascript": "javascript",
+                "python": "python",
+                "java": "java",
+                "c": "clike",
+                "cpp": "clike",
+                "c++": "clike",
+                "c#": "csharp",
+                "html": "xml",
+                "css": "css",
+                "sql": "sql",
+                "php": "php",
+                "shell": "shell",
+                "bash": "shell",
+                "zsh": "shell",
+                "markdown": "markdown",
+                "md": "markdown",
+                "xml": "xml"
+            };
+
+            // 1. 获取 <select> 元素
+            const languageSelect = document.getElementById("languageSelect");
+            let targetValue = null;
+
+            const lowerLanguagetype = languagetype.toLowerCase();
+            if (languageValueMap.hasOwnProperty(lowerLanguagetype)) {
+                targetValue = languageValueMap[lowerLanguagetype];
+            } else {
+                console.warn(`Languagetype "${languagetype}" not found in explicit mapping. Attempting direct match.`);
+            }
+
+            // 3. 如果找到了目标 value，则在 <select> 中找到并选中它
+            if (languageSelect && targetValue) {
+                for (let i = 0; i < languageSelect.options.length; i++) {
+                    const option = languageSelect.options[i];
+                    if (option.value.toLowerCase() === targetValue.toLowerCase()) {
+                        option.selected = true;
+                        break; // 找到匹配项后就可以停止循环了
+                    }
+                }
+            } else if (!languageSelect) {
+                console.error("Element with ID 'languageSelect' not found.");
+            } else if (!targetValue) {
+                console.warn(`Could not determine a target value for languagetype: "${languagetype}". No option will be selected automatically.`);
+            }
+        }
+
         // 初始化编辑器
         function initEditor() {
             editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {

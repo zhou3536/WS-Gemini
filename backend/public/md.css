@@ -1,5 +1,6 @@
 [data-theme="light"] {
     --perbgc: #c3c3c31a;
+    /* --perbgc: #3e3131e8; */
     /* --perbgc: #f9f9f9; */
     --per-df: #2c3e50;
     --code: #002b82;
@@ -65,9 +66,10 @@
 .model-message pre {
     background-color: var(--perbgc);
     /* border: 1px solid var(--df-01); */
-    border-radius: 5px;
+    border-radius: 0 0 5px 5px;
     padding: 16px;
     margin: 16px 0;
+    /* margin-top: 25px; */
     overflow-x: auto;
     /* font-family: 'Monaco', 'Consolas', 'Courier New', monospace; */
     font-family: sans-serif;
@@ -250,14 +252,24 @@
 }
 
 .pre-buttons-container {
-    height: 16px;
+    height: 25px;
+    padding: 10px 8px 0;
     display: flex;
     gap: 5px;
     margin-bottom: -16px;
     justify-content: end;
+    align-items: center;
+    background-color: var(--perbgc);
+    border-radius: 5px 5px 0 0;
     
 }
-
+.pre-buttons-container p{
+    margin-right: auto;
+    margin-left: 5px;
+    font-weight: 700;
+    font-size: 17px;
+    font-family: serif;
+}
 .pre-buttons-container button {
     height: 16px;
     display: block;
