@@ -273,8 +273,7 @@ function copycode() {
             const textToProcess = codeElement.textContent;
             const firstClassName = codeElement.classList.value.split(' ')[0];
             const languagetype = firstClassName.substring(9);
-            // 2. 检查如含有 <!DOCTYPE html><head></head><body></body> 就添加一个预览按钮
-            // 为了不区分大小写，将文本转换为小写进行检查
+            // 2. 为了不区分大小写，将文本转换为小写进行检查
             const lowerCaseText = textToProcess.toLowerCase();
             const containsHtmlBoilerplate =
                 lowerCaseText.startsWith('<!doctype html>') &&
@@ -287,11 +286,13 @@ function copycode() {
 
             // 3. 网页元素结构修改为先创建div，在div里创建按钮。
             const buttonContainer = document.createElement('div');
-            buttonContainer.classList.add('pre-buttons-container'); // 可以添加一个类名以便样式化
+            buttonContainer.classList.add('pre-buttons-container');
             // 语言类型
             const languagetypep = document.createElement('p');
-            languagetypep.innerText = `<${languagetype}>`;
-            buttonContainer.appendChild(languagetypep);
+            if (firstClassName) {
+                languagetypep.innerText = `<${languagetype}>`;
+                buttonContainer.appendChild(languagetypep);
+            }
             // 创建复制按钮
             const copyButton = document.createElement('button');
             copyButton.classList.add('copy-button');
@@ -309,7 +310,7 @@ function copycode() {
                     preview(textToProcess);
                 });
                 buttonContainer.appendChild(previewCodeButton);
-            } else {
+            } else if (firstClassName) {
                 const eiditorButton = document.createElement('button');
                 eiditorButton.classList.add('editor-buttom')
                 eiditorButton.addEventListener('click', () => {
@@ -433,6 +434,6 @@ function xstongzhi(text) {
     if (!text) { return }
     const tongzhi = document.getElementById('tongzhi')
     tongzhi.innerText = text;
-    tongzhi.style.right = '5px';
-    setTimeout(() => { tongzhi.style.right = '-100%'; }, 1500);
+    tongzhi.style.display = 'block';
+    setTimeout(() => { tongzhi.style.display = 'none'; }, 900);
 }
