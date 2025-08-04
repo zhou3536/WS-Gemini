@@ -3,6 +3,7 @@
     /* --perbgc: #3e3131e8; */
     /* --perbgc: #f9f9f9; */
     --per-df: #2c3e50;
+    --per-p:#0026c0;
     --code: #002b82;
     --hljs-string: #188038;
     --hljs-keyword: #c58af9;
@@ -16,6 +17,7 @@
     /* --perbgc: #282a2c; */
     --perbgc: #5c626833;
     --per-df: #eee;
+    --per-p:#5cb4ff;
     --code: #abe2ff;
     --hljs-string: #81c995;
     --hljs-keyword: #c58af9;
@@ -253,7 +255,7 @@
 
 .pre-buttons-container {
     height: 25px;
-    padding: 10px 8px 0;
+    padding: 5px 8px 0;
     display: flex;
     gap: 5px;
     margin-bottom: -16px;
@@ -261,6 +263,7 @@
     align-items: center;
     background-color: var(--perbgc);
     border-radius: 5px 5px 0 0;
+    border-bottom: 1px solid var(--df-005);
     
 }
 .pre-buttons-container p{
@@ -269,6 +272,7 @@
     font-weight: 700;
     font-size: 17px;
     font-family: serif;
+    color: var(--per-p);
 }
 .pre-buttons-container button {
     height: 16px;

@@ -290,7 +290,7 @@ function copycode() {
             buttonContainer.classList.add('pre-buttons-container'); // 可以添加一个类名以便样式化
             // 语言类型
             const languagetypep = document.createElement('p');
-            languagetypep.innerText = languagetype;
+            languagetypep.innerText = `<${languagetype}>`;
             buttonContainer.appendChild(languagetypep);
             // 创建复制按钮
             const copyButton = document.createElement('button');
