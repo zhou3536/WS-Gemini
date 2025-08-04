@@ -276,12 +276,8 @@ function copycode() {
             // 2. 为了不区分大小写，将文本转换为小写进行检查
             const lowerCaseText = textToProcess.toLowerCase();
             const containsHtmlBoilerplate =
-                lowerCaseText.startsWith('<!doctype html>') &&
-                lowerCaseText.includes('<html') &&
                 lowerCaseText.includes('</html>') &&
-                lowerCaseText.includes('<head') &&
                 lowerCaseText.includes('</head>') &&
-                lowerCaseText.includes('<body') &&
                 lowerCaseText.includes('</body>');
 
             // 3. 网页元素结构修改为先创建div，在div里创建按钮。
@@ -303,7 +299,7 @@ function copycode() {
             buttonContainer.appendChild(copyButton);
 
             // 如果包含HTML样板，则创建预览按钮
-            if (containsHtmlBoilerplate) {
+            if (containsHtmlBoilerplate || languagetype === 'html') {
                 const previewCodeButton = document.createElement('button');
                 previewCodeButton.classList.add('preview-button');
                 previewCodeButton.addEventListener('click', () => {
