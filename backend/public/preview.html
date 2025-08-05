@@ -18,9 +18,9 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: sans-serif;
             overflow-x: auto;
-            min-width: 100px;
+            min-width: 1000px;
         }
 
         /* --- 主容器：使用Flexbox创建左右布局 --- */
@@ -139,11 +139,11 @@
             transition: background 0.2s;
             flex-shrink: 0;
         }
-        
+
         .divider:hover {
             background: #999;
         }
-        
+
         .divider::before {
             content: '';
             position: absolute;
@@ -152,6 +152,16 @@
             right: -8px;
             bottom: 0;
             background: transparent;
+        }
+
+        /* 拖拽时的样式 */
+        .dragging {
+            cursor: ew-resize !important;
+            user-select: none !important;
+        }
+
+        .dragging * {
+            pointer-events: none !important;
         }
     </style>
 </head>
@@ -240,10 +250,11 @@
             window.open(url, '_blank');
         }
 
-        // 为“运行”按钮添加点击事件监听
+        // 为"运行"按钮添加点击事件监听
         runButton.addEventListener('click', updatePreview);
         runButtonNW.addEventListener('click', NewPreview);
 
+        // 4. 拖拽分割线功能
         (function () {
             console.log("这个匿名函数在页面加载时只执行一次！");
             const divider = document.getElementById('divider');
@@ -252,37 +263,82 @@
             const container = document.getElementById('container');
 
             let isDragging = false;
+            let startX = 0;
+            let startLeftWidth = 0;
+            let startRightWidth = 0;
 
+            // 开始拖拽
             divider.addEventListener('mousedown', (e) => {
                 isDragging = true;
-                document.body.style.cursor = 'ew-resize';
-                document.body.style.userSelect = 'none';
+                startX = e.clientX;
+
+                // 记录开始时的面板宽度
+                const containerRect = container.getBoundingClientRect();
+                startLeftWidth = leftPanel.getBoundingClientRect().width;
+                startRightWidth = rightPanel.getBoundingClientRect().width;
+
+                // 添加拖拽样式，防止鼠标事件被其他元素捕获
+                document.body.classList.add('dragging');
+
+                // 阻止默认行为和事件冒泡
+                e.preventDefault();
+                e.stopPropagation();
             });
 
+            // 拖拽移动
             document.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
 
-                const containerRect = container.getBoundingClientRect();
-                const mouseX = e.clientX - containerRect.left;
-                const totalWidth = containerRect.width;
+                // 计算鼠标移动的距离
+                const deltaX = e.clientX - startX;
 
-                // 计算左面板宽度（不包括分割线）
-                const leftWidth = mouseX - 2; // 分割线中心位置
-                const rightWidth = totalWidth - mouseX - 2;
+                // 计算新的面板宽度
+                const newLeftWidth = startLeftWidth + deltaX;
+                const newRightWidth = startRightWidth - deltaX;
 
-                if (leftWidth < 300 || rightWidth < 320) return; // 最小宽度限制
+                // 设置最小宽度限制
+                if (newLeftWidth < 400 || newRightWidth < 360) return;
 
-                // 设置面板的固定宽度，保持分割线
-                leftPanel.style.flex = `0 0 ${leftWidth}px`;
-                rightPanel.style.flex = `0 0 ${rightWidth}px`;
+                // 更新面板宽度
+                leftPanel.style.flex = `0 0 ${newLeftWidth}px`;
+                rightPanel.style.flex = `0 0 ${newRightWidth}px`;
+
+                // 阻止默认行为
+                e.preventDefault();
             });
 
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                document.body.style.cursor = '';
-                document.body.style.userSelect = '';
+            // 结束拖拽
+            document.addEventListener('mouseup', (e) => {
+                if (isDragging) {
+                    isDragging = false;
+
+                    // 移除拖拽样式
+                    document.body.classList.remove('dragging');
+
+                    // 阻止默认行为
+                    e.preventDefault();
+                }
             });
 
+            // 处理鼠标离开窗口的情况
+            document.addEventListener('mouseleave', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.classList.remove('dragging');
+                }
+            });
+
+            // 键盘事件：按下 ESC 键取消拖拽
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isDragging) {
+                    isDragging = false;
+                    document.body.classList.remove('dragging');
+
+                    // 恢复到开始拖拽时的状态
+                    leftPanel.style.flex = `0 0 ${startLeftWidth}px`;
+                    rightPanel.style.flex = `0 0 ${startRightWidth}px`;
+                }
+            });
 
         })();
     </script>
