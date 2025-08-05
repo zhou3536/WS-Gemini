@@ -234,7 +234,6 @@
 
 /* 高亮代码的特殊样式调整 */
 .model-message .hljs {
-    /* background: #f8f9fa !important; */
     color: var(--per-df) !important;
 }
 
@@ -254,7 +253,6 @@
     color: var(--hljs-number) !important;
 }
 
-/* #fa903e */
 .model-message .hljs-function {
     color: var(--hljs-function) !important;
 }
