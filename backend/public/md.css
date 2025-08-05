@@ -9,9 +9,10 @@
     --hljs-keyword: #c58af9;
     --hljs-function: #4271ae;
     --hljs-number: #f86c00;
-    --hljs-name :#0051b9;
-    --hljs-attr :#3479d4;
-    --hljs-tag :#999;
+    --hljs-name: #00509d;
+    --hljs-attr: #3479d4;
+    --hljs-tag: #999;
+    --hljs-title: #a8a815;
     --tr-1: #fff;
     --tr-2: #eee;
 }
@@ -26,9 +27,10 @@
     --hljs-keyword: #c58af9;
     --hljs-function: #88bafc;
     --hljs-number: #fa903e;
-    --hljs-name :#7688ea;
-    --hljs-attr :#527eff;
-    --hljs-tag :#ccc;
+    --hljs-name: #5fb5ff;
+    --hljs-attr: #9cdcfe;
+    --hljs-tag: #ccc;
+    --hljs-title: #e9e976;
     --tr-1: #333;
     --tr-2: #444;
 }
@@ -237,15 +239,17 @@
     color: var(--per-df) !important;
 }
 
-.model-message .hljs-comment {
-    color: #8e908c !important;
+.hljs-comment {
+    color: #939393 !important;
 }
 
 .model-message .hljs-keyword {
     color: var(--hljs-keyword) !important;
 }
 
-.model-message .hljs-string {
+.hljs-meta .hljs-string,
+.hljs-regexp,
+.hljs-string {
     color: var(--hljs-string) !important;
 }
 
@@ -256,14 +260,36 @@
 .model-message .hljs-function {
     color: var(--hljs-function) !important;
 }
-.model-message .hljs-name {
-    color: var(--hljs-name ) !important;
+
+.hljs-name,
+.hljs-quote,
+.hljs-selector-pseudo,
+.hljs-selector-tag {
+    color: var(--hljs-name) !important;
 }
-.model-message .hljs-attr {
-    color: var(--hljs-attr ) !important;
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-variable {
+    color: var(--hljs-attr) !important;
 }
-.model-message .hljs-tag {
-    color: var(--hljs-tag ) !important;
+
+.hljs-tag {
+    color: var(--hljs-tag) !important;
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+    color: var(--hljs-title);
 }
 
 .pre-buttons-container {
@@ -286,7 +312,7 @@
     font-size: 17px;
     font-family: serif;
     color: var(--df-ziji);
-    font-style:italic;
+    font-style: italic;
 }
 
 .pre-buttons-container button {
