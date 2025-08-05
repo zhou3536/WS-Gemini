@@ -9,6 +9,9 @@
     --hljs-keyword: #c58af9;
     --hljs-function: #4271ae;
     --hljs-number: #f86c00;
+    --hljs-name :#0051b9;
+    --hljs-attr :#3479d4;
+    --hljs-tag :#999;
     --tr-1: #fff;
     --tr-2: #eee;
 }
@@ -23,6 +26,9 @@
     --hljs-keyword: #c58af9;
     --hljs-function: #88bafc;
     --hljs-number: #fa903e;
+    --hljs-name :#7688ea;
+    --hljs-attr :#527eff;
+    --hljs-tag :#ccc;
     --tr-1: #333;
     --tr-2: #444;
 }
@@ -251,6 +257,15 @@
 /* #fa903e */
 .model-message .hljs-function {
     color: var(--hljs-function) !important;
+}
+.model-message .hljs-name {
+    color: var(--hljs-name ) !important;
+}
+.model-message .hljs-attr {
+    color: var(--hljs-attr ) !important;
+}
+.model-message .hljs-tag {
+    color: var(--hljs-tag ) !important;
 }
 
 .pre-buttons-container {
