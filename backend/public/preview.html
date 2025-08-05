@@ -20,6 +20,7 @@
             height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             overflow-x: auto;
+            min-width: 100px;
         }
 
         /* --- 主容器：使用Flexbox创建左右布局 --- */
@@ -38,15 +39,11 @@
         }
 
         .pane1 {
-            width: 50%;
-            min-width: 400px;
-            max-width: 800px;
-            padding-top: 20px;
+            flex: 1;
         }
 
         .pane2 {
-            flex-grow: 1;
-            min-width: 800px;
+            flex: 1;
         }
 
         .pane1>p {
@@ -133,13 +130,36 @@
         .ace-monokai .ace_gutter {
             background-color: #282a36;
         }
+
+        .divider {
+            width: 4px;
+            background: #ccc;
+            cursor: ew-resize;
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .divider:hover {
+            background: #999;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -8px;
+            right: -8px;
+            bottom: 0;
+            background: transparent;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <div class="pane1 editor-pane">
+    <div class="container" id="container">
+        <div class="pane1 editor-pane" id="pane1">
             <div id="editor"></div>
             <p>如果网页显示不正常，尝试使用浏览器预览功能</p>
             <div class="controls">
@@ -147,8 +167,8 @@
                 <button id="run-button">窗口预览</button>
             </div>
         </div>
-
-        <div class="pane2 preview-pane">
+        <div class="divider" id="divider"></div>
+        <div class="pane2 preview-pane" id="pane2">
             <iframe id="preview-frame" title="代码预览"></iframe>
         </div>
     </div>
@@ -224,7 +244,47 @@
         runButton.addEventListener('click', updatePreview);
         runButtonNW.addEventListener('click', NewPreview);
 
+        (function () {
+            console.log("这个匿名函数在页面加载时只执行一次！");
+            const divider = document.getElementById('divider');
+            const leftPanel = document.getElementById('pane1');
+            const rightPanel = document.getElementById('pane2');
+            const container = document.getElementById('container');
 
+            let isDragging = false;
+
+            divider.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                document.body.style.cursor = 'ew-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const containerRect = container.getBoundingClientRect();
+                const mouseX = e.clientX - containerRect.left;
+                const totalWidth = containerRect.width;
+
+                // 计算左面板宽度（不包括分割线）
+                const leftWidth = mouseX - 2; // 分割线中心位置
+                const rightWidth = totalWidth - mouseX - 2;
+
+                if (leftWidth < 300 || rightWidth < 320) return; // 最小宽度限制
+
+                // 设置面板的固定宽度，保持分割线
+                leftPanel.style.flex = `0 0 ${leftWidth}px`;
+                rightPanel.style.flex = `0 0 ${rightWidth}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            });
+
+
+        })();
     </script>
 </body>
 

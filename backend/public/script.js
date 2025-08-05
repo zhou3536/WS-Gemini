@@ -289,7 +289,7 @@ function copycode() {
             // 语言类型
             const languagetypep = document.createElement('p');
             if (firstClassName) {
-                languagetypep.innerText = `<${languagetype}>`;
+                languagetypep.innerText = languagetype.toUpperCase();
                 buttonContainer.appendChild(languagetypep);
             }
             // 创建复制按钮

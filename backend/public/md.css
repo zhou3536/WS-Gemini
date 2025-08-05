@@ -90,13 +90,13 @@
 
 /* 行内代码样式 */
 .model-message code {
-    background-color: var(--df-005);
+    /* background-color: var(--df-005); */
     color: var(--code);
     padding: 1px 3px;
     /* border-radius: 4px; */
     /* font-family: 'Monaco', 'Consolas', 'Courier New', monospace; */
     font-family: sans-serif;
-    font-size: 15px;
+    /* font-size: 15px; */
     /* border: 1px solid #e1e8ed; */
     font-weight: normal;
 }
@@ -255,10 +255,11 @@
 
 .pre-buttons-container {
     height: 25px;
-    padding: 3px 8px 0;
+    padding: 3px 6px 0;
     display: flex;
     gap: 5px;
     margin-bottom: -16px;
+    margin-top: 10px;
     justify-content: end;
     align-items: center;
     background-color: var(--df-005);
@@ -271,7 +272,8 @@
     font-weight: 700;
     font-size: 17px;
     font-family: serif;
-    color: var(--per-p);
+    color: var(--df-ziji);
+    font-style:italic;
 }
 
 .pre-buttons-container button {
