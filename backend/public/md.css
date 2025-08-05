@@ -299,17 +299,17 @@
 }
 
 .editor-buttom::before {
-    content: "编辑</>";
+    content: "编辑✏️";
     margin: auto;
 }
 
 .preview-button::before {
-    content: "编辑/预览";
+    content: "预览👁️";
     margin: auto;
 }
 
 .copy-button::before {
-    content: "复制<>";
+    content: "复制🔗";
     margin: auto;
 }
 
