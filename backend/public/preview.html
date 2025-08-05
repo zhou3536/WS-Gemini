@@ -239,7 +239,7 @@
             previewFrame.srcdoc = code;
         }
         updatePreview();
-        function NewPreview() {
+        function NewTabPreview() {
             const code = editor.getValue();
             localStorage.setItem(CACHE_KEY, code);
             // 1. 创建一个 Blob 对象，类型 'text/html'
@@ -252,11 +252,10 @@
 
         // 为"运行"按钮添加点击事件监听
         runButton.addEventListener('click', updatePreview);
-        runButtonNW.addEventListener('click', NewPreview);
+        runButtonNW.addEventListener('click', NewTabPreview);
 
         // 4. 拖拽分割线功能
         (function () {
-            console.log("这个匿名函数在页面加载时只执行一次！");
             const divider = document.getElementById('divider');
             const leftPanel = document.getElementById('pane1');
             const rightPanel = document.getElementById('pane2');

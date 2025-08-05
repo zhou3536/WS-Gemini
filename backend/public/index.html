@@ -74,7 +74,6 @@
         const delhistorybox = document.getElementById('delhistory');
         const socket = io();
         let sessionId = localStorage.getItem('sessionId');
-        let currentModelResponseElement = null; // 用于追踪当前模型响应的DOM元素
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
         let lastmessagebox = null;
         let sendinfobox = null;
@@ -113,8 +112,8 @@
             appendStreamChunk(data.chunk);
         });
         socket.on('streamEnd', () => {
-            currentModelResponseElement = null;
             sendBtn.disabled = false;
+            accumulatedStreamText = '';
             if (sendinfobox) sendinfobox.classList.remove('loading');
             hljs.highlightAll();
             addcopy();
@@ -256,15 +255,10 @@
 
         let isonchatWindowstart = false;
         function appendStreamChunk(chunk) {
-            modelmessage.innerHTML = '';
-            if (!currentModelResponseElement) {
-                // 如果是流的开始，创建一个新的消息元素
-                currentModelResponseElement = modelmessage;
-                accumulatedStreamText = '';
-            }
+
             // 将新的原始块附加到累积文本中
             accumulatedStreamText += chunk;
-            currentModelResponseElement.innerHTML = marked.parse(accumulatedStreamText);
+            modelmessage.innerHTML = marked.parse(accumulatedStreamText);
 
             if (lastmessagebox.offsetHeight >= chatWindow.offsetHeight && !isonchatWindowstart) {
                 lastmessagebox.scrollIntoView({ behavior: 'smooth', block: 'start' });
