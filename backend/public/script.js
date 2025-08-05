@@ -399,7 +399,7 @@ function delHistories(list) {
             if (item.sessionId === sessionId) {
                 newChatBtn.click();
             }
-            deleteBtn.style.opacity = '0.3';
+            li.style.opacity = '0';
             deleteBtn.disabled = true;
             socket.emit('deleteHistory', { sessionId: item.sessionId });
         });
