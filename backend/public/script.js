@@ -451,3 +451,12 @@ function cleanOldCache() {
     }
 }
 window.addEventListener('load', cleanOldCache);
+//设置apikey
+function sendyouapikey(text) {
+    if (text === 'close') { setapikeybox.style.display = 'none'; return };
+    const apikey = yourapikey.value;
+    if (!apikey) { xstongzhi('请输入API_KEY'); return };
+    if (apikey.length !== 39) { xstongzhi('请输入正确格式的API_KEY'); return };
+    socket.emit('sendapikey', apikey);
+    yourapikey.value = '';
+}

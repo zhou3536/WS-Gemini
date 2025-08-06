@@ -9,8 +9,8 @@ import { Server } from "socket.io";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
-import cookieParser from 'cookie-parser'; // <--- 新增：引入 cookie-parser
-
+import cookieParser from 'cookie-parser';
+import { readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -22,24 +22,21 @@ const server = http.createServer(app);
 
 const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
-const API_KEY = process.env.GEMINI_API_KEY;
 const COOKIE_SECRET = process.env.cookieSecret;
 const CUSTOM_BASE_URL = process.env.PROXYURL;
-const users = JSON.parse(process.env.users);
 
-if (!API_KEY) {
-    console.error("错误：请在 .env 文件中设置您的 GEMINI_API_KEY");
-    process.exit(1);
-}
+let users;
+
+
 if (CUSTOM_BASE_URL) { console.log('代理地址：', CUSTOM_BASE_URL); }
-const genAI = new GoogleGenerativeAI(API_KEY);
 const historiesDir = path.join(__dirname, "histories");
-if (!fs.existsSync(historiesDir)) {
-    fs.mkdirSync(historiesDir);
-}
+if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
 app.use(express.json());
-initializeAuth(app, users, COOKIE_SECRET);
+const loadJson = async () => {
+    const content = await readFile('./users.json', 'utf-8');
+    users = JSON.parse(content);
+};
 
 const cachetime = 120 * 60 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -47,8 +44,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
     etag: true,
 }));
 
-// <--- 新增：将 cookieParser 应用到 Socket.IO 的握手阶段
-// 这样在 Socket.IO 连接时，它的 req 对象也会被解析 signed cookies
 const io = new Server(server, {
     cors: {
         origin: "*", // 根据你的前端地址调整
@@ -65,14 +60,17 @@ const io = new Server(server, {
 
 
 io.on("connection", (socket) => {
-    // console.log("客户端已连接");
-
-    // <--- 在这里获取用户 ID
     const userId = socket.request.signedCookies && socket.request.signedCookies.user_id;
     if (userId) {
-        console.log(`Socket.IO 客户端连接成功，用户ID: ${userId}`);
-        // 你可以将 userId 存储在 socket 对象上，以便后续事件处理函数使用
         socket.userId = userId;
+        const loginuser = users.find(user => user.userId === userId);
+        if (loginuser && loginuser.API_KEY) {
+            socket.userApiKey = loginuser.API_KEY;
+            socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
+            socket.emit("APIKEY", socket.userApiKeyCipher)
+        } else {
+            socket.emit("error", { message: "请配置API_KEY" });
+        }
     } else {
         console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
         socket.emit('refresh', '/login.html');
@@ -80,7 +78,7 @@ io.on("connection", (socket) => {
         socket.disconnect();
         return;
     }
-
+    console.log('Socket.IO 客户端连接成功 用户ID:', userId);
     listHistories(socket);
 
     socket.on("newMessage", async (data) => {
@@ -94,21 +92,45 @@ io.on("connection", (socket) => {
     socket.on("deleteHistory", async (data) => {
         await handleDeleteHistory(socket, data.sessionId);
     });
+    socket.on("sendapikey", async (data) => {
+        await setapikey(socket, data);
+    });
 
     socket.on("disconnect", () => {
         console.log(`Socket.IO 客户端连接断开，${socket.userId ? `用户ID: ${socket.userId}` : ''}`);
     });
 });
 
+
+async function setapikey(socket, data) {
+    const user = users.find(user => user.userId === socket.userId);
+    if (user) {
+        user.API_KEY = data;
+    } else {
+        socket.emit('tongzhi', '设置失败');
+        socket.emit("APIKEY", '');
+        return;
+    }
+    await writeFile('./users.json', JSON.stringify(users, null, 2), 'utf-8');
+
+    socket.userApiKey = data;
+    socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
+    socket.emit('tongzhi', '设置成功')
+    socket.emit("APIKEY", socket.userApiKeyCipher)
+
+    console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);
+}
+
 async function handleNewMessage(socket, data) {
     // 确保从 socket 对象获取 userId
     const userId = socket.userId;
-    if (!userId) {
-        console.error('未认证用户尝试发送消息。');
-        socket.emit("APIerror", { message: "未认证，请重新登录。" });
+    const userApiKey = socket.userApiKey;
+    if (!userId && !userApiKey) {
+        console.error('未登录或未配置APIKey');
+        socket.emit("APIerror", { message: "未登录或未配置APIKey" });
         return;
     }
-    // ... 原有的逻辑 ...
+    const genAI = new GoogleGenerativeAI(userApiKey);
     // 将收到的用户消息立即回显给发送方
     const fileCount = data.files ? data.files.length : 0;
     socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
@@ -116,9 +138,7 @@ async function handleNewMessage(socket, data) {
     let { sessionId, prompt, files, model, useWebSearch } = data;
     let isNewSession = false; // 标记是否为新会话
 
-    // 1. 会话和历史记录管理
-    // 现在需要根据 userId 来管理历史记录
-    // 例如：将 historiesDir 调整为 histories/userId/
+    // 1. 现在需要根据 userId 来管理历史记录
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!fs.existsSync(userHistoriesDir)) {
         fs.mkdirSync(userHistoriesDir);
@@ -150,7 +170,7 @@ async function handleNewMessage(socket, data) {
 
     // 3. 调用Gemini API
     try {
-        console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch); // <--- 增加用户ID日志
+        console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch, ' ApiKey:', socket.userApiKeyCipher);
         const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
 
         // 构建模型参数对象
@@ -305,6 +325,12 @@ async function handleDeleteHistory(socket, sessionId) {
     }
 }
 
-server.listen(port, host, () => {
-    console.log(`服务器正在 http://${host}:${port} 上运行`);
-});
+const startServer = async () => {
+    await loadJson();
+    initializeAuth(app, users, COOKIE_SECRET);
+    server.listen(port, host, () => {
+        console.log(`服务器正在 http://${host}:${port} 上运行`);
+    });
+};
+
+startServer();

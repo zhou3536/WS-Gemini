@@ -54,6 +54,11 @@
         <p></p>
     </div>
     <div id="tongzhi">通知</div>
+    <div id="setapikey">
+        <input type="text" id="yourapikey" placeholder="输入API...">
+        <button onclick="sendyouapikey()">确定</button>
+        <button onclick="sendyouapikey('close')">关闭</button>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -72,6 +77,8 @@
         const filePreviewArea = document.getElementById('file-preview-area');
         const Connection = document.getElementById('Connection');
         const delhistorybox = document.getElementById('delhistory');
+        const setapikeybox = document.getElementById('setapikey');
+        const yourapikey = document.getElementById('yourapikey');
         const socket = io();
         let sessionId = localStorage.getItem('sessionId');
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
@@ -131,6 +138,13 @@
         socket.on('refresh', (url) => {
             if (url) { window.location.href = url; } else { location.reload(); }
         });
+        socket.on('tongzhi', (data) => {
+            xstongzhi(data);
+        });
+        socket.on('APIKEY', (data) => {
+            if (data) yourapikey.placeholder = data;
+            setapikeybox.style.display = 'none';
+        });
         socket.on('error', (data) => {
             alert(`发生错误: ${data.message}`);
         });
@@ -167,6 +181,10 @@
             logout.innerText = '注销登录';
             logout.addEventListener('click', gmmlogout);
             historyList.appendChild(logout);
+            const setapikey = document.createElement('h4');
+            setapikey.innerText = '设置API';
+            setapikey.addEventListener('click', () => { setapikeybox.style.display = 'block' });
+            historyList.appendChild(setapikey);
             list.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.title;
