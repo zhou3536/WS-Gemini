@@ -34,8 +34,13 @@ if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
 app.use(express.json());
 const loadJson = async () => {
-    const content = await readFile('./users.json', 'utf-8');
-    users = JSON.parse(content);
+    try {
+        const content = await readFile('./users.json', 'utf-8');
+        users = JSON.parse(content);
+    } catch (err) {
+        console.error("用户配置文件./users.json，读取失败", err);
+        process.exit(1);
+    }
 };
 
 const cachetime = 120 * 60 * 1000;
