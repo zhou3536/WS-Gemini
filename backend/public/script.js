@@ -186,7 +186,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const a = document.getElementById("history-list");
     const opbtn = document.getElementById("history-b");
     opbtn.addEventListener("click", function () {
-        if (!historylistdsiplay) {
+        if (delhistorybox.style.display === 'block') {
+            delhistorybox.style.display = 'none';
+        } else if (!historylistdsiplay) {
             a.style.width = '300px';
             a.style.borderRight = '1px solid var(--df-01)';
             a.style.transition = 'all 0.3s ease';
@@ -372,9 +374,9 @@ function wrapTablesInGeminiMessages() {
     });
 }
 function addcopy() {
-    generateUserMessageIndex()
+    generateUserMessageIndex();
     wrapTablesInGeminiMessages();
-    copycode()
+    copycode();
 }
 
 //删除历史
