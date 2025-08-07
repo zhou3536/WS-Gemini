@@ -747,14 +747,14 @@ button:disabled {
 /* 通知 */
 #tongzhi {
     position: fixed;
-    z-index: 1000;
-    width: 100vw;
+    z-index: 10000;
     max-height: 140px;
-    padding: 10px 0;
     overflow: hidden;
     bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
+    pointer-events: none;
+    user-select: none;
 }
 
 #tongzhi:empty {
