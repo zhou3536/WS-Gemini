@@ -412,6 +412,8 @@ function delHistories(list) {
 
 //退出登录
 async function gmmlogout() {
+    const userConfirmed = confirm('您确定要退出登录吗？');
+    if (!userConfirmed) { return }
     try {
         const response = await fetch('/api/logout', {
             method: 'POST',
@@ -419,7 +421,6 @@ async function gmmlogout() {
                 'Content-Type': 'application/json'
             }
         });
-
         if (response.ok) {
             // alert('You have been logged out.');
             window.location.href = '/login.html';

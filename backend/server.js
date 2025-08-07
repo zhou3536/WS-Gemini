@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
             socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
             socket.emit("APIKEY", socket.userApiKeyCipher)
         } else {
-            socket.emit("error", { message: "请配置API_KEY" });
+            socket.emit("tongzhi", "账户没有配置API_KEY，请配置API_KEY");
         }
     } else {
         console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
@@ -117,14 +117,15 @@ async function setapikey(socket, data) {
         const testResult = await testModel.generateContent("Hello");
     } catch (error) {
         let errorMessage = "API_KEY 无效，未知错误";
-        if (error.status > 399 ) {
-            errorMessage = `API_KEY 无效，错误代码${error.status}`;
+        if (error.status > 399) {
+            errorMessage = `Gemini返回错误代码${error.status}
+            400：API_KEY格式不正确，
+            401：API_KEY无效、过期、被禁用，
+            403：API_KEY没有足够的权限或者超出免费层级。`;
         } else if (error.message) {
             errorMessage = `API_KEY 无效，${error.message}`;
         }
-
         socket.emit('tongzhi', errorMessage);
-        socket.emit("APIKEY", '');
         return;
     }
     // API key 验证通过
@@ -140,7 +141,7 @@ async function setapikey(socket, data) {
 
     socket.userApiKey = data.trim();
     socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
-    socket.emit('tongzhi', 'API_Key验证成功')
+    socket.emit('tongzhi', 'API_KEY验证成功')
     socket.emit("APIKEY", socket.userApiKeyCipher)
 
     console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);
@@ -151,8 +152,8 @@ async function handleNewMessage(socket, data) {
     const userId = socket.userId;
     const userApiKey = socket.userApiKey;
     if (!userId && !userApiKey) {
-        console.error('未登录或未配置APIKey');
-        socket.emit("APIerror", { message: "未登录或未配置APIKey" });
+        console.error('未登录或未配置API_KEY');
+        socket.emit("APIerror", { message: "未登录或未配置API_KEY" });
         return;
     }
     const genAI = new GoogleGenerativeAI(userApiKey);
@@ -195,7 +196,7 @@ async function handleNewMessage(socket, data) {
 
     // 3. 调用Gemini API
     try {
-        console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch, ' ApiKey:', socket.userApiKeyCipher);
+        console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch, ' API_KEY:', socket.userApiKeyCipher);
         const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
 
         // 构建模型参数对象

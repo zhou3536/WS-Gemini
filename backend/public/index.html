@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="md.css">
     <link rel="stylesheet" href="color.css">
     <script src="highlight.min.js"></script>
-    <!-- <script src="marked.min.js"></script> -->
     <script src="marked.umd.js"></script>
+    <link rel="preload" href="img/cbl-2.png" as="image">
+    <link rel="preload" href="img/user.png" as="image">
+    <link rel="preload" href="img/model.png" as="image">
 </head>
 
 <body>
@@ -140,6 +142,7 @@
         });
         socket.on('tongzhi', (data) => {
             alert(data);
+            if (data === '账户没有配置API_KEY，请配置API_KEY') setapikeybox.style.display = 'block';
         });
         socket.on('APIKEY', (data) => {
             if (data) yourapikey.placeholder = data;
@@ -356,13 +359,6 @@
     </script>
     <script src="script.js"></script>
     <script src="theme.js"></script>
-
-    <!-- 预加载 -->
-    <div style="display: none;">
-        <img src="img/cbl-2.png" alt="">
-        <img src="img/user.png" alt="">
-        <img src="img/model.png" alt="">
-    </div>
 </body>
 
 </html>
