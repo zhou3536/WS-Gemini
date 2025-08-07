@@ -746,30 +746,42 @@ button:disabled {
 
 /* 通知 */
 #tongzhi {
-    display: none;
     position: fixed;
-    z-index: 1000000;
-    text-align: center;
-    bottom: 150px;
+    z-index: 1000;
+    width: 100vw;
+    max-height: 140px;
+    padding: 10px 0;
+    overflow: hidden;
+    bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 10px 20px;
-    min-width: 100px;
-    background-color: var(--df-06);
+}
+
+#tongzhi:empty {
+    display: none;
+}
+
+#tongzhi p {
+    text-align: center;
+    background-color: var(--df-08);
     color: var(--bodybgc);
+    padding: 8px 20px;
+    min-width: 100px;
+    width: fit-content;
     border-radius: 55px;
+    margin: 0 auto;
+    margin-bottom: 10px;
     transition: all 0.5s ease-in-out;
     animation: fadeIn2 0.3s ease;
+    max-width: 95vw;
 }
 
 @keyframes fadeIn2 {
     from {
-        transform: translateX(-50%)translateY(-5px);
         opacity: 0;
     }
 
     to {
-        transform: translateX(-50%)translateY(0);
         opacity: 1;
     }
 }
@@ -807,7 +819,6 @@ button:disabled {
 
 #setapikey textarea {
     display: block;
-    /* margin: 10px 0; */
     margin-bottom: 12px;
     margin-top: 5px;
     width: 100%;

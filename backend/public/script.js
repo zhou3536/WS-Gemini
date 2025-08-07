@@ -344,7 +344,6 @@ function copycode() {
             // 现代浏览器推荐使用 Clipboard API
             navigator.clipboard.writeText(text)
                 .then(() => {
-                    console.log('已复制');
                     xstongzhi('已成功复制到剪贴板');
                 })
                 .catch(err => {
@@ -431,12 +430,15 @@ async function gmmlogout() {
 }
 
 //显示通知
-function xstongzhi(text) {
-    if (!text) { return }
-    const tongzhi = document.getElementById('tongzhi')
-    tongzhi.innerText = text;
-    tongzhi.style.display = 'block';
-    setTimeout(() => { tongzhi.style.display = 'none'; }, 1500);
+function xstongzhi(text, time) {
+    if (!text) { return };
+    console.log(text);
+    const xstime = time || 1000;
+    const tongzhi = document.getElementById('tongzhi');
+    const p = document.createElement('p');
+    p.innerText = text;
+    tongzhi.prepend(p);
+    setTimeout(() => { p.remove() }, xstime);
 }
 //清理缓存
 function cleanOldCache() {
@@ -461,5 +463,5 @@ function sendyouapikey(text) {
     if (apikey.length < 36 || apikey.length > 45 || !apikey.startsWith('AI')) { xstongzhi('请输入正确格式的API_KEY'); return };
     socket.emit('sendapikey', apikey);
     yourapikey.value = '';
-    xstongzhi('正在验证，请稍后...')
+    xstongzhi('正在验证，请稍后...', 2000)
 }
