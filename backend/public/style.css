@@ -795,7 +795,7 @@ button:disabled {
     z-index: 1000;
     top: 50px;
     left: 10px;
-    padding: 10px 12px;
+    padding: 12px;
     background-color: var(--bodybgc);
     border: 1px solid #1eadff;
     color: var(--df-ziji);
@@ -819,22 +819,14 @@ button:disabled {
 
 #setapikey textarea {
     display: block;
-    margin-bottom: 12px;
-    margin-top: 5px;
     width: 100%;
-    padding: 10px;
-    font-size: 15px;
+    font-size: 16px;
     border-radius: 6px;
     outline: none;
     resize: none;
-    border: 1px solid var(--df-02);
-    background-color: var(--bodybgc);
+    border: none;
+    background:transparent;
     color: var(--df-ziji);
-}
-
-#setapikey textarea:focus {
-    border: 1px solid #1eadff60;
-    outline: 1px solid #1eadff60;
 }
 
 #setapikey button {
@@ -842,7 +834,7 @@ button:disabled {
     padding: 3px 10px;
     background-color: var(--df-01);
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--df-ziji);
     margin-left: 8px;
 }
