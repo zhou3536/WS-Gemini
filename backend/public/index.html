@@ -55,7 +55,7 @@
     </div>
     <div id="tongzhi">通知</div>
     <div id="setapikey">
-        <input type="text" id="yourapikey" placeholder="输入API...">
+        <textarea id="yourapikey" placeholder="输入API..." rows="3"></textarea>
         <button onclick="sendyouapikey()">确定</button>
         <button onclick="sendyouapikey('close')">关闭</button>
     </div>
@@ -139,7 +139,7 @@
             if (url) { window.location.href = url; } else { location.reload(); }
         });
         socket.on('tongzhi', (data) => {
-            xstongzhi(data);
+            alert(data);
         });
         socket.on('APIKEY', (data) => {
             if (data) yourapikey.placeholder = data;
@@ -182,7 +182,7 @@
             logout.addEventListener('click', gmmlogout);
             historyList.appendChild(logout);
             const setapikey = document.createElement('h4');
-            setapikey.innerText = '设置API';
+            setapikey.innerText = '设置API_KEY';
             setapikey.addEventListener('click', () => { setapikeybox.style.display = 'block' });
             historyList.appendChild(setapikey);
             list.forEach(item => {

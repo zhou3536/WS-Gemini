@@ -106,21 +106,41 @@ io.on("connection", (socket) => {
     });
 });
 
-
+//添加和验证API_KEY
 async function setapikey(socket, data) {
-    const user = users.find(user => user.userId === socket.userId);
-    if (user) {
-        user.API_KEY = data;
-    } else {
-        socket.emit('tongzhi', '设置失败');
+    if (!data) { return; }
+
+    // 验证 API key 是否可用
+    try {
+        const testAI = new GoogleGenerativeAI(data.trim());
+        const testModel = testAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
+        const testResult = await testModel.generateContent("Hello");
+    } catch (error) {
+        let errorMessage = "API_KEY 无效，未知错误";
+        if (error.status > 399 ) {
+            errorMessage = `API_KEY 无效，错误代码${error.status}`;
+        } else if (error.message) {
+            errorMessage = `API_KEY 无效，${error.message}`;
+        }
+
+        socket.emit('tongzhi', errorMessage);
         socket.emit("APIKEY", '');
         return;
     }
+    // API key 验证通过
+    const user = users.find(user => user.userId === socket.userId);
+    if (user) {
+        user.API_KEY = data.trim();
+    } else {
+        socket.emit('tongzhi', '设置失败');
+        return;
+    }
+
     await writeFile('./users.json', JSON.stringify(users, null, 2), 'utf-8');
 
-    socket.userApiKey = data;
+    socket.userApiKey = data.trim();
     socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
-    socket.emit('tongzhi', '设置成功')
+    socket.emit('tongzhi', 'API_Key验证成功')
     socket.emit("APIKEY", socket.userApiKeyCipher)
 
     console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);

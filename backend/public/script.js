@@ -436,7 +436,7 @@ function xstongzhi(text) {
     const tongzhi = document.getElementById('tongzhi')
     tongzhi.innerText = text;
     tongzhi.style.display = 'block';
-    setTimeout(() => { tongzhi.style.display = 'none'; }, 900);
+    setTimeout(() => { tongzhi.style.display = 'none'; }, 1500);
 }
 //清理缓存
 function cleanOldCache() {
@@ -457,8 +457,9 @@ window.addEventListener('load', cleanOldCache);
 function sendyouapikey(text) {
     if (text === 'close') { setapikeybox.style.display = 'none'; return };
     const apikey = yourapikey.value;
-    if (!apikey) { xstongzhi('请输入API_KEY'); return };
-    if (apikey.length !== 39) { xstongzhi('请输入正确格式的API_KEY'); return };
+    if (!apikey) { setapikeybox.style.display = 'none'; return };
+    if (apikey.length < 36 || apikey.length > 45 || !apikey.startsWith('AI')) { xstongzhi('请输入正确格式的API_KEY'); return };
     socket.emit('sendapikey', apikey);
     yourapikey.value = '';
+    xstongzhi('正在验证，请稍后...')
 }
