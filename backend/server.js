@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { initializeAuth } from './auth.js';
+import { initializeUsers } from './users.js';
 
 import express from "express";
 import http from "http";
@@ -46,6 +47,7 @@ const loadJson = async () => {
 let users = await loadJson();
 app.use(express.json());
 initializeAuth(app, users, COOKIE_SECRET);
+initializeUsers(app, users);
 const cachetime = 1200 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: cachetime,

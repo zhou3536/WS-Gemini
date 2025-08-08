@@ -131,7 +131,8 @@ const authenticateMiddleware = (req, res, next) => {
     }
 
     if (req.path.startsWith('/api')) {
-        return res.status(401).json({ message: 'Unauthorized. Please log in to access this resource.' });
+        return next();
+        // return res.status(401).json({ message: 'Unauthorized. Please log in to access this resource.' });
     }
 
     res.status(401).sendFile(path.join(__dirname, 'public', 'login.html'));
