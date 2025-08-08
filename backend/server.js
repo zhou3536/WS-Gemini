@@ -150,7 +150,6 @@ async function setapikey(socket, data) {
 }
 
 async function handleNewMessage(socket, data) {
-    const genAI = new GoogleGenerativeAI(userApiKey);
     const userId = socket.userId;
     const userApiKey = socket.userApiKey;
     const fileCount = data.files ? data.files.length : 0;
@@ -159,6 +158,7 @@ async function handleNewMessage(socket, data) {
         socket.emit("APIerror", { message: "未登录或未配置API_KEY" });
         return;
     }
+    const genAI = new GoogleGenerativeAI(userApiKey);
     let { sessionId, prompt, files, model, useWebSearch } = data;
     let isNewSession = false; // 标记是否为新会话
 
