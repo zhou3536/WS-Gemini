@@ -218,7 +218,7 @@ const initializeAuth = (app, initialUsers, initialCookieSecret) => {
 
     // 启动定期清理任务
     setInterval(cleanupLoginAttempts, CLEANUP_INTERVAL_MS);
-    console.log('Authentication module initialized.');
+    console.log('身份验证模块已初始化...');
 };
 
 export { initializeAuth };

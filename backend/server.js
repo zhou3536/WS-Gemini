@@ -25,25 +25,26 @@ const port = process.env.PORT || 3000;
 const COOKIE_SECRET = process.env.cookieSecret;
 const CUSTOM_BASE_URL = process.env.PROXYURL;
 
-let users;
-
-
-if (CUSTOM_BASE_URL) { console.log('代理地址：', CUSTOM_BASE_URL); }
+if (CUSTOM_BASE_URL) {
+    console.log('代理地址：', CUSTOM_BASE_URL);
+} else {
+    console.log('代理地址：未配置代理');
+}
 const historiesDir = path.join(__dirname, "histories");
 if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
-app.use(express.json());
 const loadJson = async () => {
     try {
         const content = await readFile('./users.json', 'utf-8');
-        users = JSON.parse(content);
+        const usersData = JSON.parse(content);
+        return usersData;
     } catch (err) {
         console.error("用户配置文件users.json，读取失败", err);
         process.exit(1);
     }
 };
-await loadJson();
-
+let users = await loadJson();
+app.use(express.json());
 initializeAuth(app, users, COOKIE_SECRET);
 const cachetime = 1200 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {
