@@ -38,12 +38,14 @@ const loadJson = async () => {
         const content = await readFile('./users.json', 'utf-8');
         users = JSON.parse(content);
     } catch (err) {
-        console.error("用户配置文件./users.json，读取失败", err);
+        console.error("用户配置文件users.json，读取失败", err);
         process.exit(1);
     }
 };
+await loadJson();
 
-const cachetime = 120 * 60 * 1000;
+initializeAuth(app, users, COOKIE_SECRET);
+const cachetime = 1200 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: cachetime,
     etag: true,
@@ -79,7 +81,6 @@ io.on("connection", (socket) => {
     } else {
         console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
         socket.emit('refresh', '/login.html');
-        socket.emit("error", { message: "登录已过期，请刷新网页重新登录，如果你刚刚登录过了，可能是你的浏览器禁用了cookie！" });
         socket.disconnect();
         return;
     }
@@ -116,16 +117,17 @@ async function setapikey(socket, data) {
         const testModel = testAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
         const testResult = await testModel.generateContent("Hello");
     } catch (error) {
-        let errorMessage = "API_KEY 无效，未知错误";
-        if (error.status > 399) {
-            errorMessage = `Gemini返回错误代码${error.status}
-            400：API_KEY格式不正确，
-            401：API_KEY无效、过期、被禁用，
-            403：API_KEY没有足够的权限或者超出免费层级。`;
+        let errorMessage = "API_KEY无效，未知错误";
+        if (error.status === 400) {
+            errorMessage = 'API_KEY格式不正确';
+        } else if (error.status === 401) {
+            errorMessage = 'API_KEY无效、过期、被禁用';
+        } else if (error.status === 403) {
+            errorMessage = 'API_KEY没有权限或超出免费层级';
         } else if (error.message) {
-            errorMessage = `API_KEY 无效，${error.message}`;
+            errorMessage = `API_KEY无效，${error.message}`;
         }
-        socket.emit('tongzhi', errorMessage);
+        socket.emit('tongzhi', `错误代码${error.status}，${errorMessage}`);
         return;
     }
     // API key 验证通过
@@ -148,23 +150,19 @@ async function setapikey(socket, data) {
 }
 
 async function handleNewMessage(socket, data) {
-    // 确保从 socket 对象获取 userId
+    const genAI = new GoogleGenerativeAI(userApiKey);
     const userId = socket.userId;
     const userApiKey = socket.userApiKey;
-    if (!userId && !userApiKey) {
-        console.error('未登录或未配置API_KEY');
+    const fileCount = data.files ? data.files.length : 0;
+    socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
+    if (!userId || !userApiKey) {
         socket.emit("APIerror", { message: "未登录或未配置API_KEY" });
         return;
     }
-    const genAI = new GoogleGenerativeAI(userApiKey);
-    // 将收到的用户消息立即回显给发送方
-    const fileCount = data.files ? data.files.length : 0;
-    socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
-
     let { sessionId, prompt, files, model, useWebSearch } = data;
     let isNewSession = false; // 标记是否为新会话
 
-    // 1. 现在需要根据 userId 来管理历史记录
+    // 现在需要根据 userId 来管理历史记录
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!fs.existsSync(userHistoriesDir)) {
         fs.mkdirSync(userHistoriesDir);
@@ -176,13 +174,13 @@ async function handleNewMessage(socket, data) {
         socket.emit("sessionCreated", { sessionId });
     }
 
-    const historyPath = path.join(userHistoriesDir, sessionId); // <--- 修改：使用用户专属目录
+    const historyPath = path.join(userHistoriesDir, sessionId);
     let history = [];
     if (!isNewSession && fs.existsSync(historyPath)) {
         history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
     }
 
-    // 2. 构建请求
+    // 构建请求
     const userMessage = { role: "user", parts: [{ text: prompt }] };
     if (files && files.length > 0) {
         const fileParts = files.map(file => ({
@@ -194,7 +192,7 @@ async function handleNewMessage(socket, data) {
         userMessage.parts.push(...fileParts);
     }
 
-    // 3. 调用Gemini API
+    // 调用Gemini API
     try {
         console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch, ' API_KEY:', socket.userApiKeyCipher);
         const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
@@ -230,7 +228,7 @@ async function handleNewMessage(socket, data) {
             socket.emit("streamChunk", { chunk: chunkText });
         }
 
-        // 4. 保存历史记录
+        // 保存历史记录
         history.push(userMessage);
         history.push({ role: "model", parts: [{ text: fullResponse }] });
         fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
@@ -351,12 +349,4 @@ async function handleDeleteHistory(socket, sessionId) {
     }
 }
 
-const startServer = async () => {
-    await loadJson();
-    initializeAuth(app, users, COOKIE_SECRET);
-    server.listen(port, host, () => {
-        console.log(`服务器正在 http://${host}:${port} 上运行`);
-    });
-};
-
-startServer();
+server.listen(port, host, () => { console.log(`服务启动成功！监听地址：http://${host}:${port}`); });
