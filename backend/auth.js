@@ -100,6 +100,7 @@ const authenticateMiddleware = (req, res, next) => {
         '/login.html',
         '/api/login',
         '/api/logout',
+        '/signup.html',
         '/theme.js',
         '/color.css',
         '/favicon.ico'

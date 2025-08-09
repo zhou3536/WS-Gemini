@@ -149,7 +149,10 @@
                 <input type="password" id="pwd2" placeholder="重复密码">
             </div>
             <div>
-                <input type="text" id="code" placeholder="验证码"><button id="getcode">获取</button>
+                <input type="text" id="Invitationcode" placeholder="输入邀请码">
+            </div>
+            <div>
+                <input type="text" id="code" placeholder="获取验证码"><button id="getcode">获取</button>
             </div>
             <button id="postcode">创建账号</button>
         </div>
@@ -159,13 +162,13 @@
                 <input type="text" id="email-2" placeholder="输入邮箱">
             </div>
             <div>
-                <input type="password" id="pwd-2" placeholder="输入密码">
+                <input type="password" id="pwd-2" placeholder="输入新密码">
             </div>
             <div>
-                <input type="password" id="pwd2-2" placeholder="重复密码">
+                <input type="password" id="pwd2-2" placeholder="重复新密码">
             </div>
             <div>
-                <input type="text" id="code-2" placeholder="验证码"><button id="getcode-2">获取</button>
+                <input type="text" id="code-2" placeholder="获取验证码"><button id="getcode-2">获取</button>
             </div>
             <button id="postcode-2">修改密码</button>
         </div>
@@ -182,6 +185,7 @@
         const postcode2 = document.getElementById('postcode-2')
         getcode.addEventListener('click', async () => {
             const email = document.getElementById('email').value;
+            const Invitationcode = document.getElementById('Invitationcode').value;
             const pwd1 = document.getElementById('pwd').value;
             const pwd2 = document.getElementById('pwd2').value;
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { xstongzhi('输入正确的邮箱'); return };
@@ -191,7 +195,7 @@
                 const response = await fetch('/api/getcode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email }),
+                    body: JSON.stringify({ email: email, Invitationcode: Invitationcode }),
                     signal: AbortSignal.timeout(5000) // 5秒超时
                 });
                 const json = await response.json();
@@ -211,7 +215,7 @@
             const pwd1 = document.getElementById('pwd').value;
             const pwd2 = document.getElementById('pwd2').value;
             const code = document.getElementById('code').value;
-            if (!pwd1) { xstongzhi('请输入密码'); return };
+            if (!email || !pwd1 || !pwd2 || !code) { xstongzhi('请输入所有内容'); return };
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
                 const response = await fetch('/api/postcode', {
@@ -238,7 +242,7 @@
             if (!pwd1) { xstongzhi('请输入密码'); return }
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/getcode', {
+                const response = await fetch('/api/getcode2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email }),
@@ -261,10 +265,10 @@
             const pwd1 = document.getElementById('pwd-2').value;
             const pwd2 = document.getElementById('pwd2-2').value;
             const code = document.getElementById('code-2').value;
-            if (!pwd1) { xstongzhi('请输入密码'); return };
+            if (!email || !pwd1 || !pwd2 || !code) { xstongzhi('请输入所有内容'); return };
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/postcode', {
+                const response = await fetch('/api/postcode2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, pwd: pwd1, code: code }),
