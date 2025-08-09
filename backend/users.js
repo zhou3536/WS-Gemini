@@ -2,6 +2,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ let users = [];
 
 // 存验证码信息：{ email: { code, createdAt, attempts } }
 const codes = {};
+const Invitationcodes = {};
 
 // 定时清理任务（每分钟）
 setInterval(() => {
@@ -47,13 +49,41 @@ function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// 模拟发送验证码
-function sendcode(email, code) {
-    console.log(`发送给 ${email} 的验证码: ${code}`);
+// 送验证码
+async function sendcode(email, code) {
+    try {
+        // 创建 SMTP 传输器
+        const transporter = nodemailer.createTransport({
+            host: "smtp.qq.com",
+            port: 465,
+            secure: true, // true 表示使用 SSL
+            auth: {
+                user: "7045781081@qq.com",
+                pass: "qzwemdmxvdlobfhh"
+            }
+        });
+
+        // 邮件内容
+        const mailOptions = {
+            from: '"验证码" <745781081@qq.com>',
+            to: email,
+            subject: '<745781081@qq.com>',
+            html: `<h2>您的验证码是：<b>${code}</b>（5分钟内有效）</h2>`
+        };
+
+        // 发送邮件
+        await transporter.sendMail(mailOptions);
+        console.log(`已发送给 ${email} 的验证码: ${code}`);
+        return { success: true };
+
+    } catch (err) {
+        console.error("发送邮件失败:", err);
+        return { error: "邮件发送失败，请稍后再试" };
+    }
 }
 
 // 公共方法：获取验证码
-function handleGetCode(email, shouldExist, Invitationcode) {
+async function  handleGetCode(email, shouldExist,) {
     const now = Date.now();
     const exists = users.some(item => item.username === email);
 
@@ -68,17 +98,19 @@ function handleGetCode(email, shouldExist, Invitationcode) {
     if (codes[email] && (now - codes[email].createdAt) < 60 * 1000) {
         return { error: '请求过于频繁，请稍后再试' };
     }
+
     // 生成验证码
     codes[email] = {
         code: generateCode(),
         createdAt: now,
         attempts: 0
     };
-    if (Invitationcode !== 'aa202508' && !shouldExist) {
-        return { error: '邀请码错误，请联系管理员' }
-    }
-    
-    sendcode(email, codes[email].code);
+
+    const result = await sendcode(email, codes[email].code);
+    if (result.error) {
+        console.log(result.error,'002')
+        return { error: '系统发送失败，请联系管理员' };
+    };
     return { success: true };
 }
 
@@ -110,15 +142,41 @@ function handlePostCode(email, code, onSuccess) {
     onSuccess();
     return { success: true };
 }
-
+//验证邀请码
+function handleInvitationcode(Invitationcode, IP) {
+    const now = Date.now();
+    let record = Invitationcodes[IP];
+    // 如果有记录且时间已过期，则重置
+    if (!record || now - record.firstTime > 20000) {
+        record = { count: 0, firstTime: now };
+        Invitationcodes[IP] = record;
+    }
+    // 如果错误次数已达上限
+    if (record.count >= 5) {
+        return { error: '请求过于频繁，请稍后再试' };
+    }
+    // 检查邀请码
+    if (Invitationcode !== '202500') {
+        record.count++;
+        return { error: '邀请码错误' };
+    }
+    // 验证成功，重置记录
+    delete Invitationcodes[IP];
+    return { success: true };
+}
 
 // ===== 注册账号 =====
 const getcode = (req, res) => {
+
     const email = req.body.email.toLowerCase();
+    const userIP = req.socket.remoteAddress;
+    console.log(userIP);
     const Invitationcode = req.body.Invitationcode;
     // if (Invitationcode !== 'aa202508') return res.status(400).json({ message: '邀请码错误，请联系管理员' });
+    const result1 = handleInvitationcode(Invitationcode, userIP);
+    if (result1.error) return res.status(400).json({ message: result1.error });
 
-    const result = handleGetCode(email, false, Invitationcode);
+    const result =  handleGetCode(email, false);
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '发送成功，请查看邮箱' });
 };

@@ -16,7 +16,8 @@
         body {
             font-family: sans-serif;
             margin: 0;
-            background: linear-gradient(to bottom right, #000037, #15008e, #0e0030);;
+            background: linear-gradient(to bottom right, #000037, #15008e, #0e0030);
+            ;
             margin: 0;
             height: 100vh;
             height: 100dvh;
@@ -39,7 +40,7 @@
             text-align: center;
             width: 100%;
             max-width: 320px;
-            height: 300px;
+            min-height: 320px;
         }
 
         .login-container h2 {
@@ -82,14 +83,19 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
             margin-top: 15px;
+            margin-bottom: 6px;
         }
 
         .loginbtn:hover {
             background-color: #0056b3;
         }
 
+        .links a {
+            width: 100px;
+        }
+
         .message {
-            margin-top: 12px;
+            margin-top: 6px;
             color: red;
         }
 
@@ -116,6 +122,10 @@
         <input type="text" id="usernameInput" placeholder="username" class="inputinfo">
         <input type="password" id="passwordInput" placeholder="password" class="inputinfo">
         <button class="loginbtn" onclick="submitPassword()">登录</button>
+        <div class="links">
+            <a href="/signup.html#signup">注册账号</a>
+            <a href="/signup.html#chacgepwd">忘记密码</a>
+        </div>
         <div id="message" class="message"></div>
     </div>
     <script src="theme.js"></script>
