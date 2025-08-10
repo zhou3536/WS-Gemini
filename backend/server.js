@@ -25,6 +25,7 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
 const COOKIE_SECRET = process.env.cookieSecret;
 const CUSTOM_BASE_URL = process.env.PROXYURL;
+const Createaccount = process.env.Createaccount;
 
 if (CUSTOM_BASE_URL) {
     console.log('代理地址：', CUSTOM_BASE_URL);
@@ -35,19 +36,24 @@ const historiesDir = path.join(__dirname, "histories");
 if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
 const loadJson = async () => {
+    const filePath = './users.json';
     try {
-        const content = await readFile('./users.json', 'utf-8');
-        const usersData = JSON.parse(content);
-        return usersData;
+        if (!fs.existsSync(filePath)) {
+            const defaultData = [];
+            await writeFile(filePath, JSON.stringify(defaultData, null, 2), 'utf-8');
+            return defaultData;
+        }
+        const content = await readFile(filePath, 'utf-8');
+        return JSON.parse(content);
     } catch (err) {
-        console.error("用户配置文件users.json，读取失败", err);
+        console.error(`读取或创建 ${filePath} 失败:`, err);
         process.exit(1);
     }
 };
 let users = await loadJson();
 app.use(express.json());
 initializeAuth(app, users, COOKIE_SECRET);
-initializeUsers(app, users);
+if (Createaccount) initializeUsers(app, users);
 const cachetime = 1200 * 1000;
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: cachetime,
@@ -70,11 +76,11 @@ const io = new Server(server, {
 
 
 io.on("connection", (socket) => {
-    const userId = socket.request.signedCookies && socket.request.signedCookies.user_id;
-    if (userId) {
-        socket.userId = userId;
-        const loginuser = users.find(user => user.userId === userId);
-        if (loginuser && loginuser.API_KEY) {
+    const loginId = socket.request.signedCookies && socket.request.signedCookies.user_id;
+    const loginuser = users.find(user => user.userId === loginId)
+    if (loginuser) {
+        socket.userId = loginId;
+        if (loginuser.API_KEY) {
             socket.userApiKey = loginuser.API_KEY;
             socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
             socket.emit("APIKEY", socket.userApiKeyCipher)
@@ -87,7 +93,7 @@ io.on("connection", (socket) => {
         socket.disconnect();
         return;
     }
-    console.log('Socket.IO 客户端连接成功 用户ID:', userId);
+    console.log('Socket.IO 客户端连接成功 用户ID:', socket.userId);
     listHistories(socket);
 
     socket.on("newMessage", async (data) => {

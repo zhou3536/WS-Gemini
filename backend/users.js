@@ -3,12 +3,17 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
+const mailhost = process.env.MAIL_HOST;
+const mailuser = process.env.MAIL_USER;
+const mailpwd = process.env.MAIL_PWD;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dataFilePath = path.join(__dirname, 'users.json');
-// ---- 辅助函数：读取 json ----
+
 function readDataFile() {
     try {
         const data = fs.readFileSync(dataFilePath, 'utf-8');
@@ -19,11 +24,10 @@ function readDataFile() {
         return [];
     }
 }
-// ---- 辅助函数：写入 a.json ----
+
 function writeDataFile(data) {
     try {
         fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
-        console.log('Successfully wrote ');
     } catch (error) {
         console.error('Error writing ', error);
     }
@@ -54,12 +58,12 @@ async function sendcode(email, code) {
     try {
         // 创建 SMTP 传输器
         const transporter = nodemailer.createTransport({
-            host: "smtp.qq.com",
+            host: mailhost,
             port: 465,
-            secure: true, // true 表示使用 SSL
+            secure: true,
             auth: {
-                user: "7045781081@qq.com",
-                pass: "qzwemdmxvdlobfhh"
+                user: mailuser,
+                pass: mailpwd
             }
         });
 
@@ -83,7 +87,7 @@ async function sendcode(email, code) {
 }
 
 // 公共方法：获取验证码
-async function  handleGetCode(email, shouldExist,) {
+async function handleGetCode(email, shouldExist,) {
     const now = Date.now();
     const exists = users.some(item => item.username === email);
 
@@ -107,10 +111,7 @@ async function  handleGetCode(email, shouldExist,) {
     };
 
     const result = await sendcode(email, codes[email].code);
-    if (result.error) {
-        console.log(result.error,'002')
-        return { error: '系统发送失败，请联系管理员' };
-    };
+    if (result.error) return { error: '系统发送失败，请联系管理员' };
     return { success: true };
 }
 
@@ -147,7 +148,7 @@ function handleInvitationcode(Invitationcode, IP) {
     const now = Date.now();
     let record = Invitationcodes[IP];
     // 如果有记录且时间已过期，则重置
-    if (!record || now - record.firstTime > 20000) {
+    if (!record || now - record.firstTime > 600000) {
         record = { count: 0, firstTime: now };
         Invitationcodes[IP] = record;
     }
@@ -156,8 +157,9 @@ function handleInvitationcode(Invitationcode, IP) {
         return { error: '请求过于频繁，请稍后再试' };
     }
     // 检查邀请码
-    if (Invitationcode !== '202500') {
+    if (Invitationcode !== '20250000') {
         record.count++;
+        if (record.count === 5) console.log('IP:', IP, '没有邀请码频繁请求');
         return { error: '邀请码错误' };
     }
     // 验证成功，重置记录
@@ -166,17 +168,15 @@ function handleInvitationcode(Invitationcode, IP) {
 }
 
 // ===== 注册账号 =====
-const getcode = (req, res) => {
-
+const getcode = async (req, res) => {
     const email = req.body.email.toLowerCase();
-    const userIP = req.socket.remoteAddress;
-    console.log(userIP);
+    const userIP = getClientIp(req);
     const Invitationcode = req.body.Invitationcode;
     // if (Invitationcode !== 'aa202508') return res.status(400).json({ message: '邀请码错误，请联系管理员' });
     const result1 = handleInvitationcode(Invitationcode, userIP);
     if (result1.error) return res.status(400).json({ message: result1.error });
 
-    const result =  handleGetCode(email, false);
+    const result = await handleGetCode(email, false);
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '发送成功，请查看邮箱' });
 };
@@ -190,12 +190,13 @@ const postcode = (req, res) => {
     });
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '创建账号成功' });
+    console.log('创建账号', email)
 };
 
 // ===== 修改密码 =====
-const getcode2 = (req, res) => {
+const getcode2 = async (req, res) => {
     const email = req.body.email.toLowerCase();
-    const result = handleGetCode(email, true); // 修改密码模式
+    const result = await handleGetCode(email, true);
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '发送成功，请查看邮箱' });
 };
@@ -211,6 +212,21 @@ const postcode2 = (req, res) => {
     });
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '密码修改成功' });
+    console.log('修改密码', email)
+};
+// 获取客户端IP地址，考虑代理
+const getClientIp = (req) => {
+    // 优先检查 X-Forwarded-For
+    const forwardedFor = req.headers['x-forwarded-for'];
+    if (forwardedFor) {
+        return forwardedFor.split(',')[0].trim();
+    }
+    // 检查 X-Real-IP
+    const realIp = req.headers['x-real-ip'];
+    if (realIp) {
+        return realIp.trim();
+    }
+    return req.ip;
 };
 
 //生成id函数
@@ -236,7 +252,7 @@ const initializeUsers = (app, initialUsers) => {
     app.post('/api/postcode2', postcode2);
 
     // 启动定期清理任务
-    console.log('用户模块已初始化...');
+    console.log('用户注册模块已初始化...');
 };
 
 export { initializeUsers };

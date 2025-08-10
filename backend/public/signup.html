@@ -237,6 +237,7 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
+            window.location.assign(`/login.html?email=${email}`);
         });
         getcode2.addEventListener('click', async () => {
             const email = document.getElementById('email-2').value;
@@ -287,6 +288,7 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
+            window.location.assign(`/login.html?email=${email}`);
         });
 
         function startCountdown() {

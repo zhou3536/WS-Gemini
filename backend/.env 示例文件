@@ -4,9 +4,19 @@
 
 # 服务运行端口
 PORT =  3636
+
 # 监听的地址，只允许本机访问修改为127.0.0.1
 HOST = 0.0.0.0
+
 # cookie，任意随机字符
 cookieSecret = JXhjgjksAQl2255g50rWrSJfdia3Z
+
 # 代理地址，如果地区限制，设置代理，可自定义
 # PROXYURL = https://geminicdn.855655.xyz
+
+# 是否启用账号注册，禁用注释掉
+# Createaccount = yes
+# 发送验证码的邮箱，密码为16位邮箱app密码，非登录密码，
+# MAIL_HOST = smtp.qq.com
+# MAIL_USER = 123456789@qq.com
+# MAIL_PWD = abcdefghabcdefgh

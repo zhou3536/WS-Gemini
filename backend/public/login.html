@@ -130,8 +130,12 @@
     </div>
     <script src="theme.js"></script>
     <script>
+        const usernameInput = document.getElementById('usernameInput');
         const passwordInput = document.getElementById('passwordInput');
-
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('email');
+        console.log(email)
+        if (email) usernameInput.value = email;
         passwordInput.addEventListener('keypress', function (event) {
             if (event.keyCode === 13) {
                 event.preventDefault();

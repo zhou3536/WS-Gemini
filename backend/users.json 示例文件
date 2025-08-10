@@ -2,13 +2,13 @@
   {
     "username": "100",
     "password": "1000",
-    "userId": "user_001",
+    "userId": "0001",
     "API_KEY": "AIzaSy66666666666666666666666666666"
   },
   {
     "username": "200",
     "password": "2000",
-    "userId": "user_002",
+    "userId": "0002",
     "API_KEY": "AIzaSy88888888888888888888888888888"
   }
 ]
