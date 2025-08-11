@@ -749,6 +749,7 @@ button:disabled {
     position: fixed;
     z-index: 10000;
     max-height: 140px;
+    padding: 0 20px;
     overflow: hidden;
     bottom: 130px;
     left: 50%;
@@ -779,10 +780,12 @@ button:disabled {
 @keyframes fadeIn2 {
     from {
         opacity: 0;
+        transform: translateX(-20px);
     }
 
     to {
         opacity: 1;
+        transform: translateX(0);
     }
 }
 

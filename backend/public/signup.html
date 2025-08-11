@@ -42,14 +42,15 @@
 
         .title a {
             width: 50%;
-            padding: 10px 8px;
+            padding: 6px 8px;
             text-align: center;
             border-radius: 8px;
             color: #222;
         }
 
         .title .Aactive {
-            background: #00000015;
+            background: #eef9ff;
+            border: 1px solid #006eff3d;
         }
 
         .page {
@@ -202,11 +203,9 @@
     </div>
     <div id="tongzhi"></div>
     <script>
-        const email = document.getElementById('email')
         const getcode = document.getElementById('getcode')
         const postcode = document.getElementById('postcode')
 
-        const email2 = document.getElementById('email-2')
         const getcode2 = document.getElementById('getcode-2')
         const postcode2 = document.getElementById('postcode-2')
 
@@ -234,6 +233,14 @@
             } catch (error) {
                 console.error('Error during login:', error);
                 xstongzhi('网络错误，请稍后重试');
+            }
+        });
+
+        const loginpwdinput = document.getElementById('loginpwd')
+        loginpwdinput.addEventListener('keypress', function (event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                postloginBtn.click();
             }
         });
 
