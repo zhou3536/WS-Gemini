@@ -3,10 +3,9 @@ dotenv.config();
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, readdir, unlink, access, mkdir } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Console } from 'console';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,50 +23,50 @@ if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 let users = [];
 let io = null;
 
-export function initializeGemini(usersArray,ioInstance) {
-users = usersArray;
-io = ioInstance;
-io.on("connection", (socket) => {
-    const loginId = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.userId;
-    const loginToken = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.sessionToken;
-    const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
-    if (loginuser) {
-        socket.userId = loginId;
-        if (loginuser.API_KEY) {
-            socket.userApiKey = loginuser.API_KEY;
-            socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
-            socket.emit("APIKEY", socket.userApiKeyCipher)
+export function initializeGemini(usersArray, ioInstance) {
+    users = usersArray;
+    io = ioInstance;
+    io.on("connection", (socket) => {
+        const loginId = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.userId;
+        const loginToken = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.sessionToken;
+        const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
+        if (loginuser) {
+            socket.userId = loginId;
+            if (loginuser.API_KEY) {
+                socket.userApiKey = loginuser.API_KEY;
+                socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
+                socket.emit("APIKEY", socket.userApiKeyCipher)
+            } else {
+                socket.emit("tongzhi", "账户没有配置API_KEY，请配置API_KEY");
+            }
         } else {
-            socket.emit("tongzhi", "账户没有配置API_KEY，请配置API_KEY");
+            console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
+            socket.emit('refresh', '/signup.html');
+            socket.disconnect();
+            return;
         }
-    } else {
-        console.log("Socket.IO 客户端连接成功，但未找到用户 ID 或未认证，跳转登录页面");
-        socket.emit('refresh', '/signup.html');
-        socket.disconnect();
-        return;
-    }
-    console.log('Socket.IO 客户端连接成功 用户ID:', socket.userId);
-    listHistories(socket);
+        console.log('Socket.IO 客户端连接成功 用户ID:', socket.userId);
+        listHistories(socket);
 
-    socket.on("newMessage", async (data) => {
-        await handleNewMessage(socket, data);
-    });
+        socket.on("newMessage", async (data) => {
+            await handleNewMessage(socket, data);
+        });
 
-    socket.on("loadHistory", async (data) => {
-        await handleLoadHistory(socket, data.sessionId);
-    });
+        socket.on("loadHistory", async (data) => {
+            await handleLoadHistory(socket, data.sessionId);
+        });
 
-    socket.on("deleteHistory", async (data) => {
-        await handleDeleteHistory(socket, data.sessionId);
-    });
-    socket.on("sendapikey", async (data) => {
-        await setapikey(socket, data);
-    });
+        socket.on("deleteHistory", async (data) => {
+            await handleDeleteHistory(socket, data.sessionId);
+        });
+        socket.on("sendapikey", async (data) => {
+            await setapikey(socket, data);
+        });
 
-    socket.on("disconnect", () => {
-        console.log(`Socket.IO 客户端连接断开，${socket.userId ? `用户ID: ${socket.userId}` : ''}`);
+        socket.on("disconnect", () => {
+            console.log(`Socket.IO 客户端连接断开，${socket.userId ? `用户ID: ${socket.userId}` : ''}`);
+        });
     });
-});
 };
 //添加和验证API_KEY
 async function setapikey(socket, data) {
@@ -100,15 +99,17 @@ async function setapikey(socket, data) {
         socket.emit('tongzhi', '设置失败');
         return;
     }
-
-    await writeFile('./users.json', JSON.stringify(users, null, 2), 'utf-8');
-
-    socket.userApiKey = data.trim();
-    socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
-    socket.emit('tongzhi', 'API_KEY验证成功')
-    socket.emit("APIKEY", socket.userApiKeyCipher)
-
-    console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);
+    try {
+        await writeFile('./users.json', JSON.stringify(users, null, 2), 'utf-8');
+        socket.userApiKey = data.trim();
+        socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
+        socket.emit('tongzhi', 'API_KEY验证成功')
+        socket.emit("APIKEY", socket.userApiKeyCipher)
+        console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);
+    } catch (writeError) {
+        console.error(`写入 users.json 失败 (用户: ${socket.userId}):`, writeError);
+        socket.emit('tongzhi', 'API_KEY保存失败');
+    }
 }
 
 async function handleNewMessage(socket, data) {
@@ -122,24 +123,37 @@ async function handleNewMessage(socket, data) {
     }
     const genAI = new GoogleGenerativeAI(userApiKey);
     let { sessionId, prompt, files, model, useWebSearch } = data;
-    let isNewSession = false; // 标记是否为新会话
+    let isNewSession = false;
 
-    // 现在需要根据 userId 来管理历史记录
     const userHistoriesDir = path.join(historiesDir, userId);
-    if (!fs.existsSync(userHistoriesDir)) {
-        fs.mkdirSync(userHistoriesDir);
-    }
-
     if (!sessionId) {
         isNewSession = true;
         sessionId = `${Date.now()}.json`;
         socket.emit("sessionCreated", { sessionId });
     }
-
     const historyPath = path.join(userHistoriesDir, sessionId);
+    try {
+        await access(userHistoriesDir);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            await mkdir(userHistoriesDir);
+        } else {
+            console.error(`创建用户历史目录失败 ${userHistoriesDir} (用户: ${userId}):`, error);
+            socket.emit('historyerror', { message: '无法创建会话目录，请稍后再试。' });
+            return;
+        }
+    }
+
     let history = [];
-    if (!isNewSession && fs.existsSync(historyPath)) {
-        history = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
+    if (!isNewSession) {
+        try {
+            const historyData = await readFile(historyPath, "utf-8");
+            history = JSON.parse(historyData);
+        } catch (error) {
+            console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
+            socket.emit("APIerror", { message: `无法加载会话历史 (${sessionId})，文件可能已损坏。请尝试新的会话。` });
+            return;
+        }
     }
 
     // 构建请求
@@ -193,7 +207,7 @@ async function handleNewMessage(socket, data) {
         // 保存历史记录
         history.push(userMessage);
         history.push({ role: "model", parts: [{ text: fullResponse }] });
-        fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
+        await writeFile(historyPath, JSON.stringify(history, null, 2), 'utf-8');
 
         socket.emit("streamEnd");
         await listHistories(socket);
@@ -234,50 +248,53 @@ async function handleLoadHistory(socket, sessionId) {
         socket.emit("historyerror", { message: "未认证，无法加载历史。" });
         return;
     }
-    const userHistoriesDir = path.join(historiesDir, userId); // <--- 修改：使用用户专属目录
+    const userHistoriesDir = path.join(historiesDir, userId);
     const historyPath = path.join(userHistoriesDir, sessionId);
-    if (fs.existsSync(historyPath)) {
-        try {
-            const historyData = fs.readFileSync(historyPath, "utf-8");
-            const history = JSON.parse(historyData);
-            socket.emit("historyLoaded", { history: history });
-        } catch (error) {
-            console.error(`加载历史记录失败 ${sessionId} (用户: ${userId}):`, error);
+    try {
+        await access(historyPath);
+        const historyData = await readFile(historyPath, "utf-8");
+        const history = JSON.parse(historyData);
+        socket.emit("historyLoaded", { history: history });
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.log(`尝试加载不存在的历史文件: ${historyPath}`);
+            socket.emit("historyerror", { message: "找不到指定的会话历史, 请开始新的会话。" });
+        } else {
+            console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
             socket.emit("historyerror", { message: `无法加载会话历史 (${sessionId})，文件可能已损坏。` });
         }
-    } else {
-        socket.emit("historyerror", { message: "找不到指定的会话历史,开始新的会话" });
         await listHistories(socket);
     }
 }
 
-async function getHistoriesList(userId) { // <--- 修改：接收 userId 参数
+async function getHistoriesList(userId) {
     if (!userId) {
         console.error('未认证用户尝试获取历史列表。');
         return [];
     }
-    const userHistoriesDir = path.join(historiesDir, userId); // <--- 修改：使用用户专属目录
-    if (!fs.existsSync(userHistoriesDir)) {
-        fs.mkdirSync(userHistoriesDir); // 如果用户目录不存在，创建它
-        return []; // 返回空列表
-    }
+    const userHistoriesDir = path.join(historiesDir, userId);
     try {
-        const files = fs.readdirSync(userHistoriesDir) // <--- 修改：读取用户专属目录
-            .filter(file => file.endsWith('.json'))
-            .sort((a, b) => b.split('.')[0] - a.split('.')[0]);
-
-        const historyList = files.map(file => {
-            const filePath = path.join(userHistoriesDir, file); // <--- 修改：路径
+        await mkdir(userHistoriesDir, { recursive: true });
+        const files = await readdir(userHistoriesDir);
+        const jsonFiles = files.filter(file => file.endsWith('.json'));
+        const historyListPromises = jsonFiles.map(async (file) => {
+            const filePath = path.join(userHistoriesDir, file);
             try {
-                const content = fs.readFileSync(filePath, 'utf-8');
+                const content = await readFile(filePath, 'utf-8');
                 const history = JSON.parse(content);
                 const firstUserMessage = history.find(msg => msg.role === 'user');
-                const title = firstUserMessage ? firstUserMessage.parts[0].text.substring(0, 50) : '无标题';
+                const title = firstUserMessage && firstUserMessage.parts && firstUserMessage.parts[0] && firstUserMessage.parts[0].text
+                    ? firstUserMessage.parts[0].text.substring(0, 30)
+                    : '无标题';
                 return { sessionId: file, title };
             } catch (error) {
                 console.error(`处理历史文件失败 ${file} (用户: ${userId}):`, error);
                 return { sessionId: file, title: '无效的历史记录' };
             }
+        });
+        const historyList = await Promise.all(historyListPromises);
+        historyList.sort((a, b) => {
+            return parseInt(b.sessionId, 10) - parseInt(a.sessionId, 10);
         });
         return historyList;
     } catch (error) {
@@ -286,10 +303,9 @@ async function getHistoriesList(userId) { // <--- 修改：接收 userId 参数
     }
 }
 
-
 async function listHistories(socket) {
-    const userId = socket.userId; // <--- 从 socket 获取 userId
-    const historyList = await getHistoriesList(userId); // <--- 传递 userId
+    const userId = socket.userId;
+    const historyList = await getHistoriesList(userId);
     socket.emit('historiesListed', { list: historyList });
 }
 
@@ -300,13 +316,20 @@ async function handleDeleteHistory(socket, sessionId) {
         socket.emit("error", { message: "未认证，无法删除历史。" });
         return;
     }
-    const userHistoriesDir = path.join(historiesDir, userId); // <--- 修改：使用用户专属目录
+    const userHistoriesDir = path.join(historiesDir, userId);
     const historyPath = path.join(userHistoriesDir, sessionId);
-    if (fs.existsSync(historyPath)) {
-        fs.unlinkSync(historyPath);
+    try {
+        await unlink(historyPath);
         await listHistories(socket);
-    } else {
+        console.log(`成功删除历史文件: ${historyPath}`);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.log(`尝试删除不存在的历史文件: ${historyPath}`);
+            socket.emit("error", { message: "找不到要删除的会话历史。" });
+        } else {
+            console.error(`删除历史文件失败 ${historyPath} (用户: ${userId}):`, error);
+            socket.emit("error", { message: "删除会话历史时发生错误。" });
+        }
         await listHistories(socket);
-        socket.emit("error", { message: "找不到要删除的会话历史。" });
     }
 }
