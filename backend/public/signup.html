@@ -17,6 +17,7 @@
             height: 100vh;
             align-items: center;
             justify-content: center;
+            background: linear-gradient(to bottom right, #2525bc, #2471dc, #4b89e0, #455ad1, #4c3484);
         }
 
         a {
@@ -24,11 +25,13 @@
         }
 
         .container {
-            padding:  5px 25px 15px;
+            padding: 5px 25px 15px;
             box-shadow: 0 1px 5px #555;
             width: 300px;
             border-radius: 15px;
             text-align: center;
+            background-color: #fff;
+            transition: all 0.3s ease-in-out,
         }
 
         .title {
@@ -39,8 +42,7 @@
 
         .title a {
             width: 50%;
-            padding: 10px 15px;
-
+            padding: 10px 8px;
             text-align: center;
             border-radius: 8px;
             color: #222;
@@ -54,8 +56,17 @@
             display: none;
             text-align: center;
             margin-bottom: 5px;
+            animation: fadeIn1 0.3s ease;
         }
+        @keyframes fadeIn1 {
+            from {
+                opacity: 0;
+            }
 
+            to {
+                opacity: 1;
+            }
+        }
         .page>div {
             width: 100%;
             margin-bottom: 10px;
@@ -78,6 +89,7 @@
             /* border: 1px solid #00000030; */
         }
 
+        #postlogin,
         #postcode,
         #postcode-2 {
             width: 100%;
@@ -139,8 +151,18 @@
 <body>
     <div class="container">
         <div class="title" id="nav">
+            <a href="#login">登录账号</a>
             <a href="#signup">注册账号</a>
             <a href="#chacgepwd">修改密码</a>
+        </div>
+        <div id="page0" class="page">
+            <div>
+                <input type="text" id="loginemail" placeholder="输入邮箱">
+            </div>
+            <div>
+                <input type="password" id="loginpwd" placeholder="输入密码">
+            </div>
+            <button id="postlogin">登录账号</button>
         </div>
         <div id="page1" class="page">
             <div>
@@ -156,7 +178,7 @@
                 <input type="text" id="Invitationcode" placeholder="输入邀请码">
             </div>
             <div>
-                <input type="text" id="code" placeholder="获取验证码"><button id="getcode">获取</button>
+                <input type="text" id="code" placeholder="输入验证码"><button id="getcode">获取</button>
             </div>
             <button id="postcode">创建账号</button>
         </div>
@@ -172,11 +194,11 @@
                 <input type="password" id="pwd2-2" placeholder="重复新密码">
             </div>
             <div>
-                <input type="text" id="code-2" placeholder="获取验证码"><button id="getcode-2">获取</button>
+                <input type="text" id="code-2" placeholder="输入验证码"><button id="getcode-2">获取</button>
             </div>
             <button id="postcode-2">修改密码</button>
         </div>
-        <a href="/login.html">登录页面</a>
+        <!-- <a href="/login.html">登录页面</a> -->
     </div>
     <div id="tongzhi"></div>
     <script>
@@ -187,6 +209,34 @@
         const email2 = document.getElementById('email-2')
         const getcode2 = document.getElementById('getcode-2')
         const postcode2 = document.getElementById('postcode-2')
+
+        const postloginBtn = document.getElementById('postlogin')
+        postloginBtn.addEventListener('click', async () => {
+            const username = document.getElementById('loginemail').value;
+            const password = document.getElementById('loginpwd').value;
+            if (!username || !password) {
+                xstongzhi('请输入用户名和密码');
+                return
+            };
+            try {
+                const response = await fetch('/user/postlogin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const json = await response.json();
+                xstongzhi(json.message);
+                if (response.ok) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                xstongzhi('网络错误，请稍后重试');
+            }
+        });
+
         getcode.addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const Invitationcode = document.getElementById('Invitationcode').value;
@@ -196,7 +246,7 @@
             if (!pwd1) { xstongzhi('请输入密码'); return }
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/getcode', {
+                const response = await fetch('/user/getcode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, Invitationcode: Invitationcode }),
@@ -207,7 +257,7 @@
                 if (!response.ok) {
                     return
                 }
-                startCountdown();
+                startCountdown(getcode);
 
             } catch (error) {
                 console.error('Fetch operation failed:', error);
@@ -222,7 +272,7 @@
             if (!email || !pwd1 || !pwd2 || !code) { xstongzhi('请输入所有内容'); return };
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/postcode', {
+                const response = await fetch('/user/postcode', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, pwd: pwd1, code: code }),
@@ -237,7 +287,8 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
-            window.location.assign(`/login.html?email=${email}`);
+            document.getElementById('loginemail').value = email;
+            window.location.assign('#login');
         });
         getcode2.addEventListener('click', async () => {
             const email = document.getElementById('email-2').value;
@@ -247,7 +298,7 @@
             if (!pwd1) { xstongzhi('请输入密码'); return }
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/getcode2', {
+                const response = await fetch('/user/getcode2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email }),
@@ -258,7 +309,7 @@
                 if (!response.ok) {
                     return
                 }
-                startCountdown();
+                startCountdown(getcode2);
 
             } catch (error) {
                 console.error('Fetch operation failed:', error);
@@ -273,7 +324,7 @@
             if (!email || !pwd1 || !pwd2 || !code) { xstongzhi('请输入所有内容'); return };
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
             try {
-                const response = await fetch('/api/postcode2', {
+                const response = await fetch('/user/postcode2', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, pwd: pwd1, code: code }),
@@ -288,11 +339,12 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
-            window.location.assign(`/login.html?email=${email}`);
+            document.getElementById('loginemail').value = email;
+            window.location.assign('#login');
         });
 
-        function startCountdown() {
-            const button = document.getElementById('getcode');
+        function startCountdown(Element) {
+            const button = Element;
             button.disabled = true;
             let timeLeft = 60;
             const originalText = button.textContent;
@@ -327,31 +379,27 @@
         window.addEventListener('load', HashChange);
         window.addEventListener('hashchange', HashChange);
         function HashChange() {
+            const Pages = document.querySelectorAll('.page');
+            // 获取所有导航链接
+
+            Pages.forEach(page => { page.style.display = 'none'; });
+            const page0 = document.getElementById('page0');
             const page1 = document.getElementById('page1');
             const page2 = document.getElementById('page2');
             const nav = document.getElementById('nav');
             const Links = document.querySelectorAll('a');
-            const hash = window.location.hash || '#signup';
-            if (hash === '#signup') {
+            const hash = window.location.hash || '#login';
+            if (hash === '#login') {
+                page0.style.display = 'block';
+            } else if (hash === '#signup') {
                 page1.style.display = 'block';
-                page2.style.display = 'none';
-                Links.forEach(link => {
-                    link.classList.remove('Aactive');
-                    if (link.getAttribute('href').substring(0) === hash) {
-                        link.classList.add('Aactive');
-                    }
-                });
-
             } else if (hash === '#chacgepwd') {
                 page2.style.display = 'block';
-                page1.style.display = 'none';
-                Links.forEach(link => {
-                    link.classList.remove('Aactive');
-                    if (link.getAttribute('href').substring(0) === hash) {
-                        link.classList.add('Aactive');
-                    }
-                });
             }
+            Links.forEach(link => {
+                link.classList.remove('Aactive');
+                if (link.getAttribute('href').substring(0) === hash) { link.classList.add('Aactive'); }
+            });
         }
     </script>
 </body>

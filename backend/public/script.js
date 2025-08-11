@@ -415,20 +415,20 @@ async function gmmlogout() {
     const userConfirmed = confirm('您确定要退出登录吗？');
     if (!userConfirmed) { return }
     try {
-        const response = await fetch('/api/logout', {
+        const response = await fetch('/user/postlogout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
         });
+        // const json = await response.json();
         if (response.ok) {
-            // alert('You have been logged out.');
-            window.location.href = '/login.html';
+            window.location.href = '/signup.html';
         }
     } catch (error) {
-        console.error('Error during logout:', error);
+        console.error('Error during login:', error);
     }
-}
+};
 
 //显示通知
 function xstongzhi(text, time) {
