@@ -25,7 +25,7 @@ if (!mailhost || !mailuser || !mailpwd) { console.error('请在.env文件设置�
 const COOKIE_SECRET = process.env.cookieSecret;;
 if (!COOKIE_SECRET) { console.error('请在.env文件设置cookieSecret'), process.exit(1) }
 
-function writeDataFile(data) {
+async function writeDataFile(data) {
     try {
         fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
     } catch (error) {
@@ -65,7 +65,7 @@ async function sendcode(email, code) {
             from: `"验证码" <${mailuser}>`,
             to: email,
             subject: `<${mailuser}>`,
-            html: `<p>您的验证码是：<b>${code}</b>（5分钟内有效）</p>`
+            html: `<p>您的验证码是：<b>${code}</b>（10分钟内有效）</p>`
         };
         await transporter.sendMail(mailOptions);
         console.log(`已发送给 ${email} 的验证码: ${code}`);
@@ -130,7 +130,6 @@ function handlePostCode(email, code, onSuccess) {
 
     // 验证成功
     delete codes[email];
-    onSuccess();
     return { success: true };
 }
 //验证邀请码
@@ -160,6 +159,7 @@ function handleInvitationcode(Invitationcode, IP) {
 // ===== 注册账号 =====
 const getcode = async (req, res) => {
     const email = req.body.email.toLowerCase();
+    if (!email) return;
     const userIP = getClientIp(req);
     const Invitationcode = req.body.Invitationcode;
     const result1 = handleInvitationcode(Invitationcode, userIP);
@@ -172,25 +172,25 @@ const getcode = async (req, res) => {
 
 const postcode = async (req, res) => {
     const { email, pwd, code } = req.body;
-    const hash = await bcrypt.hash(pwd, 10);
-    const result = handlePostCode(email, code, () => {
-        users.push({
-            username: email,
-            password: hash,
-            userId: crypto.randomUUID(),
-            sessionToken: crypto.randomUUID(),
-            API_KEY: ""
-        });
-        writeDataFile(users);
-    });
-    if (result.error) return res.status(400).json({ message: result.error });
-    res.json({ message: '创建账号成功' });
-    console.log('创建账号', email)
+    if (!email || !pwd || !code) return;
+    try {
+        const hash = await bcrypt.hash(pwd, 10);
+        const result = handlePostCode(email, code);
+        if (result.error) return res.status(400).json({ message: result.error });
+        users.push({ username: email, password: hash, userId: crypto.randomUUID(), sessionToken: crypto.randomUUID(), API_KEY: "" });
+        await writeDataFile(users);
+        res.json({ message: '创建账号成功' });
+        console.log('创建账号', email)
+    } catch (error) {
+        console.error('注册过程中发生错误:', error);
+        res.status(500).json({ message: '服务器错误，请稍后再试' });
+    }
 };
 
 // ===== 修改密码 =====
 const getcode2 = async (req, res) => {
     const email = req.body.email.toLowerCase();
+    if (!email) return;
     const result = await handleGetCode(email, true);
     if (result.error) return res.status(400).json({ message: result.error });
     res.json({ message: '发送成功，请查看邮箱' });
@@ -198,22 +198,29 @@ const getcode2 = async (req, res) => {
 
 const postcode2 = async (req, res) => {
     const { email, pwd, code } = req.body;
-    const hash = await bcrypt.hash(pwd, 10);
-    const result = handlePostCode(email, code, () => {
-        const user = users.find(u => u.username === email);
+    if (!email || !pwd || !code) return;
+    try {
+        const hash = await bcrypt.hash(pwd, 10);
+        const result = handlePostCode(email, code);
+        if (result.error) return res.status(400).json({ message: result.error });
+        const user = users.find(user => user.username === email);
         if (user) {
             user.password = hash;
             user.sessionToken = crypto.randomUUID();
-            writeDataFile(users);
+            await writeDataFile(users);
+        } else {
+            return res.status(400).json({ message: '未找到该用户' });
         }
-    });
-    if (result.error) return res.status(400).json({ message: result.error });
-    res.json({ message: '密码修改成功' });
-    console.log('修改密码', email)
+        res.json({ message: '密码修改成功' });
+        console.log('修改密码', email)
+    } catch (error) {
+        console.error(email, '修改密码发生错误:', error);
+        res.status(500).json({ message: '服务器错误，请稍后再试' });
+    }
 };
 // 获取客户端IP地址，考虑代理
 const getClientIp = (req) => {
-    // 优先检查 X-Forwarded-For
+    // 检查 X-Forwarded-For
     const forwardedFor = req.headers['x-forwarded-for'];
     if (forwardedFor) {
         return forwardedFor.split(',')[0].trim();
@@ -260,13 +267,12 @@ const authenticateMiddleware = (req, res, next) => {
                 sameSite: 'Lax'
             });
             req.user = foundUser;
-            // console.log("设置了req.user的请求:", req.method, req.url);
             return next();
         }
     };
 
     ;
-    
+
 
     res.status(401).sendFile(path.join(__dirname, 'public', 'signup.html'));
 };
