@@ -259,7 +259,7 @@
             <a href="#signup">注册账号</a>
             <a href="#chacgepwd">重置密码</a>
         </div>
-        <div id="page0" class="page">
+        <div id="login" class="page">
             <div>
                 <input type="text" id="loginemail" placeholder="输入邮箱">
             </div>
@@ -268,7 +268,7 @@
             </div>
             <button id="postlogin">登录账号</button>
         </div>
-        <div id="page1" class="page">
+        <div id="signup" class="page">
             <div>
                 <input type="text" id="email" placeholder="输入邮箱">
             </div>
@@ -287,7 +287,7 @@
             <button id="postcode">创建账号</button>
         </div>
 
-        <div id="page2" class="page">
+        <div id="chacgepwd" class="page">
             <div>
                 <input type="text" id="email-2" placeholder="输入邮箱">
             </div>
@@ -490,26 +490,19 @@
         window.addEventListener('hashchange', HashChange);
         function HashChange() {
             const Pages = document.querySelectorAll('.page');
-            // 获取所有导航链接
-
-            Pages.forEach(page => { page.style.display = 'none'; });
-            const page0 = document.getElementById('page0');
-            const page1 = document.getElementById('page1');
-            const page2 = document.getElementById('page2');
             const nav = document.getElementById('nav');
-            const Links = document.querySelectorAll('a');
+            const Links = nav.querySelectorAll('a');
             const hash = window.location.hash || '#login';
-            if (hash === '#login') {
-                page0.style.display = 'block';
-            } else if (hash === '#signup') {
-                page1.style.display = 'block';
-            } else if (hash === '#chacgepwd') {
-                page2.style.display = 'block';
-            }
+            const Elementid = hash.slice(1);
+            Pages.forEach(page => { page.style.display = 'none'; });
             Links.forEach(link => {
                 link.classList.remove('Aactive');
                 if (link.getAttribute('href').substring(0) === hash) { link.classList.add('Aactive'); }
             });
+
+            const defaultpage = document.getElementById('login');
+            const displaypage = document.getElementById(Elementid) || defaultpage;
+            displaypage.style.display = 'block';
         }
     </script>
 </body>
