@@ -334,10 +334,9 @@ async function handleDeleteHistory(socket, sessionId) {
     }
 }
 //强制下线
-export function disconnectChat(userId, email) {
+export function disconnectChat(userId) {
     for (const [socketId, uid] of activechat) {
         if (uid === userId) {
-            console.log('强制下线', email);
             const socket = io.sockets.sockets.get(socketId);
             if (socket) socket.disconnect(true);
             activechat.delete(socketId);

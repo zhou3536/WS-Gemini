@@ -199,6 +199,7 @@ const getcode2 = async (req, res) => {
 
 const postcode2 = async (req, res) => {
     const { email, pwd, code } = req.body;
+    const userIP = getClientIp(req);
     if (!email || !pwd || !code) return;
     try {
         const hash = await bcrypt.hash(pwd, 10);
@@ -214,7 +215,8 @@ const postcode2 = async (req, res) => {
         }
         res.json({ message: '密码修改成功' });
         console.log('修改密码', email)
-        disconnectChat(user.userId, email);
+        disconnectChat(user.userId);
+        delete lockIP[userIP];
     } catch (error) {
         console.error(email, '修改密码发生错误:', error);
         res.status(500).json({ message: '服务器错误，请稍后再试' });
@@ -305,7 +307,7 @@ const postlogin = async (req, res) => {
             sameSite: 'Lax'
         });
         delete lockIP[IP];
-        console.log(`IP: ${IP} - User ${username} 登录成功 UserID: ${foundUser.userId}`);
+        console.log('用户登录', username, 'IP:', IP);
         return res.status(200).json({ message: '登录成功' });
     } else {
         record.count++;
