@@ -22,7 +22,7 @@ if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
 let users = [];
 let io = null;
-const activeCHchat = new Map();
+const activechat = new Map();
 export function initializeGemini(usersArray, ioInstance) {
     users = usersArray;
     io = ioInstance;
@@ -32,7 +32,7 @@ export function initializeGemini(usersArray, ioInstance) {
         const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
         if (loginuser) {
             socket.userId = loginId;
-            activeCHchat.set(socket.id, socket.userId);
+            activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
                 socket.userApiKey = loginuser.API_KEY;
                 socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
@@ -65,7 +65,7 @@ export function initializeGemini(usersArray, ioInstance) {
         });
 
         socket.on("disconnect", () => {
-            activeCHchat.delete(socket.id);
+            activechat.delete(socket.id);
             console.log(`Socket.IO用户断开:${loginuser.username}`);
         });
     });
@@ -335,12 +335,12 @@ async function handleDeleteHistory(socket, sessionId) {
 }
 //强制下线
 export function disconnectChat(userId, email) {
-    for (const [socketId, uid] of activeCHchat) {
+    for (const [socketId, uid] of activechat) {
         if (uid === userId) {
             console.log('强制下线', email);
             const socket = io.sockets.sockets.get(socketId);
             if (socket) socket.disconnect(true);
-            activeCHchat.delete(socketId);
+            activechat.delete(socketId);
         }
     }
 }
