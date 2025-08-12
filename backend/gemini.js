@@ -22,16 +22,17 @@ if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }
 
 let users = [];
 let io = null;
-
+const activeCHchat = new Map();
 export function initializeGemini(usersArray, ioInstance) {
     users = usersArray;
     io = ioInstance;
     io.on("connection", (socket) => {
-        const loginId = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.userId;
-        const loginToken = socket.request.signedCookies.session_id && socket.request.signedCookies.session_id.sessionToken;
+        const loginId = socket.request.signedCookies?.session_id?.userId;
+        const loginToken = socket.request.signedCookies?.session_id?.sessionToken;
         const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
         if (loginuser) {
             socket.userId = loginId;
+            activeCHchat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
                 socket.userApiKey = loginuser.API_KEY;
                 socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
@@ -45,7 +46,7 @@ export function initializeGemini(usersArray, ioInstance) {
             socket.disconnect();
             return;
         }
-        console.log('Socket.IO 客户端连接成功 用户ID:', socket.userId);
+        console.log(`Socket.IO用户连接:${loginuser.username}`);
         listHistories(socket);
 
         socket.on("newMessage", async (data) => {
@@ -64,15 +65,14 @@ export function initializeGemini(usersArray, ioInstance) {
         });
 
         socket.on("disconnect", () => {
-            console.log(`Socket.IO 客户端连接断开，${socket.userId ? `用户ID: ${socket.userId}` : ''}`);
+            activeCHchat.delete(socket.id);
+            console.log(`Socket.IO用户断开:${loginuser.username}`);
         });
     });
 };
 //添加和验证API_KEY
 async function setapikey(socket, data) {
     if (!data) { return; }
-
-    // 验证 API key 是否可用
     try {
         const testAI = new GoogleGenerativeAI(data.trim());
         const testModel = testAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
@@ -331,5 +331,16 @@ async function handleDeleteHistory(socket, sessionId) {
             socket.emit("error", { message: "删除会话历史时发生错误。" });
         }
         await listHistories(socket);
+    }
+}
+//强制下线
+export function disconnectChat(userId, email) {
+    for (const [socketId, uid] of activeCHchat) {
+        if (uid === userId) {
+            console.log('强制下线', email);
+            const socket = io.sockets.sockets.get(socketId);
+            if (socket) socket.disconnect(true);
+            activeCHchat.delete(socketId);
+        }
     }
 }

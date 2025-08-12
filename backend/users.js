@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
+import { disconnectChat } from './gemini.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -213,6 +214,7 @@ const postcode2 = async (req, res) => {
         }
         res.json({ message: '密码修改成功' });
         console.log('修改密码', email)
+        disconnectChat(user.userId, email);
     } catch (error) {
         console.error(email, '修改密码发生错误:', error);
         res.status(500).json({ message: '服务器错误，请稍后再试' });
