@@ -63,13 +63,38 @@ export function initializeGemini(usersArray, ioInstance) {
         socket.on("sendapikey", async (data) => {
             await setapikey(socket, data);
         });
-
+        socket.on("SimpleMessage", async (data) => {
+            await Simplemessage(socket, data);
+        });
         socket.on("disconnect", () => {
             activechat.delete(socket.id);
             console.log(`Socket.IO用户断开:${loginuser.username}`);
         });
     });
 };
+//简单接口
+async function Simplemessage(socket, data) {
+    if (!data) { return }
+    try {
+        const AI = new GoogleGenerativeAI(socket.userApiKey);
+        const Model = AI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
+        const chat = Model.startChat({ history: [] });
+        const result = await chat.sendMessageStream([{ text: data }]);
+        let fullResponse = "";
+        for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            fullResponse += chunkText;
+            socket.emit("streamChunk", { chunk: chunkText });
+        }
+        socket.emit("streamEnd");
+
+    } catch (error) {
+        let errorMessage = "未知错误";
+        if (error.message) errorMessage = error.message
+        socket.emit('tongzhi', `错误代码${error.status}，${errorMessage}`);
+    };
+}
+
 //添加和验证API_KEY
 async function setapikey(socket, data) {
     if (!data) { return; }

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGemini</title>
+    <link rel="stylesheet" href="md.css">
+    <link rel="stylesheet" href="color.css">
+    <script src="marked.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navh: 40px;
+            --hhh: calc(100vh - var(--navh));
+            --hhh: calc(100dvh - var(--navh));
+            --bodybgc: #FFF;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bodybgc: #1b1c1d;
+            }
+        }
+
+        body {
+            font-family: sans-serif;
+            background: var(--bodybgc);
+            margin: 0;
+            height: 100vh;
+            height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+            color: var(--df-ziji);
+            transition:
+                background-color 0.3s ease-in-out,
+                color 0.3s ease-in-out;
+            min-width: 320px;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .ppp {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            overflow: hidden;
+        }
+
+        .ppp1 {
+            padding: 10px;
+            background-color: var(--df-005);
+        }
+        .ppp2 {
+            padding: 10px;
+            background-color: var(--df-002);
+        }
+
+        #prompt-input {
+            width: 100%;
+            flex-grow: 1;
+            margin-bottom: 10px;
+            padding: 10px;
+            outline: none;
+            border: 2px solid var(--df-01);
+            resize: none;
+            border-radius: 10px;
+            font-size: 16px;
+            line-height: 18px;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+            background-color: transparent;
+
+        }
+
+        #tsc {
+            /* background: var(--df-01); */
+            background-color: transparent;
+            height: 30px;
+            margin: 0 5px;
+            font-size: 16px;
+            color: var(--df-ziji);
+            vertical-align: middle;
+            border-radius: 5px;
+            border: 2px solid var(--df-03);
+        }
+
+        #tsc option {
+            background-color: #777;
+            color: #fff;
+        }
+
+        #sendBtn {
+            width: 150px;
+            height: 40px;
+            font-size: 18px;
+            background: #0a84ff80;
+            border-radius: 10px;
+            color: var(--df-ziji);
+            border: 2px solid var(--df-02);
+            vertical-align: middle;
+            font-weight: 600;
+        }
+
+        #sendBtn:disabled {
+            cursor: not-allowed;
+        }
+
+        #sendBtn:active {
+            transform: scale(0.97);
+        }
+
+        #themeToggle {
+            width: 25px;
+            height: 25px;
+            vertical-align: middle;
+            border: 2px solid var(--df-03);
+            border-radius: 6px;
+            background-color: transparent;
+        }
+
+        .model-message {
+            height: 100%;
+            overflow-y: auto;
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .loading {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--df-02);
+            border-top: 3px solid #00b3ff;
+            position: absolute;
+            left: calc(50% - 20px);
+            top: calc(50% - 20px);
+            border-radius: 50%;
+            animation: simpleRotate 0.7s linear infinite;
+        }
+
+
+
+        @keyframes simpleRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media only screen and (orientation: portrait) {
+            .container {
+                flex-direction: column;
+            }
+
+            .ppp1 {
+                flex-grow: 3;
+            }
+
+            .ppp2 {
+                flex-grow: 7;
+            }
+
+            #sendBtn {
+                height: 30px;
+                width: 100px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            body {
+                overflow: hidden;
+            }
+
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--df-02);
+
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--df-04);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="ppp ppp1">
+            <textarea id="prompt-input" placeholder="输入内容..."></textarea>
+            <div style="text-align: center;">
+                <button id="sendBtn">确定</button>
+                <select id="tsc" class="">
+                    <option value="将下面内容翻译成中文：">翻译成中文</option>
+                    <option value="将下面内容翻译成英文：">翻译成英文</option>
+                    <option value="">问答模式</option>
+                </select>
+                <button id="themeToggle"></button>
+            </div>
+        </div>
+        <div class="ppp ppp2">
+            <div id="geminimessage" class="model-message">
+            </div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let accumulatedStreamText = ''
+        const socket = io();
+        const geminimessagebox = document.getElementById('geminimessage');
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.addEventListener('click', sendMessage);
+        document.getElementById('prompt-input').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendBtn.click();
+            }
+        });
+        // --- Socket.IO 事件处理 ---
+        socket.on('connect', () => {
+            console.log('Socket.IO连接已建立');
+            // Connection.style.display = 'none';
+            sendBtn.disabled = false;
+
+        });
+
+        socket.on('refresh', (url) => {
+            if (url) { window.location.href = url; } else { location.reload(); }
+        });
+        socket.on('tongzhi', (data) => {
+            sendBtn.disabled = false;
+            geminimessagebox.innerHTML = data;
+        });
+
+        socket.on('streamChunk', (data) => {
+            appendStreamChunk(data.chunk);
+        });
+        socket.on('streamEnd', () => {
+            sendBtn.disabled = false;
+            accumulatedStreamText = '';
+        });
+
+        socket.on('error', (data) => {
+            alert(`发生错误: ${data.message}`);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.IO连接已关闭');
+            sendBtn.disabled = true;
+        });
+
+        function appendStreamChunk(text) {
+            accumulatedStreamText += text;
+            addgeminimessage(accumulatedStreamText);
+        };
+
+        function addgeminimessage(text) {
+            geminimessagebox.innerHTML = marked.parse(text);
+        };
+
+        async function sendMessage() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const tsc = document.getElementById('tsc').value.trim();
+            const text = tsc + prompt;
+
+            if (!prompt) return;
+            if (sendBtn.disabled) return;
+            sendBtn.disabled = true;
+            geminimessagebox.innerHTML = '<div class="loading"></div>';
+            socket.emit('SimpleMessage', text);
+        }
+
+
+    </script>
+    <script src="theme.js"></script>
+</body>
+
+</html>
