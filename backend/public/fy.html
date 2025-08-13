@@ -55,12 +55,12 @@
         .ppp1 {
             width: 40vw;
             padding: 10px;
-            background-color: var(--df-005);
+            background-color: var(--df-002);
         }
 
         .ppp2 {
             flex: 1;
-            background-color: var(--df-002);
+            /* background-color: var(--df-002); */
         }
 
         #prompt-input {
@@ -77,7 +77,7 @@
             font-family: Arial, sans-serif;
             overflow-y: auto;
             background-color: transparent;
-
+            color: var(--df-ziji);
         }
 
         #tsc {
@@ -90,6 +90,7 @@
             vertical-align: middle;
             border-radius: 5px;
             border: 2px solid var(--df-03);
+            outline: none;
         }
 
         #tsc option {
@@ -216,8 +217,7 @@
             </div>
         </div>
         <div class="ppp ppp2">
-            <div id="geminimessage" class="model-message">
-            </div>
+            <div id="geminimessage" class="model-message">翻译由Gemini-2.5-flash-lite提供服务</div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
@@ -285,9 +285,9 @@
             sendBtn.disabled = true;
             geminimessagebox.innerHTML = '<div class="loading"></div>';
             socket.emit('SimpleMessage', text);
-        }
+        };
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             document.body.style.height = window.innerHeight + 'px';
         })
     </script>

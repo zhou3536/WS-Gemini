@@ -17,6 +17,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             height: 100vh;
+            height: 100dvh;
             align-items: center;
             justify-content: center;
             background: linear-gradient(to bottom right, #2525bc, #2471dc, #4b89e0, #455ad1, #4c3484);
@@ -202,6 +203,21 @@
             box-shadow: none !important;
         }
 
+        #login p {
+            margin: 10px auto 20px;
+            font-size: 18px;
+        }
+
+        #login a {
+            display: block;
+            margin-top: 10px;
+            padding: 10px 45px;
+            border-radius: 10px;
+            line-height: 18px;
+            background-color: #6aa4f7;
+            color: #000;
+        }
+
         /* 通知样式优化 */
         #tongzhi {
             position: fixed;
@@ -303,9 +319,11 @@
             <button id="postcode-2">修改密码</button>
         </div>
         <!-- <a href="/login.html">登录页面</a> -->
+
     </div>
     <div id="tongzhi"></div>
     <script>
+        let LoginStatus = false;
         const getcode = document.getElementById('getcode')
         const postcode = document.getElementById('postcode')
 
@@ -313,7 +331,8 @@
         const postcode2 = document.getElementById('postcode-2')
 
         const postloginBtn = document.getElementById('postlogin')
-        postloginBtn.addEventListener('click', async () => {
+        postloginBtn.addEventListener('click', postlogin)
+        async function postlogin() {
             const username = document.getElementById('loginemail').value;
             const password = document.getElementById('loginpwd').value;
             if (!username || !password) {
@@ -331,13 +350,17 @@
                 const json = await response.json();
                 xstongzhi(json.message);
                 if (response.ok) {
-                    window.location.href = '/';
-                }
+                    if (window.location.pathname === 'signup.html') {
+                        checkLoginStatus()
+                    } else {
+                        location.reload();
+                    };
+                };
             } catch (error) {
                 console.error('Error during login:', error);
                 xstongzhi('网络错误，请稍后重试');
             }
-        });
+        };
 
         const loginpwdinput = document.getElementById('loginpwd')
         loginpwdinput.addEventListener('keypress', function (event) {
@@ -397,8 +420,11 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
-            document.getElementById('loginemail').value = email;
-            window.location.assign('#login');
+            const loginemail = document.getElementById('loginemail');
+            if (loginemail) {
+                loginemail.value = email;
+                window.location.assign('#login');
+            }
         });
         getcode2.addEventListener('click', async () => {
             const email = document.getElementById('email-2').value;
@@ -442,15 +468,17 @@
                 });
                 const json = await response.json();
                 xstongzhi(json.message);
-                if (!response.ok) {
-                    return
-                }
+                if (!response.ok) { return }
+
             } catch (error) {
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
-            document.getElementById('loginemail').value = email;
-            window.location.assign('#login');
+            const loginemail = document.getElementById('loginemail');
+            if (loginemail) {
+                loginemail.value = email;
+                window.location.assign('#login');
+            }
         });
 
         function startCountdown(Element) {
@@ -503,7 +531,24 @@
             const defaultpage = document.getElementById('login');
             const displaypage = document.getElementById(Elementid) || defaultpage;
             displaypage.style.display = 'block';
+        };
+        //检查登录状态
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/user/status');
+                const data = await response.json();
+                if (data.loggedIn) {
+                    LoginStatus = true;
+                    document.getElementById('login').innerHTML =
+                        `<h1>欢迎回来</h1>
+                        <p>${data.username}</p>
+                        <a href="/">跳转主页</a>`
+                };
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+            }
         }
+        checkLoginStatus();
     </script>
 </body>
 

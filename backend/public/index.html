@@ -181,10 +181,15 @@
             logout.innerText = '注销登录';
             logout.addEventListener('click', gmmlogout);
             historyList.appendChild(logout);
+            const openpage = document.createElement('h4');
+            openpage.innerText = 'AI 翻译';
+            openpage.addEventListener('click', () => { window.open('/fy.html', '_blank'); });
+            historyList.appendChild(openpage);
             const setapikey = document.createElement('h4');
             setapikey.innerText = '设置API_KEY';
             setapikey.addEventListener('click', () => { setapikeybox.style.display = 'block' });
             historyList.appendChild(setapikey);
+
             list.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.title;

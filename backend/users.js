@@ -324,6 +324,18 @@ const postlogout = (req, res) => {
     });
     return res.status(200).json({ message: '退出成功' });
 };
+// 登录状态
+const getUserStatus = (req, res) => {
+    const sessionCookie = req.signedCookies[SESSION_COOKIE_NAME];
+    if (sessionCookie && sessionCookie.userId && sessionCookie.sessionToken) {
+        const foundUser = users.find(user => user.userId === sessionCookie.userId);
+        if (foundUser && foundUser.sessionToken === sessionCookie.sessionToken) {
+            return res.json({ loggedIn: true, username: foundUser.username });
+        }
+    }
+    // 无效会话或未登录
+    res.json({ loggedIn: false });
+};
 //初始化
 const initializeUsers = (app, initialUsers) => {
     users = initialUsers;
@@ -337,7 +349,7 @@ const initializeUsers = (app, initialUsers) => {
     app.post('/user/postcode2', postcode2);
     app.post('/user/postlogin', postlogin);
     app.post('/user/postlogout', postlogout);
-
+    app.get('/user/status', getUserStatus);
     // 启动定期清理任务
     console.log('用户模块已初始化...');
 };
