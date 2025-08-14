@@ -218,6 +218,10 @@
             color: #000;
         }
 
+        #login a:nth-of-type(2) {
+            background-color: #f56161be;
+        }
+
         /* 通知样式优化 */
         #tongzhi {
             position: fixed;
@@ -359,6 +363,25 @@
             } catch (error) {
                 console.error('Error during login:', error);
                 xstongzhi('网络错误，请稍后重试');
+            }
+        };
+        //退出登录
+        async function postlogout() {
+            const userConfirmed = confirm('您确定要退出登录吗？');
+            if (!userConfirmed) { return }
+            try {
+                const response = await fetch('/user/postlogout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                });
+                // const json = await response.json();
+                if (response.ok) {
+                    window.location.href = '/signup.html';
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
             }
         };
 
@@ -539,10 +562,11 @@
                 const data = await response.json();
                 if (data.loggedIn) {
                     LoginStatus = true;
-                    document.getElementById('login').innerHTML =
-                        `<h1>欢迎回来</h1>
+                    document.getElementById('login').innerHTML = `
+                        <h1>欢迎回来</h1>
                         <p>${data.username}</p>
-                        <a href="/">跳转主页</a>`
+                        <a href="/">跳转主页</a>
+                        <a href="" onclick="postlogout()">退出登录</a>`
                 };
             } catch (error) {
                 console.error('检查登录状态失败:', error);
