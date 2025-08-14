@@ -57,19 +57,19 @@ function generateCode() {
 // 发送验证码
 async function sendcode(email, code) {
     try {
-        // const transporter = nodemailer.createTransport({
-        //     host: mailhost,
-        //     port: 465,
-        //     secure: true,
-        //     auth: { user: mailuser, pass: mailpwd }
-        // });
-        // const mailOptions = {
-        //     from: `"验证码" <${mailuser}>`,
-        //     to: email,
-        //     subject: `<${mailuser}>`,
-        //     html: `<p>您的验证码是：<b>${code}</b>（10分钟内有效）</p>`
-        // };
-        // await transporter.sendMail(mailOptions);
+        const transporter = nodemailer.createTransport({
+            host: mailhost,
+            port: 465,
+            secure: true,
+            auth: { user: mailuser, pass: mailpwd }
+        });
+        const mailOptions = {
+            from: `"验证码" <${mailuser}>`,
+            to: email,
+            subject: `<${mailuser}>`,
+            html: `<p>您的验证码是：<b>${code}</b>（10分钟内有效）</p>`
+        };
+        await transporter.sendMail(mailOptions);
         console.log(`已发送给 ${email} 的验证码: ${code}`);
         return { success: true };
     } catch (err) {
