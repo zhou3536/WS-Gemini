@@ -37,6 +37,7 @@ async function writeDataFile(data) {
 // 存验证码信息
 const codes = {};
 const lockIP = {};
+const lockUser = {};
 
 // 定时清理任务（每分钟）
 setInterval(() => {
@@ -56,19 +57,19 @@ function generateCode() {
 // 发送验证码
 async function sendcode(email, code) {
     try {
-        const transporter = nodemailer.createTransport({
-            host: mailhost,
-            port: 465,
-            secure: true,
-            auth: { user: mailuser, pass: mailpwd }
-        });
-        const mailOptions = {
-            from: `"验证码" <${mailuser}>`,
-            to: email,
-            subject: `<${mailuser}>`,
-            html: `<p>您的验证码是：<b>${code}</b>（10分钟内有效）</p>`
-        };
-        await transporter.sendMail(mailOptions);
+        // const transporter = nodemailer.createTransport({
+        //     host: mailhost,
+        //     port: 465,
+        //     secure: true,
+        //     auth: { user: mailuser, pass: mailpwd }
+        // });
+        // const mailOptions = {
+        //     from: `"验证码" <${mailuser}>`,
+        //     to: email,
+        //     subject: `<${mailuser}>`,
+        //     html: `<p>您的验证码是：<b>${code}</b>（10分钟内有效）</p>`
+        // };
+        // await transporter.sendMail(mailOptions);
         console.log(`已发送给 ${email} 的验证码: ${code}`);
         return { success: true };
     } catch (err) {
@@ -138,7 +139,7 @@ function handleInvitationcode(Invitationcode, IP) {
     const now = Date.now();
     let record = lockIP[IP];
     // 如果有记录且时间已过期，则重置
-    if (!record || now - record.firstTime > 600 * 1000) {
+    if (!record || now - record.firstTime > 3600 * 1000) {
         record = { count: 0, firstTime: now };
         lockIP[IP] = record;
     }
@@ -201,22 +202,20 @@ const postcode2 = async (req, res) => {
     const { email, pwd, code } = req.body;
     const userIP = getClientIp(req);
     if (!email || !pwd || !code) return;
+    const user = users.find(user => user.username === email);
+    if (!user) return res.status(401).json({ message: '输入的用户名不存在' });
+
     try {
         const hash = await bcrypt.hash(pwd, 10);
         const result = handlePostCode(email, code);
         if (result.error) return res.status(400).json({ message: result.error });
-        const user = users.find(user => user.username === email);
-        if (user) {
-            user.password = hash;
-            user.sessionToken = crypto.randomUUID();
-            await writeDataFile(users);
-        } else {
-            return res.status(400).json({ message: '未找到该用户' });
-        }
+        user.password = hash;
+        user.sessionToken = crypto.randomUUID();
+        await writeDataFile(users);
         res.json({ message: '密码修改成功' });
         console.log('修改密码', email)
         disconnectChat(user.userId);
-        delete lockIP[userIP];
+        delete lockUser[user.username];
     } catch (error) {
         console.error(email, '修改密码发生错误:', error);
         res.status(500).json({ message: '服务器错误，请稍后再试' });
@@ -275,9 +274,6 @@ const authenticateMiddleware = (req, res, next) => {
         }
     };
 
-    ;
-
-
     res.status(401).sendFile(path.join(__dirname, 'public', 'signup.html'));
 };
 
@@ -286,19 +282,17 @@ const postlogin = async (req, res) => {
     const { username, password } = req.body;
     const IP = getClientIp(req);
     const foundUser = users.find(user => user.username === username);
+    if (!foundUser) return res.status(401).json({ message: '输入的用户名不存在' });
     const now = Date.now();
-    let record = lockIP[IP];
-    // 如果有记录且时间已过期，则重置
-    if (!record || now - record.firstTime > 600 * 1000) {
-        record = { count: 0, firstTime: now };
-        lockIP[IP] = record;
+    let userRecord = lockUser[foundUser.username];
+    if (!userRecord || now - userRecord.firstTime > 3600 * 1000) {
+        userRecord = { count: 0, firstTime: now };
+        lockUser[foundUser.username] = userRecord;
     }
-    // 如果错误次数已达上限
-    if (record.count >= 10) {
-        return res.status(503).json({ message: `请求过于频繁，你的IP:${IP}已被限制操作` });
+    if (userRecord.count >= 10) {
+        return res.status(503).json({ message: '密码错误过多，请重置密码，或稍后重试' });
     }
     if (foundUser && await bcrypt.compare(password, foundUser.password)) {
-        // 设置用户 ID Cookie
         res.cookie(SESSION_COOKIE_NAME, { userId: foundUser.userId, sessionToken: foundUser.sessionToken }, {
             maxAge: SESSION_DURATION_MS,
             httpOnly: true,
@@ -306,12 +300,12 @@ const postlogin = async (req, res) => {
             signed: true,
             sameSite: 'Lax'
         });
-        delete lockIP[IP];
+        delete lockUser[foundUser.username];
         console.log('用户登录', username, 'IP:', IP);
         return res.status(200).json({ message: '登录成功' });
     } else {
-        record.count++;
-        if (record.count === 10) console.log('IP:', IP, '已锁定，登录失败频繁请求');
+        userRecord.count++;
+        if (userRecord.count >= 10) console.log('用户:', foundUser.username, '已锁定，登录失败频繁请求');
         return res.status(401).json({ message: '用户名或密码不正确' });
     }
 };
