@@ -497,6 +497,14 @@
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
             };
+            document.getElementById('login').innerHTML = `
+            <div>
+                <input type="text" id="loginemail" placeholder="输入邮箱">
+            </div>
+            <div>
+                <input type="password" id="loginpwd" placeholder="输入密码">
+            </div>
+            <button id="postlogin" onclick="postlogin()">登录账号</button>`
             const loginemail = document.getElementById('loginemail');
             if (loginemail) {
                 loginemail.value = email;

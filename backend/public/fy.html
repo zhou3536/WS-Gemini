@@ -134,7 +134,7 @@
             position: relative;
         }
 
-        .loading {
+        /* .loading {
             width: 40px;
             height: 40px;
             border: 3px solid var(--df-02);
@@ -144,6 +144,17 @@
             top: calc(50% - 20px);
             border-radius: 50%;
             animation: simpleRotate 0.7s linear infinite;
+        } */
+
+        .loading {
+            width: 25px;
+            height: 25px;
+            border: 3px solid #666;
+            border-top: 3px solid #fff;
+            border-right: 3px solid #fff;
+            margin: auto;
+            border-radius: 50%;
+            animation: simpleRotate 0.8s linear infinite;
         }
 
 
@@ -207,7 +218,7 @@
         <div class="ppp ppp1">
             <textarea id="prompt-input" placeholder="输入内容..."></textarea>
             <div style="text-align: center;">
-                <button id="sendBtn">确定</button>
+                <button id="sendBtn">连接中...</button>
                 <select id="tsc" class="">
                     <option value="将下面内容翻译成中文：">翻译成中文</option>
                     <option value="将下面内容翻译成英文：">翻译成英文</option>
@@ -236,9 +247,8 @@
         // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
             console.log('Socket.IO连接已建立');
-            // Connection.style.display = 'none';
             sendBtn.disabled = false;
-
+            sendBtn.innerHTML = '确定';
         });
 
         socket.on('refresh', (url) => {
@@ -246,6 +256,7 @@
         });
         socket.on('tongzhi', (data) => {
             sendBtn.disabled = false;
+            sendBtn.innerHTML = '确定';
             geminimessagebox.innerHTML = data;
         });
 
@@ -254,6 +265,7 @@
         });
         socket.on('streamEnd', () => {
             sendBtn.disabled = false;
+            sendBtn.innerHTML = '确定';
             accumulatedStreamText = '';
         });
 
@@ -264,6 +276,7 @@
         socket.on('disconnect', () => {
             console.log('Socket.IO连接已关闭');
             sendBtn.disabled = true;
+            sendBtn.innerHTML = '网络断开';
         });
 
         function appendStreamChunk(text) {
@@ -283,7 +296,7 @@
             if (!prompt) return;
             if (sendBtn.disabled) return;
             sendBtn.disabled = true;
-            geminimessagebox.innerHTML = '<div class="loading"></div>';
+            sendBtn.innerHTML = '<div class="loading"></div>';
             socket.emit('SimpleMessage', text);
         };
 

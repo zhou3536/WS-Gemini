@@ -38,7 +38,7 @@ let users = await loadJson();
 
 const io = new Server(server, {
     cors: {
-        origin: "*", // 根据你的前端地址调整
+        origin: "*",
         methods: ["GET", "POST"]
     },
     allowRequest: (req, callback) => {
