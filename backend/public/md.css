@@ -42,9 +42,7 @@
 .model-message h4,
 .model-message h5,
 .model-message h6 {
-    /* color: #2c3e50; */
     font-weight: 600;
-    margin: 16px 0 8px 0;
     line-height: 1.4;
 }
 

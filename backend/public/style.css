@@ -292,11 +292,6 @@ body {
 
 .message {
     padding: 8px 10px;
-    /* line-height: 1.2; */
-}
-
-.message-box:first-child {
-    margin-top: 5px;
 }
 
 .message .fileCount {
@@ -309,7 +304,7 @@ body {
     background: #41c0ff30;
     border-radius: 0 15px 15px 15px;
     width: fit-content;
-    margin-left: 5px;
+    margin-top: 12px;
 }
 
 .user-message>p {
