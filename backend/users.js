@@ -273,8 +273,10 @@ const authenticateMiddleware = (req, res, next) => {
             return next();
         }
     };
-
-    res.status(401).sendFile(path.join(__dirname, 'public', 'signup.html'));
+    if (req.path.endsWith('.html') || req.path === '/') {
+        return res.status(401).sendFile(path.join(__dirname, 'public', 'signup.html'));
+    };
+    res.status(401).json({ message: '请登录后重试' });
 };
 
 // 登录路由处理函数
