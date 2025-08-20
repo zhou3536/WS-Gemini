@@ -292,9 +292,9 @@
 
 .pre-buttons-container {
     height: 25px;
-    padding: 3px 6px 0;
+    padding: 0 6px;
     display: flex;
-    gap: 5px;
+    gap: 8px;
     margin-bottom: -16px;
     margin-top: 10px;
     justify-content: end;
@@ -324,7 +324,10 @@
     background-color: transparent;
     color: var(--df-ziji);
     font-size: 12px;
-    line-height: 12px;
+    gap: 3px;
+    display: flex;
+    align-items: center;
+    justify-items: center;
 }
 
 .pre-buttons-container button:hover {
@@ -334,24 +337,7 @@
 .pre-buttons-container button:active {
     background-color: var(--df-01);
 }
-
-.editor-buttom::before {
-    content: "编辑✏️";
-    margin: auto;
-}
-
-.preview-button::before {
-    content: "预览👁️";
-    margin: auto;
-}
-
-.copy-button::before {
-    content: "复制🔗";
-    margin: auto;
-}
-
-.copy-button-OK::before {
-    content: "已复制";
-    color: #36ab55;
-    vertical-align: middle;
+.pre-buttons-container button svg{
+    width: 14px;
+    height: 14px;
 }
