@@ -113,14 +113,15 @@
         socket.on('userMessageEcho', (data) => {
             appendMessage(data.prompt, 'user', data.fileCount);
             createmodelmessagebox();
+            sendBtn.classList.add('loading');
         });
         socket.on('streamChunk', (data) => {
             appendStreamChunk(data.chunk);
         });
         socket.on('streamEnd', () => {
             sendBtn.disabled = false;
+            sendBtn.classList.remove('loading');
             accumulatedStreamText = '';
-            if (sendinfobox) sendinfobox.classList.remove('loading');
             hljs.highlightAll();
             addcopy();
         });
@@ -130,7 +131,7 @@
         });
         socket.on('APIerror', (data) => {
             console.error('API错误:', data.message);
-            if (sendinfobox) sendinfobox.classList.remove('loading');
+            sendBtn.classList.remove('loading');
             sendBtn.disabled = false;
             appenderror(data.message);
         });
@@ -204,7 +205,7 @@
                         socket.emit('loadHistory', { sessionId });
                         closehislist();
                         chatWindow.innerHTML = '';
-                        // 更新列表的激活状态
+
                         document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
                         li.classList.add('active');
                     }
@@ -217,18 +218,14 @@
         function appendMessage(text, sender, fileCount = 0) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-box');
-            const sendinfo = document.createElement('div');
-            sendinfo.classList.add('sender');
             const message = document.createElement('div');
             message.classList.add(`${sender}-message`, 'message');
 
             if (sender === 'user') {
-                sendinfo.innerHTML = '<img src="img/user.png" alt=""><p class="user">User</p>';
                 const messagep = document.createElement('p');
                 messagep.innerText = text;
                 message.appendChild(messagep);
             } else {
-                sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
                 message.innerHTML = marked.parse(text);
             };
 
@@ -239,25 +236,19 @@
                 message.appendChild(fileCountElement);
             }
 
-            messageElement.appendChild(sendinfo);
             messageElement.appendChild(message);
-
             chatWindow.appendChild(messageElement);
         }
 
         function createmodelmessagebox() {
             const messagebox = document.createElement('div');
             messagebox.classList.add('message-box');
-            const sendinfo = document.createElement('div');
-            sendinfo.classList.add('sender', 'loading');
-            sendinfo.innerHTML = '<img src="img/model.png" alt=""><p>Gemini</p>';
+            
             const message = document.createElement('div');
             message.classList.add('message', 'model-message');
-            const status = document.createElement('i');
-            status.classList.add('modalstatus');
-            status.innerText = SearchOn ? '正在搜索...' : '正在思考...';
-            message.appendChild(status);
-            messagebox.appendChild(sendinfo);
+            const status = SearchOn ? '正在搜索...' : '正在思考...';
+            message.innerHTML = `<img src="img/model.png" alt="" class="mimg"><span class="mspan">${status}</span>`;
+            
             messagebox.appendChild(message);
             chatWindow.appendChild(messagebox);
 
@@ -271,15 +262,12 @@
 
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            sendinfobox = sendinfo;
             modelmessage = message;
             lastmessagebox = messagebox;
         }
 
         let isonchatWindowstart = false;
         function appendStreamChunk(chunk) {
-
-            // 将新的原始块附加到累积文本中
             accumulatedStreamText += chunk;
             modelmessage.innerHTML = marked.parse(accumulatedStreamText);
 
@@ -325,7 +313,6 @@
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        // const mimeType = file.type === 'application/json' ? 'text/plain' : file.type;
                         resolve({
                             data: e.target.result.split(',')[1],
                             mimeType: file.type

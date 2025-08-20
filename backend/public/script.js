@@ -204,15 +204,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 function closehislist() {
+    if (window.innerWidth > 800) return;
     const a = document.getElementById("history-list");
     const opbtn = document.getElementById("history-b");
-    if (window.innerWidth > 800) { return }
     a.style.width = '0';
     a.style.borderRight = 'none';
     a.style.transition = 'none';
     opbtn.classList.remove('hisbtn2');
     historylistdsiplay = false;
-
 };
 
 //对话导航
