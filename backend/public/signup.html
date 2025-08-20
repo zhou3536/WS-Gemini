@@ -155,30 +155,10 @@
             position: relative;
             overflow: hidden;
         }
-
-        .container button:hover:not(:disabled) {
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+        .container .wait {
+            cursor: wait;
         }
-
-        .container button:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .container button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .container button:hover::before:not(:disabled) {
-            left: 100%;
-        }
-
+   
         #postlogin,
         #postcode,
         #postcode-2 {
@@ -269,6 +249,7 @@
                 opacity: 1;
             }
         }
+
     </style>
 </head>
 
@@ -401,6 +382,8 @@
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { xstongzhi('输入正确的邮箱'); return };
             if (!pwd1) { xstongzhi('请输入密码'); return }
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
+            getcode.classList.add('wait');
+            xstongzhi('验证码发送中');
             try {
                 const response = await fetch('/user/getcode', {
                     method: 'POST',
@@ -418,6 +401,8 @@
             } catch (error) {
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
+            } finally {
+                getcode.classList.remove('wait')
             }
         });
         postcode.addEventListener('click', async () => {
@@ -456,6 +441,8 @@
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { xstongzhi('输入正确的邮箱'); return };
             if (!pwd1) { xstongzhi('请输入密码'); return }
             if (pwd1 !== pwd2) { xstongzhi('两次输入的密码不一样'); return };
+            getcode2.classList.add('wait');
+            xstongzhi('验证码发送中');
             try {
                 const response = await fetch('/user/getcode2', {
                     method: 'POST',
@@ -473,6 +460,8 @@
             } catch (error) {
                 console.error('Fetch operation failed:', error);
                 xstongzhi('请求失败，请稍后再试');
+            } finally {
+                getcode2.classList.remove('wait');
             }
         });
         postcode2.addEventListener('click', async () => {
