@@ -160,14 +160,14 @@ Searchbtn.addEventListener("click", function () {
 renderFilePreviews();
 
 //缓存选择
-// const modelSelect = document.getElementById('gemini-v');
-// modelSelect.addEventListener('change', function () {
-//     localStorage.setItem('selectedModel', this.value);
-// });
-// const savedValue = localStorage.getItem('selectedModel');
-// if (savedValue) {
-//     modelSelect.value = savedValue;
-// }
+const modelSelect = document.getElementById('gemini-v');
+modelSelect.addEventListener('change', function () {
+    localStorage.setItem('selectedModel', this.value);
+});
+const savedValue = localStorage.getItem('selectedModel');
+if (savedValue) {
+    modelSelect.value = savedValue;
+}
 
 // 动态调整输入框高度
 promptInput.addEventListener('input', function () {
