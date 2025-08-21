@@ -31,6 +31,7 @@ export function initializeGemini(usersArray, ioInstance) {
         const loginToken = socket.request.signedCookies?.session_id?.sessionToken;
         const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
         if (loginuser) {
+            socket.user= loginuser;
             socket.userId = loginId;
             activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
@@ -68,7 +69,6 @@ export function initializeGemini(usersArray, ioInstance) {
         });
         socket.on("disconnect", () => {
             activechat.delete(socket.id);
-            console.log(`Socket.IO用户断开:${loginuser.username}`);
         });
     });
 };
@@ -112,8 +112,14 @@ async function setapikey(socket, data) {
             errorMessage = 'API_KEY没有权限或超出免费层级';
         } else if (error.message) {
             errorMessage = `API_KEY无效，${error.message}`;
-        }
-        socket.emit('tongzhi', `错误代码${error.status}，${errorMessage}`);
+        };
+
+        if (error.status) {
+            socket.emit('tongzhi', `${errorMessage}，错误代码${error.status}`);
+        } else {
+            socket.emit('tongzhi', '网络连接错误，无法连接到API地址');
+        };
+
         return;
     }
     // API key 验证通过
@@ -130,7 +136,7 @@ async function setapikey(socket, data) {
         socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
         socket.emit('tongzhi', 'API_KEY验证成功')
         socket.emit("APIKEY", socket.userApiKeyCipher)
-        console.log(socket.userId, "用户更新API_KEY：", socket.userApiKeyCipher);
+        console.log(socket.user.username, "用户更新API_KEY：", socket.userApiKeyCipher);
     } catch (writeError) {
         console.error(`写入 users.json 失败 (用户: ${socket.userId}):`, writeError);
         socket.emit('tongzhi', 'API_KEY保存失败');
