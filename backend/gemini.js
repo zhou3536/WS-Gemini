@@ -31,7 +31,7 @@ export function initializeGemini(usersArray, ioInstance) {
         const loginToken = socket.request.signedCookies?.session_id?.sessionToken;
         const loginuser = users.find(user => user.userId === loginId && user.sessionToken === loginToken)
         if (loginuser) {
-            socket.user= loginuser;
+            socket.user = loginuser;
             socket.userId = loginId;
             activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
