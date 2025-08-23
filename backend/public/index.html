@@ -194,7 +194,6 @@
             list.forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.title;
-                li.title = item.sessionId.replace('.json','');
                 li.dataset.sessionId = item.sessionId;
                 if (item.sessionId === sessionId) {
                     li.classList.add('active');

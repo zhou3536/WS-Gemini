@@ -158,10 +158,8 @@ async function handleNewMessage(socket, data) {
 
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!sessionId) {
-        const now = new Date();
-        const timeStr = now.toLocaleString().replace(/[/:]/g, "-");
         isNewSession = true;
-        sessionId = `${timeStr}.json`;
+        sessionId = `${Date.now()}.json`;
         socket.emit("sessionCreated", { sessionId });
     }
     const historyPath = path.join(userHistoriesDir, sessionId);
@@ -327,9 +325,7 @@ async function getHistoriesList(userId) {
         });
         const historyList = await Promise.all(historyListPromises);
         historyList.sort((a, b) => {
-            const A = a.sessionId.replace(/\.json$/, '');
-            const B = b.sessionId.replace(/\.json$/, '');
-            return B.localeCompare(A);
+            return parseInt(b.sessionId, 10) - parseInt(a.sessionId, 10);
         });
         return historyList;
     } catch (error) {
