@@ -390,7 +390,7 @@ function delHistories(list) {
     list.forEach((item, index) => {
         const li = document.createElement('li');
         const span = document.createElement('span');
-        span.title = `文件名：${item.sessionId}`;
+        span.title = item.sessionId.replace('.json', '');
         span.textContent = `${index + 1}. ${item.title}`
         li.dataset.sessionId = item.sessionId;
         const deleteBtn = document.createElement('button');

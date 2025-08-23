@@ -159,7 +159,7 @@ async function handleNewMessage(socket, data) {
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!sessionId) {
         const now = new Date();
-        const timeStr = now.toISOString().replace(/[:.]/g, "-");
+        const timeStr = now.toLocaleString().replace(/[/:]/g, "-");
         isNewSession = true;
         sessionId = `${timeStr}.json`;
         socket.emit("sessionCreated", { sessionId });
@@ -331,7 +331,6 @@ async function getHistoriesList(userId) {
             const B = b.sessionId.replace(/\.json$/, '');
             return B.localeCompare(A);
         });
-        console.log(historyList)
         return historyList;
     } catch (error) {
         console.error("获取历史记录列表失败:", error);
