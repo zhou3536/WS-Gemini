@@ -545,6 +545,10 @@ body {
         padding: 8px 2px;
     }
 
+    .user-message {
+        padding: 8px 10px;
+    }
+
     .input-area {
         padding: 6px;
         padding-bottom: 3px;
