@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const dataFilePath = path.join(__dirname, 'users.json');
 let users = [];
 const SESSION_COOKIE_NAME = 'session_id';
-const SESSION_DURATION_MS = 48 * 3600000;
+const SESSION_DURATION_MS = 480 * 3600000;
 
 const mailhost = process.env.MAIL_HOST;
 const mailuser = process.env.MAIL_USER;
