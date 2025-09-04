@@ -168,7 +168,7 @@ body {
     color: var(--df-ziji);
     min-width: 284px;
     border-radius: 8px;
-    font-weight: 550;
+    /* font-weight: 550; */
 }
 
 .sidebar button:hover {
@@ -406,7 +406,7 @@ body {
     width: calc(100% - 14px);
     max-width: 800px;
     margin: 6px auto;
-    margin-top: 6px;
+    margin-bottom: 12px;
     padding: 10px 16px;
     padding-bottom: 3px;
     border: 2px solid rgba(30, 173, 255, 0.3);
@@ -553,7 +553,7 @@ body {
 }
 
 @media (max-width: 1100px) {
-    #history-list {
+    .sidebar {
         position: absolute;
         left: 0;
     }
@@ -576,6 +576,7 @@ body {
         padding: 6px;
         padding-bottom: 3px;
         border-radius: 10px;
+        margin-bottom: 6px;
     }
 }
 
