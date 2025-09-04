@@ -144,42 +144,65 @@ body {
     display: flex;
 }
 
-#history-list {
+.sidebar {
     width: 0;
     max-width: 300px;
+    padding: 10px 0;
     height: var(--hhh);
-    counter-reset: item-counter;
     background-color: var(--hisbgc);
     border: none;
-    /* border-width: 0; */
-    /* border-right: 1px solid var(--df-01); */
     z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-#history-list h4,
+.sidebar button {
+    display: block;
+    border: none;
+    background: transparent;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 16px;
+    margin: 0 8px;
+    color: var(--df-ziji);
+    min-width: 284px;
+    border-radius: 8px;
+    font-weight: 550;
+}
+
+.sidebar button:hover {
+    background-color: var(--df-005);
+}
+
+#history-list {
+    flex: 1;
+    overflow-y: auto;
+    /* margin: 10px 0; */
+    min-width: 260px;
+}
+
 #history-list li {
-    margin: 3px 8px;
+    margin: 0 8px;
     padding: 5px 8px;
     border-radius: 8px;
+    font-size: 15px;
     cursor: default;
     display: block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: var(--ziti-1);
+    /* min-width: 276px; */
 }
 
-#history-list li span {
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+#history-list li:hover {
+    color: #007bff;
 }
 
 #history-list .active {
     background-color: var(--df-01);
 }
-
-
 
 #list-dhdh {
     position: absolute;
@@ -588,6 +611,11 @@ body {
 
     ::-webkit-scrollbar-thumb:hover {
         background: var(--df-04);
+    }
+
+    #history-list::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
     }
 }
 

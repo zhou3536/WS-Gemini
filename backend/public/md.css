@@ -164,7 +164,7 @@
     border: 1px solid var(--df-01);
     padding: 5px;
     text-align: left;
-    min-width: 180px;
+    min-width: 100px;
 }
 
 .model-message th {

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="md.css">
     <link rel="stylesheet" href="color.css">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/img/manifest.json">
     <script src="highlight.min.js"></script>
     <script src="marked.umd.js"></script>
 </head>
@@ -30,7 +30,13 @@
     </div>
     <div class="container">
         <ul id="delhistory"></ul>
-        <ul id="history-list" class="list-1"></ul>
+        <ul id="sidebar" class="sidebar">
+            <button onclick="gmmlogout()">退出登录</button>
+            <button onclick="window.open('/fy.html', '_blank')">AI翻译</button>
+            <button onclick="setapikeybox.style.display = 'block'">设置API</button>
+            <button onclick="delhistorybox.style.display = 'block'">管理历史</button>
+            <div id="history-list"></div>
+        </ul>
         <ul id="list-dhdh" class="list-1"></ul>
         <main class="chat-area" id="chat-area">
             <div id="welcome">探索无界限</div>
@@ -69,6 +75,7 @@
         const chatWindow = document.getElementById('chat-window');
         const sendBtn = document.getElementById('send-btn');
         const newChatBtn = document.getElementById('new-chat-btn');
+        const sidebar = document.getElementById('sidebar');
         const historyList = document.getElementById('history-list');
         const chatarea = document.getElementById('chat-area');
         const promptInput = document.getElementById('prompt-input');
@@ -175,26 +182,9 @@
 
         function renderHistoriesList(list) {
             historyList.innerHTML = '';
-            const ophis = document.createElement('h4');
-            ophis.innerText = '管理记录';
-            ophis.addEventListener('click', function () { delhistorybox.style.display = 'block' });
-            historyList.appendChild(ophis);
-            const logout = document.createElement('h4');
-            logout.innerText = '注销登录';
-            logout.addEventListener('click', gmmlogout);
-            historyList.appendChild(logout);
-            const openpage = document.createElement('h4');
-            openpage.innerText = 'AI 翻译';
-            openpage.addEventListener('click', () => { window.open('/fy.html', '_blank'); });
-            historyList.appendChild(openpage);
-            const setapikey = document.createElement('h4');
-            setapikey.innerText = '设置API_KEY';
-            setapikey.addEventListener('click', () => { setapikeybox.style.display = 'block' });
-            historyList.appendChild(setapikey);
-
-            list.forEach(item => {
+            list.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.textContent = item.title;
+                li.textContent = `${index + 1}. ${item.title}`;
                 li.dataset.sessionId = item.sessionId;
                 if (item.sessionId === sessionId) {
                     li.classList.add('active');
@@ -244,12 +234,12 @@
         function createmodelmessagebox() {
             const messagebox = document.createElement('div');
             messagebox.classList.add('message-box');
-            
+
             const message = document.createElement('div');
             message.classList.add('message', 'model-message');
             const status = SearchOn ? '正在搜索...' : '正在思考...';
             message.innerHTML = `<img src="img/model.png" alt="" class="mimg"><span class="mspan">${status}</span>`;
-            
+
             messagebox.appendChild(message);
             chatWindow.appendChild(messagebox);
 

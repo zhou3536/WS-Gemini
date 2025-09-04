@@ -51,9 +51,11 @@ const io = new Server(server, {
 app.use(express.json());
 
 app.use('/img', express.static(path.join(__dirname, 'public', 'img'), { maxAge: 24 * 60 * 60 * 1000 }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 initializeUsers(app, users);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 initializeGemini(users, io);
 
 

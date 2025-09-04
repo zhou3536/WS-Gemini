@@ -183,7 +183,7 @@ window.addEventListener('load', () => {
 //打开关闭历史列表
 let historylistdsiplay = false;
 document.addEventListener('DOMContentLoaded', function () {
-    const a = document.getElementById("history-list");
+    const a = document.getElementById("sidebar");
     const opbtn = document.getElementById("history-b");
     opbtn.addEventListener("click", function () {
         if (delhistorybox.style.display === 'block') {
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 function closehislist() {
     if (window.innerWidth > 800) return;
-    const a = document.getElementById("history-list");
+    const a = document.getElementById("sidebar");
     const opbtn = document.getElementById("history-b");
     a.style.width = '0';
     a.style.borderRight = 'none';
