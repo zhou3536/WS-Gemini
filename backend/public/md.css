@@ -22,7 +22,7 @@
     --perbgc: #5c626833;
     --per-df: #eee;
     --per-p: #5cb4ff;
-    --code: #bbbcda;
+    --code: #d3e3ff;
     --hljs-string: #81c995;
     --hljs-keyword: #c58af9;
     --hljs-function: #88bafc;
@@ -96,14 +96,14 @@
 
 /* 行内代码样式 */
 .model-message code {
-    /* background-color: var(--df-005); */
+    background-color: var(--df-005);
     color: var(--code);
-    padding: 1px 3px;
-    /* border-radius: 4px; */
-    /* font-family: 'Monaco', 'Consolas', 'Courier New', monospace; */
-    font-family: sans-serif;
-    /* font-size: 15px; */
-    /* border: 1px solid #e1e8ed; */
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+    /* font-family: sans-serif; */
+    font-size: 14px;
+    /* border: 1px solid var(--df-01); */
     font-weight: normal;
 }
 
@@ -307,10 +307,10 @@
     margin-right: auto;
     margin-left: 5px;
     font-weight: 700;
-    font-size: 17px;
+    font-size: 15px;
     font-family: serif;
     color: var(--df-ziji);
-    font-style: italic;
+    /* font-style: italic; */
 }
 
 .pre-buttons-container button {
