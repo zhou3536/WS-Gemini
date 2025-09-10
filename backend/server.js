@@ -20,8 +20,7 @@ const server = http.createServer(app);
 const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
 const COOKIE_SECRET = process.env.cookieSecret;
-
-
+const CacheControl = process.env.CacheControl;
 
 const loadJson = async () => {
     const filePath = './users.json';
@@ -50,11 +49,11 @@ const io = new Server(server, {
 
 app.use(express.json());
 
-app.use('/img', express.static(path.join(__dirname, 'public', 'img'), { maxAge: 24 * 60 * 60 * 1000 }));
+app.use('/img', express.static(path.join(__dirname, 'public', 'img'), { maxAge: CacheControl }));
 
 initializeUsers(app, users);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: CacheControl }));
 
 initializeGemini(users, io);
 
