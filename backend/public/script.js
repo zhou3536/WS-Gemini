@@ -398,10 +398,11 @@ function delHistories(list) {
         deleteBtn.classList.add('delete-history-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (item.sessionId === sessionId) {
-                newChatBtn.click();
-            }
-            li.style.opacity = '0';
+            if (item.sessionId === sessionId) newChatBtn.click();
+            li.style.transition = 'all 0.1s ease-in-out';
+            li.style.padding = '0';
+            li.style.margin = '0 auto';
+            li.style.height = '0';
             deleteBtn.disabled = true;
             socket.emit('deleteHistory', { sessionId: item.sessionId });
         });

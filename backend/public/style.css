@@ -696,6 +696,7 @@ button:disabled {
     margin: 5px auto;
     border-radius: 8px;
     background-color: var(--df-005);
+    overflow: hidden;
 }
 
 #delhistory li span {
