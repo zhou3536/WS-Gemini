@@ -690,13 +690,14 @@ button:disabled {
 #delhistory li {
     list-style-type: none;
     display: flex;
-    align-content: center;
+    align-items: center;
     max-width: 800px;
-    padding: 8px;
-    margin: 5px auto;
+    padding: 0 8px;
+    margin: 0 auto 6px;
     border-radius: 8px;
     background-color: var(--df-005);
     overflow: hidden;
+    height: 35px;
 }
 
 #delhistory li span {

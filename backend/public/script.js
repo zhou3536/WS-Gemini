@@ -399,12 +399,14 @@ function delHistories(list) {
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (item.sessionId === sessionId) newChatBtn.click();
-            li.style.transition = 'all 0.1s ease-in-out';
-            li.style.padding = '0';
+            li.style.transition = 'all 0.1s linear';
             li.style.margin = '0 auto';
             li.style.height = '0';
+            li.style.opacity = '0';
             deleteBtn.disabled = true;
-            socket.emit('deleteHistory', { sessionId: item.sessionId });
+            setTimeout(() => {
+                socket.emit('deleteHistory', { sessionId: item.sessionId })
+            }, 100);
         });
         li.appendChild(span);
         li.appendChild(deleteBtn);
