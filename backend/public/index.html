@@ -195,7 +195,7 @@
                         localStorage.setItem('sessionId', sessionId);
                         socket.emit('loadHistory', { sessionId });
                         closehislist();
-                        chatWindow.innerHTML = '';
+                        chatWindow.innerHTML = '<svg class="loader" viewBox="25 25 50 50"> <circle r="20" cy="50" cx="50"></circle></svg>';
 
                         document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
                         li.classList.add('active');
