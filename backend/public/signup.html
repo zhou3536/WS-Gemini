@@ -20,7 +20,9 @@
             height: 100dvh;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(to bottom right, #2525bc, #2471dc, #4b89e0, #455ad1, #4c3484);
+            background: radial-gradient(1200px 600px at 80% 20%, rgba(0, 68, 255, 0.323), transparent 60%),
+                radial-gradient(800px 400px at 10% 90%, rgba(25, 0, 61, 0.4), transparent 60%),
+                linear-gradient(180deg, #0b1220, #04070f);
             position: relative;
             overflow: hidden;
             padding: 20px;
@@ -51,9 +53,9 @@
             width: 380px;
             border-radius: 20px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(61, 23, 214, 0.1);
+            /* backdrop-filter: blur(10px); */
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             z-index: 1;
             transform: translateY(0);
@@ -65,7 +67,7 @@
             display: flex;
             margin: 0 0 20px 0;
             font-weight: 600;
-            background: rgba(248, 250, 252, 0.6);
+            /* background: rgba(248, 250, 252, 0.6); */
             border-radius: 15px;
             padding: 8px 0;
             gap: 4px;
@@ -76,7 +78,7 @@
             padding: 10px;
             text-align: center;
             border-radius: 12px;
-            color: #64748b;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -93,6 +95,7 @@
 
         .page {
             display: none;
+            color: #fff;
             text-align: center;
             margin-bottom: 10px;
             animation: fadeIn1 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -122,18 +125,18 @@
         .container input {
             width: 100%;
             padding: 10px;
-            border: 2px solid rgba(226, 232, 240, 0.8);
+            border: 2px solid rgba(226, 232, 240, 0.5);
             border-radius: 6px;
             font-size: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #1e293b;
+            background: transparent;
+            color: #ecf3ff;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
         }
 
         .container input:focus {
             border-color: #3b82f6;
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
@@ -154,10 +157,11 @@
             position: relative;
             overflow: hidden;
         }
+
         .container .wait {
             cursor: wait;
         }
-   
+
         #postlogin,
         #postcode,
         #postcode-2 {
@@ -249,10 +253,21 @@
             }
         }
 
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
     </style>
 </head>
 
 <body>
+    <canvas id="spaceCanvas"></canvas>
+
     <div class="container">
         <div class="title" id="nav">
             <a href="#login">登录账号</a>
@@ -568,6 +583,138 @@
             }
         }
         checkLoginStatus();
+    </script>
+
+
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let stars = [];
+        const maxSize = Math.max(window.innerWidth, window.innerHeight);
+
+
+        // 配置参数
+        const config = {
+            starCount: 1200,       // 星星数量
+            speed: maxSize / 900,             // 基础速度
+            acceleration: 0.5,    // 加速度
+            deceleration: 0.1,    // 减速度
+            starSize: 4,          // 星星基础大小
+        };
+
+        let currentSpeed = config.speed;
+        let isAccelerating = false;
+
+        // 初始化画布大小
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            // 重新定位中心
+            config.centerOffsetX = width / 2;
+            config.centerOffsetY = height / 2;
+        }
+
+        // 星星类
+        class Star {
+            constructor() {
+                this.reset(true);
+            }
+
+            // 重置星星状态
+            // randomZ: 是否随机分布在Z轴（用于初始化），否则从最远处生成
+            reset(randomZ) {
+                // x 和 y 是相对于中心点的坐标 (-width/2 到 width/2)
+                this.x = (Math.random() * width) - (width / 2);
+                this.y = (Math.random() * height) - (height / 2);
+
+                // z 代表深度。z 越小，星星越接近屏幕；z 越大，星星越远
+                // 初始时，z 分布在 0 到 width 之间
+                this.z = randomZ ? Math.random() * width : width;
+
+                // 之前的 z 坐标，用于绘制拖尾效果
+                this.pz = this.z;
+            }
+
+            update() {
+                // 星星向屏幕移动（Z轴减小）
+                this.z = this.z - currentSpeed;
+
+                // 如果星星跑到了屏幕后面（z <= 0），重置它到最远处
+                if (this.z < 1) {
+                    this.reset(false);
+                    this.pz = this.z;
+                }
+            }
+
+            draw() {
+                // 映射逻辑：将 3D 坐标 (x, y, z) 投影到 2D 屏幕 (sx, sy)
+
+                // 这里的 map 函数简单模拟透视：越近（z越小），偏移量越大
+                const sx = (this.x / this.z) * width + config.centerOffsetX;
+                const sy = (this.y / this.z) * height + config.centerOffsetY;
+
+                // 计算星星的“上一帧”位置（用于画线/拖尾）
+                const px = (this.x / this.pz) * width + config.centerOffsetX;
+                const py = (this.y / this.pz) * height + config.centerOffsetY;
+
+                // 更新 pz 为当前的 z，供下一帧使用
+                this.pz = this.z;
+
+                // 计算星星的半径：越近越大
+                const r = (1 - this.z / width) * config.starSize;
+
+                // 绘制星星（线条拖尾效果）
+                ctx.beginPath();
+                ctx.moveTo(px, py); // 从上一帧位置
+                ctx.lineTo(sx, sy); // 画到当前位置
+
+                // 根据距离调整颜色透明度，越远越暗
+                const alpha = (1 - this.z / width);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.lineWidth = r;
+                ctx.stroke();
+            }
+        }
+
+        // 初始化
+        function init() {
+            resize();
+            stars = [];
+            for (let i = 0; i < config.starCount; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            // 绘制半透明黑色背景，形成极短的残影，或者直接清空
+            // 这里直接清空以保持清晰的线条感，如果想要模糊感可以用 fillRect
+            ctx.fillStyle = "#010102";
+            ctx.fillRect(0, 0, width, height);
+
+            // 处理速度逻辑
+            if (isAccelerating) {
+                if (currentSpeed < config.maxSpeed) currentSpeed += config.acceleration;
+            } else {
+                if (currentSpeed > config.speed) currentSpeed -= config.deceleration;
+            }
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // 事件监听
+        window.addEventListener('resize', resize);
+        init();
+        animate();
+
     </script>
 </body>
 
