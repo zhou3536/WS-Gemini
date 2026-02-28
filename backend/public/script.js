@@ -469,4 +469,17 @@ function sendyouapikey(text) {
     socket.emit('sendapikey', apikey);
     yourapikey.value = '';
     xstongzhi('正在验证，请稍后...', 2000)
-}
+};
+
+function removeAllContextMenu() {
+    const contextMenus = document.querySelectorAll('.contextmenu');
+    contextMenus.forEach(menu => {
+        if (menu.parentNode) { menu.parentNode.removeChild(menu) }
+    });
+    console.log('aa')
+};
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', (event) => {
+        removeAllContextMenu();
+    });
+});

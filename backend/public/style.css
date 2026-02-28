@@ -877,3 +877,20 @@ button:disabled {
         stroke-dashoffset: -125px;
     }
 }
+
+.contextmenu {
+    position: absolute;
+    color: #931a1a;
+    z-index: 1000000;
+    padding: 3px 10px;
+    border: 1px solid #00000060;
+    border-radius: 5px;
+    background: #fff;
+    font-size: 15px;
+    cursor: default;
+}
+
+.contextmenu:hover {
+    color: #cf0f0f;
+    border: 1px solid #000000a0;
+}

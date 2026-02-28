@@ -15,7 +15,7 @@ const CUSTOM_BASE_URL = process.env.PROXYURL;
 if (CUSTOM_BASE_URL) {
     console.log('代理地址:', CUSTOM_BASE_URL);
 } else {
-    console.log('代理地址：未配置代理');
+    console.log('代理地址：直连');
 }
 const historiesDir = path.join(__dirname, "histories");
 if (!fs.existsSync(historiesDir)) { fs.mkdirSync(historiesDir); }

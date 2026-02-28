@@ -201,7 +201,24 @@
                         li.classList.add('active');
                     }
                 });
-
+                li.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    removeAllContextMenu();
+                    const contextMenu = document.createElement('div');
+                    contextMenu.classList.add('contextmenu');
+                    contextMenu.innerText = `删除对话${index + 1}`;
+                    contextMenu.addEventListener('click', (e) => {
+                        const userConfirmed = confirm(`您确定要删除 对话${index + 1} 吗？`);
+                        if (!userConfirmed) { return };
+                        socket.emit('deleteHistory', { sessionId: item.sessionId });
+                        if (item.sessionId === sessionId) newChatBtn.click();
+                    });
+                    const mouseX = event.clientX;
+                    const mouseY = event.clientY;
+                    contextMenu.style.top = `${mouseY}px`;
+                    contextMenu.style.left = `${mouseX}px`;
+                    document.body.appendChild(contextMenu)
+                });
                 historyList.appendChild(li);
             });
         }
