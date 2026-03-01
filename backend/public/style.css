@@ -180,6 +180,10 @@ body {
     overflow-y: auto;
     /* margin: 10px 0; */
     min-width: 260px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 #history-list li {
