@@ -472,14 +472,13 @@ function sendyouapikey(text) {
 };
 
 function removeAllContextMenu() {
-    const contextMenus = document.querySelectorAll('.contextmenu');
+    const contextMenus = document.querySelectorAll('body > div.contextmenu');
     contextMenus.forEach(menu => {
         if (menu.parentNode) { menu.parentNode.removeChild(menu) }
     });
-    console.log('aa')
 };
 document.addEventListener('DOMContentLoaded', () => {
-    document.addEventListener('click', (event) => {
+    document.addEventListener('click', () => {
         removeAllContextMenu();
     });
 });
