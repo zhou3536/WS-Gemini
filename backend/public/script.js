@@ -481,4 +481,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => {
         removeAllContextMenu();
     });
+    document.addEventListener('click', (event) => {
+        const clickedElement = event.target;
+        if (!clickedElement.closest('#gemini-v')) modelOptions.style.display = 'none';
+    });
+
+    document.getElementById('gemini-v').addEventListener('click', () => {
+        if (modelOptions.style.display === 'none') {
+            modelOptions.style.display = 'block';
+        } else {
+            modelOptions.style.display = 'none';
+        }
+    });
+
+    const OptionsElements = modelOptions.querySelectorAll('div');
+    OptionsElements.forEach(div => {
+        div.addEventListener('click', () => {
+            model = div.getAttribute('model');
+            document.getElementById('gemini-p').innerText = div.textContent;
+        })
+    });
 });
