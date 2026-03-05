@@ -102,7 +102,6 @@
 
         // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
-            console.log('Socket.IO连接已建立');
             Connection.style.display = 'none';
             sendBtn.disabled = false;
             if (sessionId) {
@@ -164,7 +163,6 @@
         });
 
         socket.on('disconnect', () => {
-            console.log('Socket.IO连接已关闭');
             Connection.style.display = 'block';
             sendBtn.disabled = true;
         });
