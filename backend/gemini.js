@@ -160,7 +160,6 @@ async function handleNewMessage(socket, data) {
     if (!sessionId) {
         isNewSession = true;
         sessionId = `${Date.now()}.json`;
-        socket.emit("sessionCreated", { sessionId });
     }
     const historyPath = path.join(userHistoriesDir, sessionId);
     try {
@@ -234,7 +233,7 @@ async function handleNewMessage(socket, data) {
             fullResponse += chunkText;
             socket.emit("streamChunk", { chunk: chunkText });
         }
-
+        if (isNewSession) socket.emit("sessionCreated", { sessionId });
         // 保存历史记录
         history.push(userMessage);
         history.push({ role: "model", parts: [{ text: fullResponse }] });

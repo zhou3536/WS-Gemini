@@ -148,11 +148,14 @@ promptInput.addEventListener('paste', (e) => {
 //搜索开关
 Searchbtn.addEventListener("click", function () {
     const aaa = document.getElementById('Search');
+    const Img = document.getElementById('SearchImg');
     if (SearchOn) {
-        aaa.classList.remove('SearchON');
+        // aaa.classList.remove('SearchON');
+        Img.src = "img/5241.png"
         SearchOn = false;
     } else if (!SearchOn) {
-        aaa.classList.add('SearchON');
+        // aaa.classList.add('SearchON');
+        Img.src = "img/5242.png"
         SearchOn = true;
     }
 });

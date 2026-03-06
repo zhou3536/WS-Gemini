@@ -51,9 +51,11 @@
                 <input type="file" id="file-input" multiple style="display: none;">
                 <div class="send-box">
                     <div class="menu">
-                        <button id="new-chat-btn">新对话</button>
+                        <button id="new-chat-btn">新聊天</button>
                         <button id="addfile"></button>
-                        <button id="Search" class="search">搜索网络</button>
+                        <button id="Search" class="search" style="border: none;">
+                            <img src="img/5241.png" id="SearchImg" alt="" style="vertical-align: middle;width: 23px;height: 23px; ">
+                        </button>
                         <div id="Connection" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
                     </div>
@@ -257,8 +259,8 @@
 
             const message = document.createElement('div');
             message.classList.add('message', 'model-message');
-            const status = SearchOn ? '正在搜索...' : '正在思考...';
-            message.innerHTML = `<img src="img/model.png" alt="" class="mimg"><span class="mspan">${status}</span>`;
+            const status = SearchOn ? '搜索 ...' : '快马加编 ...';
+            message.innerHTML = `<img src="img/gemini.png" alt="" class="mimg"><span class="mspan">${status}</span>`;
 
             messagebox.appendChild(message);
             chatWindow.appendChild(messagebox);

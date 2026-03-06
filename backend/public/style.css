@@ -379,13 +379,24 @@ body {
     box-shadow: none;
     vertical-align: middle;
     margin-right: 8px;
+    animation: rotate1 1.3s linear infinite;
 }
 
 .model-message .mspan {
+    font-size: 13px;
+    font-style: italic;
+    color: #555;
     vertical-align: middle;
-    animation: fade 1.5s infinite;
+    animation: fade 2s infinite;
 }
-
+@keyframes rotate1 {
+  from {
+    transform: rotate(0deg); 
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 @keyframes fade {
 
     0%,
