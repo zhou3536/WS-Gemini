@@ -500,6 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-const modelcache = JSON.parse(localStorage.getItem("model"));
-model = modelcache.model || 'gemini-2.5-flash-lite';
-document.getElementById('gemini-p').innerText = modelcache.modelname || Gemini - 2.5 - Lite;
+let modelcache = JSON.parse(localStorage.getItem("model"));
+if (!modelcache) modelcache = { model: 'gemini-2.5-flash-lite', modelname: 'Gemini-2.5-Lite' }
+model = modelcache.model;
+document.getElementById('gemini-p').innerText = modelcache.modelname;

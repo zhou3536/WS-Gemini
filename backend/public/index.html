@@ -54,7 +54,8 @@
                         <button id="new-chat-btn">新聊天</button>
                         <button id="addfile"></button>
                         <button id="Search" class="search" style="border: none;">
-                            <img src="img/5241.png" id="SearchImg" alt="" style="vertical-align: middle;width: 23px;height: 23px; ">
+                            <img src="img/5241.png" id="SearchImg" alt=""
+                                style="vertical-align: middle;width: 23px;height: 23px; ">
                         </button>
                         <div id="Connection" title="连接状态"></div>
                         <button id="send-btn" class="send-btn"></button>
@@ -100,7 +101,7 @@
         let modelmessage = null;
         let selectedFiles = []; // 用于存储选择的文件
         let SearchOn = false; // 搜索开关
-        let model = 'gemini-2.5-flash-lite'; // 默认模型
+        let model;
 
         // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {

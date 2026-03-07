@@ -190,6 +190,7 @@ body {
     color: var(--df-ziji);
     min-width: 284px;
     border-radius: 8px;
+    transition: all 0.3s ease;
     /* font-weight: 550; */
 }
 
@@ -213,17 +214,18 @@ body {
     padding: 5px 8px;
     border-radius: 8px;
     font-size: 15px;
-    cursor: default;
+    cursor: pointer;
     display: block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--ziti-1);
+    transition: all 0.3s ease;
     /* min-width: 276px; */
 }
 
 #history-list li:hover {
-    color: #007bff;
+    background: var(--df-005);
 }
 
 #history-list .active {
@@ -389,14 +391,17 @@ body {
     vertical-align: middle;
     animation: fade 2s infinite;
 }
+
 @keyframes rotate1 {
-  from {
-    transform: rotate(0deg); 
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
+
 @keyframes fade {
 
     0%,
@@ -919,15 +924,18 @@ button:disabled {
     position: absolute;
     color: #931a1a;
     z-index: 1000000;
-    padding: 3px 10px;
+    padding: 6px 10px;
     border: 1px solid #00000060;
     border-radius: 5px;
     background: #fff;
     font-size: 15px;
     cursor: default;
+    animation: fadeIn 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .contextmenu:hover {
     color: #cf0f0f;
+    background: #e8f7ff;
     border: 1px solid #000000a0;
 }
