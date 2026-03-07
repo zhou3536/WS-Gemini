@@ -163,14 +163,7 @@ Searchbtn.addEventListener("click", function () {
 renderFilePreviews();
 
 //缓存选择
-const modelSelect = document.getElementById('gemini-v');
-modelSelect.addEventListener('change', function () {
-    localStorage.setItem('selectedModel', this.value);
-});
-const savedValue = localStorage.getItem('selectedModel');
-if (savedValue) {
-    modelSelect.value = savedValue;
-}
+
 
 // 动态调整输入框高度
 promptInput.addEventListener('input', function () {
@@ -502,6 +495,11 @@ document.addEventListener('DOMContentLoaded', () => {
         div.addEventListener('click', () => {
             model = div.getAttribute('model');
             document.getElementById('gemini-p').innerText = div.textContent;
+            localStorage.setItem("model", JSON.stringify({ model: model, modelname: div.textContent }));
         })
     });
 });
+
+const modelcache = JSON.parse(localStorage.getItem("model"));
+model = modelcache.model || 'gemini-2.5-flash-lite';
+document.getElementById('gemini-p').innerText = modelcache.modelname || Gemini - 2.5 - Lite;

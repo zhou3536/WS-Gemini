@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 import { readFile, writeFile, readdir, unlink, access, mkdir } from 'fs/promises';
@@ -74,34 +74,52 @@ export function initializeGemini(usersArray, ioInstance) {
 };
 //简单接口
 async function Simplemessage(socket, data) {
-    if (!data) { return }
+    if (!data) return;
+
     try {
-        const AI = new GoogleGenerativeAI(socket.userApiKey);
-        const Model = AI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
-        const chat = Model.startChat({ history: [] });
-        const result = await chat.sendMessageStream([{ text: data }]);
+        const ai = new GoogleGenAI({
+            apiKey: socket.userApiKey,
+            httpOptions: { baseUrl: CUSTOM_BASE_URL }
+        });
+
+        const responseStream = await ai.models.generateContentStream({
+            model: 'gemini-2.5-flash-lite',
+            contents: [{ role: 'user', parts: [{ text: data }] }],
+            config: {}
+        });
+
         let fullResponse = "";
-        for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            fullResponse += chunkText;
-            socket.emit("streamChunk", { chunk: chunkText });
+
+        for await (const chunk of responseStream) {
+            const chunkText = chunk.text;
+            if (chunkText) {
+                fullResponse += chunkText;
+                socket.emit("streamChunk", { chunk: chunkText });
+            }
         }
+
         socket.emit("streamEnd");
 
     } catch (error) {
-        let errorMessage = "未知错误";
-        if (error.message) errorMessage = error.message
-        socket.emit('tongzhi', `错误代码${error.status}，${errorMessage}`);
-    };
+        let errorMessage = error.message || "未知错误";
+        console.error("AI Error:", error);
+        socket.emit('tongzhi', `错误状态: ${error.status || 'Error'}，${errorMessage}`);
+    }
 }
 
 //添加和验证API_KEY
 async function setapikey(socket, data) {
     if (!data) { return; }
     try {
-        const testAI = new GoogleGenerativeAI(data.trim());
-        const testModel = testAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }, { baseUrl: CUSTOM_BASE_URL });
-        const testResult = await testModel.generateContent("Hello");
+        const ai = new GoogleGenAI({
+            apiKey: data.trim(),
+            httpOptions: { baseUrl: CUSTOM_BASE_URL }
+        });
+        const responseStream = await ai.models.generateContentStream({
+            model: 'gemini-2.5-flash',
+            contents: "Hello",
+            config: {}
+        });
     } catch (error) {
         let errorMessage = "API_KEY无效，未知错误";
         if (error.status === 400) {
@@ -152,7 +170,10 @@ async function handleNewMessage(socket, data) {
         socket.emit("APIerror", { message: "未登录或未配置API_KEY" });
         return;
     }
-    const genAI = new GoogleGenerativeAI(userApiKey);
+    const ai = new GoogleGenAI({
+        apiKey: userApiKey,
+        httpOptions: { baseUrl: CUSTOM_BASE_URL }
+    });
     let { sessionId, prompt, files, model, useWebSearch } = data;
     let isNewSession = false;
 
@@ -186,7 +207,6 @@ async function handleNewMessage(socket, data) {
         }
     }
 
-    // 构建请求
     const userMessage = { role: "user", parts: [{ text: prompt }] };
     if (files && files.length > 0) {
         const fileParts = files.map(file => ({
@@ -200,40 +220,33 @@ async function handleNewMessage(socket, data) {
 
     // 调用Gemini API
     try {
-        console.log('User ID:', userId, 'Session ID:', sessionId, ' Model:', model, ' Websearch:', useWebSearch, ' API_KEY:', socket.userApiKeyCipher);
-        const generationConfig = { temperature: 0.5, topP: 0.8, topK: 40, maxOutputTokens: 20480 };
+        console.log('User ID:', userId, ' Model:', model, ' Websearch:', useWebSearch,);
 
-        // 构建模型参数对象
-        const modelParams = {
-            model,
-            generationConfig,
-        };
+        let config = {};
 
-        // 根据 useWebSearch 条件添加 tools
         if (useWebSearch) {
-            modelParams.tools = [{ google_search: {} }];
+            config.tools = [{ googleSearch: {} }];
         }
-
-        const geminiModel = genAI.getGenerativeModel(modelParams, { baseUrl: CUSTOM_BASE_URL },);
-
-        // 如果是新会话，history 在这里是空数组
-        // 如果是旧会话，history 包含了之前的内容
-        const chat = geminiModel.startChat({
+        const chat = ai.chats.create({
+            model: model,
             history: history,
-            generationConfig: {
-                // 可由前端传递参数
-            },
+            config
+        });
+        const responseStream = await chat.sendMessageStream({
+            message: userMessage
         });
 
-        const result = await chat.sendMessageStream(userMessage.parts);
-
         let fullResponse = "";
-        for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            fullResponse += chunkText;
-            socket.emit("streamChunk", { chunk: chunkText });
+        for await (const chunk of responseStream) {
+            const chunkText = chunk.text || "";
+            if (chunkText) {
+                fullResponse += chunkText;
+                socket.emit("streamChunk", { chunk: chunkText });
+            }
         }
+
         if (isNewSession) socket.emit("sessionCreated", { sessionId });
+
         // 保存历史记录
         history.push(userMessage);
         history.push({ role: "model", parts: [{ text: fullResponse }] });
