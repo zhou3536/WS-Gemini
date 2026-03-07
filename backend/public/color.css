@@ -21,6 +21,7 @@
     --dffx-04: rgba(255, 255, 255, 0.4);
     --dffx-07: rgba(255, 255, 255, 0.7);
     --dffx-1: rgba(255, 255, 255);
+    --tongzhi: #555;
 }
 
 [data-theme="dark"] {
@@ -45,4 +46,5 @@
     --dffx-04: rgba(0, 0, 0, 0.4);
     --dffx-07: rgba(0, 0, 0, 0.7);
     --dffx-1: rgba(0, 0, 0);
+    --tongzhi: #ccc;
 }

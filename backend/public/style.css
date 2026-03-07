@@ -210,25 +210,34 @@ body {
 }
 
 #history-list li {
-    margin: 0 8px;
-    padding: 5px 8px;
-    border-radius: 8px;
     font-size: 15px;
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+    margin: 0px 8px;
+    padding: 6px 8px;
+    border-radius: 12px;
     cursor: pointer;
     display: block;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
+    /* text-overflow: ellipsis; */
     color: var(--ziti-1);
     transition: all 0.3s ease;
+    border-bottom: 1px solid var(--df-005);
     /* min-width: 276px; */
 }
-
+#history-list li div{
+    overflow: hidden;
+    white-space: nowrap;
+}
 #history-list li:hover {
     background: var(--df-005);
 }
 
 #history-list .active {
+    background-color: var(--df-01);
+}
+
+#history-list .active:hover {
     background-color: var(--df-01);
 }
 
@@ -246,9 +255,14 @@ body {
     margin: 0 3px;
     padding: 3px 8px;
     border-radius: 5px;
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--df-005);
 }
 
 #list-dhdh h4 {
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
     background-color: var(--bodybgc);
 }
 
@@ -316,7 +330,7 @@ body {
 .list-1 li::before {
     counter-increment: item-counter;
     content: counter(item-counter) ".";
-    margin-right: 0.3em;
+    margin-right: 1px;
 }
 
 .chat-area {
@@ -794,7 +808,7 @@ button:disabled {
 
 #tongzhi p {
     text-align: center;
-    background-color: var(--df-09);
+    background-color: var(--tongzhi);
     color: var(--bodybgc);
     padding: 8px 20px;
     min-width: 100px;
@@ -810,12 +824,12 @@ button:disabled {
 @keyframes fadeIn2 {
     from {
         opacity: 0;
-        transform: scale(0.6);
+        /* transform: scale(.9); */
     }
 
     to {
         opacity: 1;
-        transform: scale(1);
+        /* transform: scale(1); */
     }
 }
 

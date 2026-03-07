@@ -190,7 +190,10 @@
             historyList.innerHTML = '';
             list.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.textContent = `${index + 1}. ${item.title}`;
+                const lidiv = document.createElement('div');
+                lidiv.textContent = `${index + 1}.${item.title}`;
+                li.appendChild(lidiv);
+                li.title = item.title;
                 li.dataset.sessionId = item.sessionId;
                 if (item.sessionId === sessionId) {
                     li.classList.add('active');
@@ -269,7 +272,7 @@
             promptInput.value = '';
             selectedFiles = [];
             renderFilePreviews();
-            promptInput.focus();
+            // promptInput.focus();
 
             promptInput.style.height = '0';
             promptInput.style.height = promptInput.scrollHeight + 'px';
@@ -317,11 +320,12 @@
 
         async function sendMessage() {
             const prompt = promptInput.value.trim();
-            if (prompt === '' && selectedFiles.length === 0) return;
+            if (prompt === '' && selectedFiles.length === 0) {xstongzhi('请输入内容');return;}
             if (sendBtn.disabled) return;
 
             welcome.style.display = 'none';
             sendBtn.disabled = true;
+            promptInput.blur();
 
             const filePromises = selectedFiles.map(file => {
                 return new Promise((resolve, reject) => {

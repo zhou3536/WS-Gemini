@@ -217,12 +217,12 @@ function generateUserMessageIndex() {
     indexList.innerHTML = '';
     if (userMessages.length === 0) {
         const listTitle = document.createElement('h4');
-        listTitle.textContent = '新的对话';
+        listTitle.textContent = '新的聊天';
         indexList.appendChild(listTitle);
         return;
     }
     const listTitle = document.createElement('h4');
-    listTitle.textContent = '对话导航';
+    listTitle.textContent = '聊天导航';
     indexList.appendChild(listTitle);
     userMessages.forEach((messageDiv, index) => {
         const messageId = `user-msg-${index}`;
@@ -434,12 +434,11 @@ async function gmmlogout() {
 function xstongzhi(text, time) {
     if (!text) { return };
     console.log(text);
-    const xstime = time || 1000;
     const tongzhi = document.getElementById('tongzhi');
     const p = document.createElement('p');
     p.innerText = text;
     tongzhi.prepend(p);
-    setTimeout(() => { p.remove() }, xstime);
+    setTimeout(() => { p.remove() }, time || 1000);
 }
 //清理缓存
 function cleanOldCache() {
@@ -504,3 +503,5 @@ let modelcache = JSON.parse(localStorage.getItem("model"));
 if (!modelcache) modelcache = { model: 'gemini-2.5-flash-lite', modelname: 'Gemini-2.5-Lite' }
 model = modelcache.model;
 document.getElementById('gemini-p').innerText = modelcache.modelname;
+
+chatarea.addEventListener('click', () => { closehislist() });
