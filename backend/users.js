@@ -346,7 +346,6 @@ const initializeUsers = (app, initialUsers) => {
     app.post('/user/postlogin', postlogin);
     app.post('/user/postlogout', postlogout);
     app.get('/user/status', getUserStatus);
-    // 启动定期清理任务
     console.log('用户模块已初始化...');
 };
 

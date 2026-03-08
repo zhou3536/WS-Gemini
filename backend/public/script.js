@@ -180,7 +180,6 @@ window.addEventListener('load', () => {
 let historylistdsiplay = false;
 document.addEventListener('DOMContentLoaded', function () {
     const a = document.getElementById("sidebar");
-    const opbtn = document.getElementById("history-b");
     opbtn.addEventListener("click", function () {
         if (delhistorybox.style.display === 'block') {
             delhistorybox.style.display = 'none';
@@ -500,8 +499,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let modelcache = JSON.parse(localStorage.getItem("model"));
-if (!modelcache) modelcache = { model: 'gemini-2.5-flash-lite', modelname: 'Gemini-2.5-Lite' }
+if (!modelcache) {
+    const defaultModel = document.getElementById('modelOptions').firstElementChild;
+    modelcache = { model: defaultModel.getAttribute('model'), modelname: defaultModel.textContent }
+}
 model = modelcache.model;
 document.getElementById('gemini-p').innerText = modelcache.modelname;
 
-chatarea.addEventListener('click', () => { closehislist() });
+chatWindow.addEventListener('click', () => { if (historylistdsiplay && window.innerWidth < 1100) opbtn.click() });

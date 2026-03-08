@@ -34,22 +34,42 @@ body {
 }
 
 #welcome {
-    display: none;
+    /* display: none; */
+    width: 340px;
     position: absolute;
     left: 50%;
-    top: 45%;
+    top: 40%;
     transform: translateX(-50%) translateY(-50%);
-    padding: 15px;
-    font-size: 32px;
-    font-style: italic;
-    background-image: linear-gradient(to right, #58AADD 0%, #DB5C7F 100%);
+    /* animation: fadeIn 1s linear; */
+    z-index: -1;
+    user-select: none;
+}
+
+#welcome h1 {
+    padding: 0;
+    font-size: 80px;
+    line-height: 1;
+    font-weight: 500;
+    background-image: linear-gradient(74deg, rgb(66, 133, 244) 0px,
+            rgb(155, 114, 203) 33%,
+            rgb(217, 101, 112) 66%,
+            rgb(217, 101, 112)100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     white-space: nowrap;
-    animation: fadeIn 1s linear;
-    z-index: -1;
-    user-select: none;
+}
+
+#welcome h2 {
+    color: var(--df-07);
+    padding: 0 5px;
+    margin-bottom: 5px;
+}
+
+#welcome h4 {
+    color: var(--df-08);
+    font-weight: normal;
+    padding: 0 5px;
 }
 
 .nav {
@@ -135,20 +155,22 @@ body {
     position: absolute;
     top: 30px;
     left: 0;
+    font-weight: normal;
+    font-size: 15px;
     border: 1px solid #00000050;
     background-color: #eee;
     color: #111;
     padding: 0;
     outline: none;
-    border-radius: 8px;
+    border-radius: 5px;
     z-index: 1000;
-    box-shadow: 2px 2px 10px #00000060;
+    box-shadow: 2px 2px 15px #00000060;
 }
 
 #modelOptions div {
     border-bottom: 1px solid var(--df-01);
-    padding: 6px 6px;
-    transition: all 0.3s ease;
+    padding: 6px 18px 6px 8px;
+    transition: all 0.2s ease;
 }
 
 #modelOptions div:hover {
@@ -201,6 +223,7 @@ body {
 #history-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     /* margin: 10px 0; */
     min-width: 260px;
     user-select: none;
@@ -210,8 +233,9 @@ body {
 }
 
 #history-list li {
-    font-size: 15px;
-    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+    width: 283px;
+    font-size: 14px;
+    /* font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace; */
     margin: 0px 8px;
     padding: 6px 8px;
     border-radius: 12px;
@@ -225,10 +249,12 @@ body {
     border-bottom: 1px solid var(--df-005);
     /* min-width: 276px; */
 }
-#history-list li div{
+
+#history-list li div {
     overflow: hidden;
     white-space: nowrap;
 }
+
 #history-list li:hover {
     background: var(--df-005);
 }
@@ -617,7 +643,8 @@ body {
 
 @media (max-width: 500px) {
     #welcome {
-        font-size: 28px;
+        top: 45%;
+        transform: translateX(-50%) translateY(-50%)scale(0.9);
     }
 
     .message {

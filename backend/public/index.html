@@ -21,10 +21,10 @@
         <div id="gemini-v" class="send-btn1">
             <p id="gemini-p"></p>
             <div id="modelOptions" style="display: none">
-                <div model="gemini-2.5-flash-lite">Gemini-2.5-Lite</div>
-                <div model="gemini-2.5-flash">Gemini-2.5-Flash</div>
-                <div model="gemini-3.1-flash-lite-preview">Gemini-3-Lite</div>
-                <div model="gemini-3-flash-preview">Gemini-3-Flash</div>
+                <div model="gemini-2.5-flash-lite">Gemini-2.5快速</div>
+                <div model="gemini-2.5-flash">Gemini-2.5思考</div>
+                <div model="gemini-3.1-flash-lite-preview">Gemini-3.0快速</div>
+                <div model="gemini-3-flash-preview">Gemini-3.0思考</div>
             </div>
         </div>
         <div class="btnbox">
@@ -43,7 +43,11 @@
         </ul>
         <ul id="list-dhdh" class="list-1"></ul>
         <main class="chat-area" id="chat-area">
-            <div id="welcome">Gemini</div>
+            <div id="welcome">
+                <h1>Gemini</h1>
+                <h2>获取创意灵感，提升工作效率</h2>
+                <h4>轻松对话，让 Google AI 帮你写作、规划、学习或处理其他事务</h4>
+            </div>
             <div id="chat-window"></div>
             <div id="input-area" class="input-area">
                 <div id="file-preview-area" class="file-preview-area"></div>
@@ -75,6 +79,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        const opbtn = document.getElementById("history-b");
         const modelOptions = document.getElementById('modelOptions');
         const welcome = document.getElementById('welcome');
         const inputarea = document.getElementById('input-area');
@@ -320,7 +325,7 @@
 
         async function sendMessage() {
             const prompt = promptInput.value.trim();
-            if (prompt === '' && selectedFiles.length === 0) {xstongzhi('请输入内容');return;}
+            if (prompt === '' && selectedFiles.length === 0) { xstongzhi('请输入内容'); return }
             if (sendBtn.disabled) return;
 
             welcome.style.display = 'none';

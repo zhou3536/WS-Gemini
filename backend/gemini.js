@@ -106,6 +106,31 @@ async function Simplemessage(socket, data) {
         socket.emit('tongzhi', `错误状态: ${error.status || 'Error'}，${errorMessage}`);
     }
 }
+async function shortmessage(socket, historydata) {
+    if (!historydata) return;
+
+    try {
+        const ai = new GoogleGenAI({
+            apiKey: socket.userApiKey,
+            httpOptions: { baseUrl: CUSTOM_BASE_URL }
+        });
+
+        const chat = ai.chats.create({
+            model: "gemini-3.1-flash-lite-preview",
+            history: historydata,
+        });
+
+        const response1 = await chat.sendMessage({
+            message: "根据上面的对话生成标题。要求：越短越好，只返回标题，不要解释，不要引号，不要任何额外文字，标题不超过20个字",
+            config: { temperature: 0.2, maxOutputTokens: 20 }
+        });
+        console.log('ai创建标题成功')
+        return response1.text;
+    } catch (error) {
+        console.log('ai创建标题失败', `错误状态: ${error.status}`)
+        return '';
+    }
+}
 
 //添加和验证API_KEY
 async function setapikey(socket, data) {
@@ -116,7 +141,7 @@ async function setapikey(socket, data) {
             httpOptions: { baseUrl: CUSTOM_BASE_URL }
         });
         const responseStream = await ai.models.generateContentStream({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.5-flash-lite',
             contents: "Hello",
             config: {}
         });
@@ -245,7 +270,16 @@ async function handleNewMessage(socket, data) {
             }
         }
 
-        if (isNewSession) socket.emit("sessionCreated", { sessionId });
+        if (isNewSession) {
+            socket.emit("sessionCreated", { sessionId });
+            if (prompt.length > 18 || files.length > 0) {
+                const historytext = [];
+                historytext.push(userMessage);
+                historytext.push({ role: "model", parts: [{ text: fullResponse }] });
+                const res = await shortmessage(socket, historytext);
+                if(res)userMessage.parts[0].title = res;
+            }
+        }
 
         // 保存历史记录
         history.push(userMessage);
@@ -325,10 +359,11 @@ async function getHistoriesList(userId) {
             try {
                 const content = await readFile(filePath, 'utf-8');
                 const history = JSON.parse(content);
-                const firstUserMessage = history.find(msg => msg.role === 'user');
-                const title = firstUserMessage && firstUserMessage.parts && firstUserMessage.parts[0] && firstUserMessage.parts[0].text
-                    ? firstUserMessage.parts[0].text.substring(0, 30)
-                    : '无标题';
+
+                const userMsg = history.find(item => item.role === "user");
+                const title = userMsg?.parts?.[0]?.title
+                    || userMsg?.parts?.[0]?.text
+                    || "无标题";
                 return { sessionId: file, title };
             } catch (error) {
                 console.error(`处理历史文件失败 ${file} (用户: ${userId}):`, error);
