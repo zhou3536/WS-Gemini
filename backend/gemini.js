@@ -34,6 +34,7 @@ export function initializeGemini(usersArray, ioInstance) {
         if (loginuser) {
             socket.user = loginuser;
             socket.userId = loginId;
+            socket.HistoriesList =  await getHistoriesList(socket);
             activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
                 socket.userApiKey = loginuser.API_KEY;
@@ -111,22 +112,23 @@ async function shortmessage(socket, historydata) {
     if (!historydata) return;
 
     try {
-        const ai = new GoogleGenAI({
-            apiKey: KEY2,
-            httpOptions: { baseUrl: CUSTOM_BASE_URL }
-        });
+        // const ai = new GoogleGenAI({
+        //     apiKey: KEY2,
+        //     httpOptions: { baseUrl: CUSTOM_BASE_URL }
+        // });
 
-        const chat = ai.chats.create({
-            model: "gemini-2.5-flash-lite",
-            history: historydata,
-        });
+        // const chat = ai.chats.create({
+        //     model: "gemini-2.5-flash-lite",
+        //     history: historydata,
+        // });
 
-        const response1 = await chat.sendMessage({
-            message: "根据上面的对话生成标题。要求：越短越好，只返回标题，不要解释，不要引号，不要任何额外文字，标题不超过20个字",
-            config: { temperature: 0.2, maxOutputTokens: 20 }
-        });
-        console.log('ai创建标题成功')
-        return response1.text;
+        // const response1 = await chat.sendMessage({
+        //     message: "根据上面的对话生成标题。要求：越短越好，只返回标题，不要解释，不要引号，不要任何额外文字，标题不超过20个字",
+        //     config: { temperature: 0.2, maxOutputTokens: 20 }
+        // });
+        // console.log('ai创建标题成功')
+        // return response1.text;
+        return Date.now();
     } catch (error) {
         console.log('ai创建标题失败', `错误状态: ${error.status}`)
         return '';
@@ -259,10 +261,25 @@ async function handleNewMessage(socket, data) {
             history: history,
             config
         });
-        const responseStream = await chat.sendMessageStream({
-            message: userMessage
-        });
+        // const responseStream = await chat.sendMessageStream({
+        //     message: userMessage
+        // });
+        // 测试消息
+        const responseStream = {
+            async *[Symbol.asyncIterator]() {
+                const texts = [
+                    "你好，",
+                    "这是",
+                    "一条",
+                    "测试消息。"
+                ];
 
+                for (const t of texts) {
+                    await new Promise(r => setTimeout(r, 200)); // 模拟流式延迟
+                    yield { text: t };
+                }
+            }
+        };
         let fullResponse = "";
         for await (const chunk of responseStream) {
             const chunkText = chunk.text || "";
@@ -274,12 +291,23 @@ async function handleNewMessage(socket, data) {
         socket.emit("streamEnd");
         if (isNewSession) {
             socket.emit("sessionCreated", { sessionId });
-            if (prompt.length > 18 || files.length > 0) {
+
+
+
+
+            if (prompt.length > 0 || files.length > 0) {
                 const historytext = [];
                 historytext.push(userMessage);
                 historytext.push({ role: "model", parts: [{ text: fullResponse }] });
                 const res = await shortmessage(socket, historytext);
-                if (res) userMessage.parts[0].title = res;
+                // if (res) userMessage.parts[0].title = res;
+                socket.HistoriesList.push({
+                    sessionId,
+                    title:res
+                })
+                console.log(socket.HistoriesList)
+                const HistoriesList = path.join(userHistoriesDir, 'HistoriesList.json');
+                await writeFile(HistoriesList, JSON.stringify(socket.HistoriesList, null, 2), 'utf-8');
             }
         }
 
@@ -346,50 +374,70 @@ async function handleLoadHistory(socket, sessionId) {
     }
 }
 
-async function getHistoriesList(userId) {
-    if (!userId) {
-        console.error('未认证用户尝试获取历史列表。');
-        return [];
-    }
-    const userHistoriesDir = path.join(historiesDir, userId);
+async function getHistoriesList(socket) {
+    // const userHistoriesDir = path.join(historiesDir, userId);
 
-    
+    const dir = path.join(__dirname, "histories", socket.userId);
+    const file = path.join(dir, "historiesList.json");
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, "[]", "utf8");
+    }
+
+    let data;
     try {
-        await mkdir(userHistoriesDir, { recursive: true });
-        const files = await readdir(userHistoriesDir);
-        const jsonFiles = files.filter(file => file.endsWith('.json'));
-        const historyListPromises = jsonFiles.map(async (file) => {
-            const filePath = path.join(userHistoriesDir, file);
-            try {
-                const content = await readFile(filePath, 'utf-8');
-                const history = JSON.parse(content);
-
-                const userMsg = history.find(item => item.role === "user");
-                const title = userMsg?.parts?.[0]?.title
-                    || userMsg?.parts?.[0]?.text
-                    || "无标题";
-                return { sessionId: file, title };
-            } catch (error) {
-                console.error(`处理历史文件失败 ${file} (用户: ${userId}):`, error);
-                return { sessionId: file, title: '无效的历史记录' };
-            }
-        });
-        const historyList = await Promise.all(historyListPromises);
-        historyList.sort((a, b) => {
-            return parseInt(b.sessionId, 10) - parseInt(a.sessionId, 10);
-        });
-        return historyList;
-    } catch (error) {
-        console.error("获取历史记录列表失败:", error);
-        return [];
+        data = JSON.parse(fs.readFileSync(file, "utf8"));
+    } catch {
+        data = [];
     }
+
+    // 添加到全局变量
+    socket.HistoriesList.push(...data);
+    return socket.HistoriesList;
+
+
+
+
+
+
+    // const files = await readdir(userHistoriesDir);
+    // const jsonFiles = files.filter(file => file.endsWith('.json'));
+    // const historyListPromises = jsonFiles.map(async (file) => {
+    //     const filePath = path.join(userHistoriesDir, file);
+    //     try {
+    //         const content = await readFile(filePath, 'utf-8');
+    //         const history = JSON.parse(content);
+
+    //         const userMsg = history.find(item => item.role === "user");
+    //         const title = userMsg?.parts?.[0]?.title
+    //             || userMsg?.parts?.[0]?.text
+    //             || "无标题";
+    //         return { sessionId: file, title };
+    //     } catch (error) {
+    //         console.error(`处理历史文件失败 ${file} (用户: ${userId}):`, error);
+    //         return { sessionId: file, title: '无效的历史记录' };
+    //     }
+    // });
+    // const historyList = await Promise.all(historyListPromises);
+    // historyList.sort((a, b) => {
+    //     return parseInt(b.sessionId, 10) - parseInt(a.sessionId, 10);
+    // });
+    // return socket.HistoriesList;
+    // } catch (error) {
+    //     console.error("获取历史记录列表失败:", error);
+    //     return [];
+    // }
 }
 
-async function listHistories(socket) {
-    const userId = socket.userId;
-    const historyList = await getHistoriesList(userId);
-    socket.emit('historiesListed', { list: historyList });
-}
+// async function listHistories(socket) {
+//     const userId = socket.userId;
+//     const historyList = await getHistoriesList(socket);
+//     socket.emit('historiesListed', { list: historyList });
+// }
 
 async function handleDeleteHistory(socket, sessionId) {
     const userId = socket.userId;
