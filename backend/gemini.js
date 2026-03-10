@@ -11,6 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const CUSTOM_BASE_URL = process.env.PROXYURL;
+const KEY2 = process.env.KEY2;
 
 if (CUSTOM_BASE_URL) {
     console.log('代理地址:', CUSTOM_BASE_URL);
@@ -111,12 +112,12 @@ async function shortmessage(socket, historydata) {
 
     try {
         const ai = new GoogleGenAI({
-            apiKey: socket.userApiKey,
+            apiKey: KEY2,
             httpOptions: { baseUrl: CUSTOM_BASE_URL }
         });
 
         const chat = ai.chats.create({
-            model: "gemini-3.1-flash-lite-preview",
+            model: "gemini-2.5-flash-lite",
             history: historydata,
         });
 
@@ -199,9 +200,9 @@ async function handleNewMessage(socket, data) {
         apiKey: userApiKey,
         httpOptions: { baseUrl: CUSTOM_BASE_URL }
     });
-    let { sessionId, prompt, files, model, useWebSearch } = data;
+    let { sessionId, prompt, files, model, useWebSearch, defaultModelConfig } = data;
     let isNewSession = false;
-
+    console.log(defaultModelConfig);
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!sessionId) {
         isNewSession = true;
@@ -247,11 +248,12 @@ async function handleNewMessage(socket, data) {
     try {
         console.log('User ID:', userId, ' Model:', model, ' Websearch:', useWebSearch,);
 
-        let config = {};
+        let config = defaultModelConfig || {};
 
         if (useWebSearch) {
             config.tools = [{ googleSearch: {} }];
         }
+        console.log(config);
         const chat = ai.chats.create({
             model: model,
             history: history,
@@ -269,7 +271,7 @@ async function handleNewMessage(socket, data) {
                 socket.emit("streamChunk", { chunk: chunkText });
             }
         }
-
+        socket.emit("streamEnd");
         if (isNewSession) {
             socket.emit("sessionCreated", { sessionId });
             if (prompt.length > 18 || files.length > 0) {
@@ -277,7 +279,7 @@ async function handleNewMessage(socket, data) {
                 historytext.push(userMessage);
                 historytext.push({ role: "model", parts: [{ text: fullResponse }] });
                 const res = await shortmessage(socket, historytext);
-                if(res)userMessage.parts[0].title = res;
+                if (res) userMessage.parts[0].title = res;
             }
         }
 
@@ -286,7 +288,7 @@ async function handleNewMessage(socket, data) {
         history.push({ role: "model", parts: [{ text: fullResponse }] });
         await writeFile(historyPath, JSON.stringify(history, null, 2), 'utf-8');
 
-        socket.emit("streamEnd");
+
         await listHistories(socket);
 
     } catch (error) {
@@ -350,6 +352,8 @@ async function getHistoriesList(userId) {
         return [];
     }
     const userHistoriesDir = path.join(historiesDir, userId);
+
+    
     try {
         await mkdir(userHistoriesDir, { recursive: true });
         const files = await readdir(userHistoriesDir);

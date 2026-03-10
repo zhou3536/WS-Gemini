@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyGemini</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
     <link rel="stylesheet" href="md.css">
     <link rel="stylesheet" href="color.css">
     <link rel="manifest" href="/img/manifest.json">
@@ -39,6 +40,7 @@
             <button onclick="window.open('/fy.html', '_blank')">AI翻译</button>
             <button onclick="setapikeybox.style.display = 'block'">设置API</button>
             <button onclick="delhistorybox.style.display = 'block'">管理历史</button>
+            <button onclick="ModelConfig.showModal()">模型参数设置</button>
             <div id="history-list"></div>
         </ul>
         <ul id="list-dhdh" class="list-1"></ul>
@@ -68,8 +70,6 @@
                 </div>
             </div>
         </main>
-        <img src="" alt="">
-        <p></p>
     </div>
     <div id="tongzhi"></div>
     <div id="setapikey">
@@ -77,7 +77,34 @@
         <button onclick="sendyouapikey()">确定</button>
         <button onclick="sendyouapikey('close')">关闭</button>
     </div>
+    <dialog id="ModelConfig">
+        <h2>AI 模型参数设置</h2>
+        <div class="param-group">
+            <label for="temperatureSlider">Temperature: <span class="value-display"
+                    id="temperatureValue">0.7</span></label>
+            <input type="range" id="temperatureSlider" min="0" max="1" step="0.01">
+        </div>
+        <div class="param-group">
+            <label for="maxOutputTokensSlider">Max Output Tokens: <span class="value-display"
+                    id="maxOutputTokensValue">256</span></label>
+            <input type="range" id="maxOutputTokensSlider" min="64" max="8192" step="1">
+        </div>
+        <div class="param-group">
+            <label for="topPSlider">Top P : <span class="value-display" id="topPValue">0.9</span></label>
+            <input type="range" id="topPSlider" min="0" max="1" step="0.01">
+        </div>
+        <div class="param-group">
+            <label for="topKSlider">Top K: <span class="value-display" id="topKValue">50</span></label>
+            <input type="range" id="topKSlider" min="0" max="100" step="1">
+        </div>
 
+        <button onclick="getModelConfig()">确认</button>
+        <button onclick="RestoreDefaultsModelConfig()">默认</button>
+
+        <div class="result-display" id="resultDisplay">
+        </div>
+        </div>
+    </dialog>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const opbtn = document.getElementById("history-b");
@@ -99,6 +126,8 @@
         const delhistorybox = document.getElementById('delhistory');
         const setapikeybox = document.getElementById('setapikey');
         const yourapikey = document.getElementById('yourapikey');
+        const ModelConfig = document.getElementById('ModelConfig');
+        // ModelConfig.showModal()
         const socket = io();
         let sessionId = localStorage.getItem('sessionId');
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
@@ -355,7 +384,8 @@
                 prompt,
                 files,
                 model,
-                useWebSearch: SearchOn
+                useWebSearch: SearchOn,
+                defaultModelConfig
             });
 
         }
@@ -371,6 +401,7 @@
         });
     </script>
     <script src="script.js"></script>
+    <script src="script2.js"></script>
     <script src="theme.js"></script>
 </body>
 

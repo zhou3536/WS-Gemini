@@ -244,7 +244,7 @@ body {
     /* font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace; */
     margin: 0px 8px;
     padding: 6px 8px;
-    border-radius: 12px;
+    border-radius: 8px;
     cursor: pointer;
     display: block;
     overflow: hidden;

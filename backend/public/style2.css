@@ -1,0 +1,50 @@
+#ModelConfig {
+    margin: auto;
+    width: 350px;
+    outline: 1px solid var(--df-05);
+    border: none;
+    border-radius: 15px;
+    padding: 18px 15px;
+}
+
+#ModelConfig label {
+    display: flex;
+    margin-right: 10px;
+    font-size: 14px;
+    padding: 5px 0;
+}
+
+#ModelConfig span {
+    display: block;
+    margin-left: auto;
+}
+
+#ModelConfig input {
+    appearance: none;
+    display: block;
+    width: 100%;
+    outline: none;
+    background: #5c98b5;
+    height: 5px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+#ModelConfig button {
+    width: 100%;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 8px;
+    background: #0095e0;
+    border: 1px solid #000;
+    outline: none;
+}
+
+#ModelConfig button:hover {
+    background: #0081c1;
+}
+
+#ModelConfig button:active {
+    background: #006497;
+}
+

@@ -1,0 +1,72 @@
+// 定义一个数组，包含所有滑块的ID及其对应的显示值ID
+const sliders = [
+    { id: 'temperatureSlider', valueId: 'temperatureValue', type: 'float' },
+    { id: 'maxOutputTokensSlider', valueId: 'maxOutputTokensValue', type: 'int' },
+    { id: 'topPSlider', valueId: 'topPValue', type: 'float' },
+    { id: 'topKSlider', valueId: 'topKValue', type: 'int' }
+];
+let defaultModelConfig = {
+    "temperature": 0.5,
+    "maxOutputTokens": 4096,
+    "topP": 1,
+    "topK": 40
+};
+
+function restoreModelConfigFromCache() {
+    const configString = localStorage.getItem('modelConfigCache');
+    if (!configString) {
+        console.warn('缓存中未找到模型配置。');
+        return;
+    }
+    defaultModelConfig = JSON.parse(configString);
+};
+restoreModelConfigFromCache();
+
+function RestoreDefaultsModelConfig() {
+    const userConfirmed = confirm(`恢复默认参数？`);
+    if (!userConfirmed) { return };
+    defaultModelConfig = {
+        "temperature": 0.5,
+        "maxOutputTokens": 4096,
+        "topP": 1,
+        "topK": 40
+    }
+    sliders.forEach(slider => {
+        const input = document.getElementById(slider.id);
+        const key = slider.id.replace("Slider", "")
+        document.getElementById(slider.valueId).innerText = defaultModelConfig[key];
+        input.value = defaultModelConfig[key];
+    });
+    saveModelConfigToCache()
+};
+
+sliders.forEach(slider => {
+    const input = document.getElementById(slider.id);
+    const valueDisplay = document.getElementById(slider.valueId);
+    const key = slider.id.replace("Slider", "")
+    valueDisplay.innerText = defaultModelConfig[key];
+    input.value = defaultModelConfig[key];
+    input.addEventListener('input', () => { valueDisplay.innerText = input.value; });
+});
+
+
+//获取所有滑块的当前值，并将其转换为对应的类型。
+function getModelConfig() {
+    sliders.forEach(slider => {
+        const input = document.getElementById(slider.id);
+        const key = slider.id.replace("Slider", "")
+        defaultModelConfig[key] = +input.value;
+    });
+    saveModelConfigToCache();
+    document.getElementById('ModelConfig').close();
+    console.log(defaultModelConfig);
+};
+
+
+
+
+function saveModelConfigToCache() {
+    localStorage.setItem('modelConfigCache', JSON.stringify(defaultModelConfig));
+};
+
+
