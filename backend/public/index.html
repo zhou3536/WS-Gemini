@@ -41,6 +41,7 @@
             <button onclick="setapikeybox.style.display = 'block'">设置API</button>
             <button onclick="delhistorybox.style.display = 'block'">管理历史</button>
             <button onclick="ModelConfig.showModal()">模型参数设置</button>
+            <h3></h3>
             <div id="history-list"></div>
         </ul>
         <ul id="list-dhdh" class="list-1"></ul>
@@ -223,6 +224,7 @@
 
         function renderHistoriesList(list) {
             historyList.innerHTML = '';
+            list = list.sort((a, b) => parseInt(b.sessionId) - parseInt(a.sessionId));
             list.forEach((item, index) => {
                 const li = document.createElement('li');
                 const lidiv = document.createElement('div');

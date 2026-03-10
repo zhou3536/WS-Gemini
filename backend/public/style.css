@@ -44,13 +44,15 @@ body {
     z-index: -1;
     user-select: none;
 }
-#welcome img{
+
+#welcome img {
     width: 60px;
     height: 60px;
     display: block;
     margin-bottom: -8px;
     transform: rotate(90deg);
 }
+
 #welcome h1 {
     padding: 0;
     font-size: 80px;
@@ -222,21 +224,39 @@ body {
     /* font-weight: 550; */
 }
 
+#sidebar h3 {
+    /* width: 260px; */
+    border-top: 1px solid var(--df-02);
+    margin: 10px 15px;
+}
+
 .sidebar button:hover {
     background-color: var(--df-005);
 }
 
 #history-list {
+    position: relative;
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    /* margin: 10px 0; */
+    /* padding-top: 20px; */
     min-width: 260px;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    /* margin-top: 20px; */
 }
+
+/* #history-list::before {
+    position: fixed;
+    left: 15px;
+    top: 0;
+    width: 260px;
+    content: '';
+    border: 1px solid var(--df-02);
+    z-index: 10;
+} */
 
 #history-list li {
     width: 283px;

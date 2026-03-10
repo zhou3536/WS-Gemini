@@ -376,6 +376,11 @@ function addcopy() {
 
 //删除历史
 function delHistories(list) {
+    list.sort((a, b) => {
+        const idA = Number(a.sessionId.replace('.json', ''));
+        const idB = Number(b.sessionId.replace('.json', ''));
+        return idA - idB; 
+    });
     delhistorybox.innerHTML = '';
 
     const closebtn = document.createElement('button')
