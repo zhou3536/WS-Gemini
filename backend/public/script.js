@@ -377,9 +377,9 @@ function addcopy() {
 //删除历史
 function delHistories(list) {
     list.sort((a, b) => {
-        const idA = Number(a.sessionId.replace('.json', ''));
-        const idB = Number(b.sessionId.replace('.json', ''));
-        return idA - idB; 
+        const idA = Number(a.chatId.replace('.json', ''));
+        const idB = Number(b.chatId.replace('.json', ''));
+        return idA - idB;
     });
     delhistorybox.innerHTML = '';
 
@@ -390,22 +390,22 @@ function delHistories(list) {
     list.forEach((item, index) => {
         const li = document.createElement('li');
         const span = document.createElement('span');
-        span.title = item.sessionId.replace('.json', '');
+        span.title = item.chatId;
         span.textContent = `${index + 1}. ${item.title}`
-        li.dataset.sessionId = item.sessionId;
+        li.dataset.chatId = item.chatId;
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '✕';
         deleteBtn.classList.add('delete-history-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (item.sessionId === sessionId) newChatBtn.click();
+            if (item.chatId === chatId) newChat();
             li.style.transition = 'all 0.1s linear';
             li.style.margin = '0 auto';
             li.style.height = '0';
             li.style.opacity = '0';
             deleteBtn.disabled = true;
             setTimeout(() => {
-                socket.emit('deleteHistory', { sessionId: item.sessionId })
+                socket.emit('deleteHistory', { chatId: item.chatId })
             }, 100);
         });
         li.appendChild(span);
@@ -460,10 +460,9 @@ function cleanOldCache() {
 }
 window.addEventListener('load', cleanOldCache);
 //设置apikey
-function sendyouapikey(text) {
-    if (text === 'close') { setapikeybox.style.display = 'none'; return };
+function sendyouapikey() {
     const apikey = yourapikey.value;
-    if (!apikey) { setapikeybox.style.display = 'none'; return };
+    if (!apikey) return;
     if (apikey.length < 36 || apikey.length > 45 || !apikey.startsWith('AI')) { xstongzhi('请输入正确格式的API_KEY'); return };
     socket.emit('sendapikey', apikey);
     yourapikey.value = '';
@@ -476,20 +475,26 @@ function removeAllContextMenu() {
         if (menu.parentNode) { menu.parentNode.removeChild(menu) }
     });
 };
+const gemini_p = document.getElementById('gemini-p')
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => {
         removeAllContextMenu();
     });
     document.addEventListener('click', (event) => {
         const clickedElement = event.target;
-        if (!clickedElement.closest('#gemini-v')) modelOptions.style.display = 'none';
+        if (!clickedElement.closest('#gemini-v')) {
+            modelOptions.style.display = 'none';
+            gemini_p.classList.remove('gemini-p2')
+        }
     });
 
     document.getElementById('gemini-v').addEventListener('click', () => {
         if (modelOptions.style.display === 'none') {
             modelOptions.style.display = 'block';
+            gemini_p.classList.add('gemini-p2')
         } else {
             modelOptions.style.display = 'none';
+            gemini_p.classList.remove('gemini-p2')
         }
     });
 
@@ -511,4 +516,4 @@ if (!modelcache) {
 model = modelcache.model;
 document.getElementById('gemini-p').innerText = modelcache.modelname;
 
-chatWindow.addEventListener('click', () => { if (historylistdsiplay && window.innerWidth < 1100) opbtn.click() });
+chatarea.addEventListener('click', () => { if (historylistdsiplay && window.innerWidth < 1100) opbtn.click() });

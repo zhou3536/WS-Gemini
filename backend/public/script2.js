@@ -39,17 +39,19 @@ function RestoreDefaultsModelConfig() {
     });
     saveModelConfigToCache()
 };
-
-sliders.forEach(slider => {
-    const input = document.getElementById(slider.id);
-    const valueDisplay = document.getElementById(slider.valueId);
-    const key = slider.id.replace("Slider", "")
-    valueDisplay.innerText = defaultModelConfig[key];
-    input.value = defaultModelConfig[key];
-    input.addEventListener('input', () => { valueDisplay.innerText = input.value; });
-});
-
-
+function openModelConfig(text) {
+    sliders.forEach(slider => {
+        const input = document.getElementById(slider.id);
+        const valueDisplay = document.getElementById(slider.valueId);
+        const key = slider.id.replace("Slider", "")
+        valueDisplay.innerText = defaultModelConfig[key];
+        input.value = defaultModelConfig[key];
+        input.addEventListener('input', () => { valueDisplay.innerText = input.value; });
+    });
+    if (text) ModelConfig.showModal();
+    document.getElementById('yourapikey').blur();
+}
+openModelConfig()
 //获取所有滑块的当前值，并将其转换为对应的类型。
 function getModelConfig() {
     sliders.forEach(slider => {
@@ -58,7 +60,7 @@ function getModelConfig() {
         defaultModelConfig[key] = +input.value;
     });
     saveModelConfigToCache();
-    document.getElementById('ModelConfig').close();
+    ModelConfig.close();
     console.log(defaultModelConfig);
 };
 

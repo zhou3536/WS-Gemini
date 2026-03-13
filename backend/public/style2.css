@@ -1,10 +1,15 @@
 #ModelConfig {
+    user-select: none;
     margin: auto;
     width: 350px;
     outline: 1px solid var(--df-05);
     border: none;
     border-radius: 15px;
     padding: 18px 15px;
+}
+
+#ModelConfig h2 {
+    margin-bottom: 12px;
 }
 
 #ModelConfig label {
@@ -14,12 +19,31 @@
     padding: 5px 0;
 }
 
+.setyourapikey {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+#yourapikey {
+    width: 100%;
+    /* margin: 5px 0; */
+    margin-right: 8px;
+    padding: 5px 5px;
+    border-radius: 6px;
+    border: 2px solid #b4c5dc;
+    outline: none;
+}
+
+#yourapikey:focus {
+    border: 2px solid #4c7ebe;
+}
+
 #ModelConfig span {
     display: block;
     margin-left: auto;
 }
 
-#ModelConfig input {
+#ModelConfig input[type="range"] {
     appearance: none;
     display: block;
     width: 100%;
@@ -27,24 +51,30 @@
     background: #5c98b5;
     height: 5px;
     border-radius: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+#ModelConfig .ModelConfigbutton {
+    display: flex;
+    gap: 10px;
+    padding-top: 15px;
 }
 
 #ModelConfig button {
     width: 100%;
-    margin: 5px;
     padding: 5px;
     border-radius: 8px;
-    background: #0095e0;
-    border: 1px solid #000;
+    background: #4faedd;
+    border: 1px solid #8c99a8;
     outline: none;
+    transition: all 0.2s ease;
 }
 
 #ModelConfig button:hover {
-    background: #0081c1;
+    background: #3fb6ff;
+    border: 1px solid #5c6875;
 }
 
 #ModelConfig button:active {
     background: #006497;
 }
-

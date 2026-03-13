@@ -34,7 +34,7 @@ export function initializeGemini(usersArray, ioInstance) {
         if (loginuser) {
             socket.user = loginuser;
             socket.userId = loginId;
-            socket.HistoriesList = [];
+            socket.historiesList = [];
             activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
                 socket.userApiKey = loginuser.API_KEY;
@@ -57,11 +57,11 @@ export function initializeGemini(usersArray, ioInstance) {
         });
 
         socket.on("loadHistory", async (data) => {
-            await handleLoadHistory(socket, data.sessionId);
+            await handleLoadHistory(socket, data.chatId);
         });
 
         socket.on("deleteHistory", async (data) => {
-            await handleDeleteHistory(socket, data.sessionId);
+            await handleDeleteHistory(socket, data.chatId);
         });
         socket.on("sendapikey", async (data) => {
             await setapikey(socket, data);
@@ -201,15 +201,14 @@ async function handleNewMessage(socket, data) {
         apiKey: userApiKey,
         httpOptions: { baseUrl: CUSTOM_BASE_URL }
     });
-    let { sessionId, prompt, files, model, useWebSearch, defaultModelConfig } = data;
+    let { chatId, prompt, files, model, useWebSearch, defaultModelConfig } = data;
     let isNewSession = false;
-    console.log(defaultModelConfig);
     const userHistoriesDir = path.join(historiesDir, userId);
-    if (!sessionId) {
+    if (!chatId) {
         isNewSession = true;
-        sessionId = `${Date.now()}.json`;
+        chatId = getTimeId();
     }
-    const historyPath = path.join(userHistoriesDir, sessionId);
+    const historyPath = path.join(userHistoriesDir, `${chatId}.json`);
     try {
         await access(userHistoriesDir);
     } catch (error) {
@@ -229,7 +228,7 @@ async function handleNewMessage(socket, data) {
             history = JSON.parse(historyData);
         } catch (error) {
             console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
-            socket.emit("APIerror", { message: `无法加载会话历史 (${sessionId})，文件可能已损坏。请尝试新的会话。` });
+            socket.emit("APIerror", { message: `无法加载会话历史 (${chatId})，文件可能已损坏。请尝试新的会话。` });
             return;
         }
     }
@@ -247,14 +246,13 @@ async function handleNewMessage(socket, data) {
 
     // 调用Gemini API
     try {
-        console.log('User ID:', userId, ' Model:', model, ' Websearch:', useWebSearch,);
+        console.log('User ID:', userId, ' Model:', model);
 
         let config = defaultModelConfig || {};
 
         if (useWebSearch) {
             config.tools = [{ googleSearch: {} }];
         }
-        console.log(config);
         const chat = ai.chats.create({
             model: model,
             history: history,
@@ -289,15 +287,15 @@ async function handleNewMessage(socket, data) {
         }
         socket.emit("streamEnd");
         if (isNewSession) {
-            socket.emit("sessionCreated", { sessionId });
+            socket.emit("sessionCreated", { chatId });
             const title = prompt.length > 20 ? prompt.slice(0, 20) + "..." : prompt;
-            let NewSessionhistory = { sessionId, title };
+            let NewSessionhistory = { chatId, title };
             if (prompt.length > 20 || files.length > 0) {
                 const historytext = [];
                 historytext.push(userMessage);
                 historytext.push({ role: "model", parts: [{ text: fullResponse }] });
                 const res = await shortmessage(socket, historytext);
-                if (res) NewSessionhistory = { sessionId, title: res };
+                if (res) NewSessionhistory = { chatId, title: res };
             }
             await updateHistoriesList(socket, 'add', NewSessionhistory);
         }
@@ -337,7 +335,7 @@ async function handleNewMessage(socket, data) {
     }
 }
 
-async function handleLoadHistory(socket, sessionId) {
+async function handleLoadHistory(socket, chatId) {
     const userId = socket.userId;
     if (!userId) {
         console.error('未认证用户尝试加载历史。');
@@ -345,7 +343,7 @@ async function handleLoadHistory(socket, sessionId) {
         return;
     }
     const userHistoriesDir = path.join(historiesDir, userId);
-    const historyPath = path.join(userHistoriesDir, sessionId);
+    const historyPath = path.join(userHistoriesDir, `${chatId}.json`);
     try {
         await access(historyPath);
         const historyData = await readFile(historyPath, "utf-8");
@@ -357,46 +355,30 @@ async function handleLoadHistory(socket, sessionId) {
             socket.emit("historyerror", { message: "找不到指定的会话历史, 请开始新的会话。" });
         } else {
             console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
-            socket.emit("historyerror", { message: `无法加载会话历史 (${sessionId})，文件可能已损坏。` });
+            socket.emit("historyerror", { message: `无法加载会话历史 (${chatId})，文件可能已损坏。` });
         }
-        await updateHistoriesList(socket, 'del', sessionId);
+        await updateHistoriesList(socket, 'del', chatId);
         await listHistories(socket);
-    }
-}
-
-async function getHistoriesList(socket) {
-    const dir = path.join(__dirname, "histories", socket.userId);
-    const file = path.join(dir, "historiesList.json");
-
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-
-    if (!fs.existsSync(file)) {
-        fs.writeFileSync(file, "[]", "utf8");
-    }
-
-    let data;
-    try {
-        data = JSON.parse(fs.readFileSync(file, "utf8"));
-    } catch {
-        data = [];
-    }
-    socket.HistoriesList.push(...data);
-    return socket.HistoriesList;
-}
+    };
+};
 
 async function listHistories(socket, text) {
-    let historyList;
     if (text === 'login') {
-        historyList = await getHistoriesList(socket);
-    } else {
-        historyList = socket.HistoriesList;
+        const dir = path.join(__dirname, "histories", socket.userId);
+        const file = path.join(dir, "historiesList.json");
+        let data;
+        try {
+            data = JSON.parse(fs.readFileSync(file, "utf8"));
+        } catch (err) {
+            // console.log(err.message)
+            data = [];
+        }
+        socket.historiesList.push(...data);
     }
-    socket.emit('historiesListed', { list: historyList });
+    socket.emit('historiesListed', { list: socket.historiesList });
 }
 
-async function handleDeleteHistory(socket, sessionId) {
+async function handleDeleteHistory(socket, chatId) {
     const userId = socket.userId;
     if (!userId) {
         console.error('未认证用户尝试删除历史。');
@@ -404,10 +386,10 @@ async function handleDeleteHistory(socket, sessionId) {
         return;
     }
     const userHistoriesDir = path.join(historiesDir, userId);
-    const historyPath = path.join(userHistoriesDir, sessionId);
+    const historyPath = path.join(userHistoriesDir, `${chatId}.json`);
     try {
         await unlink(historyPath);
-        await updateHistoriesList(socket, 'del', sessionId)
+        await updateHistoriesList(socket, 'del', chatId)
 
         await listHistories(socket);
         console.log(`成功删除历史文件: ${historyPath}`);
@@ -419,24 +401,37 @@ async function handleDeleteHistory(socket, sessionId) {
             console.error(`删除历史文件失败 ${historyPath} (用户: ${userId}):`, error);
             socket.emit("error", { message: "删除会话历史时发生错误。" });
         }
-        await updateHistoriesList(socket, 'del', sessionId)
+        await updateHistoriesList(socket, 'del', chatId)
         await listHistories(socket);
     }
 }
 async function updateHistoriesList(socket, text, data) {
     const userHistoriesDir = path.join(historiesDir, socket.userId);
-    const HistoriesList = path.join(userHistoriesDir, 'HistoriesList.json');
+    const historiesList = path.join(userHistoriesDir, 'historiesList.json');
 
     if (text === 'del') {
-        const index = socket.HistoriesList.findIndex(item => item.sessionId === data);
+        const index = socket.historiesList.findIndex(item => item.chatId === data);
         if (index !== -1) {
-            socket.HistoriesList.splice(index, 1);
+            socket.historiesList.splice(index, 1);
         }
     } else if (text === 'add') {
-        socket.HistoriesList.push(data)
+        socket.historiesList.push(data)
     }
-    await writeFile(HistoriesList, JSON.stringify(socket.HistoriesList, null, 2), 'utf-8');
+    await writeFile(historiesList, JSON.stringify(socket.historiesList, null, 2), 'utf-8');
 };
+
+function getTimeId() {
+    const d = new Date(Date.now());
+    const YY = String(d.getFullYear()).slice(-2);
+    const MM = String(d.getMonth() + 1).padStart(2, '0');
+    const DD = String(d.getDate()).padStart(2, '0');
+    const HH = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    const SSS = String(d.getMilliseconds()).padStart(3, '0');
+    return YY + MM + DD + HH + mm + ss + SSS;
+}
+
 //强制下线
 export function disconnectChat(userId) {
     for (const [socketId, uid] of activechat) {

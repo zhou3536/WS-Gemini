@@ -20,7 +20,7 @@
         <button class="hisbtn" id="history-b"></button>
         <!-- 模型选择 -->
         <div id="gemini-v" class="send-btn1">
-            <p id="gemini-p"></p>
+            <p id="gemini-p" class="gemini-p"></p>
             <div id="modelOptions" style="display: none">
                 <div model="gemini-2.5-flash-lite">Gemini-2.5快速</div>
                 <div model="gemini-2.5-flash">Gemini-2.5思考</div>
@@ -38,19 +38,18 @@
         <ul id="sidebar" class="sidebar">
             <button onclick="gmmlogout()">退出登录</button>
             <button onclick="window.open('/fy.html', '_blank')">AI翻译</button>
-            <button onclick="setapikeybox.style.display = 'block'">设置API</button>
             <button onclick="delhistorybox.style.display = 'block'">管理历史</button>
-            <button onclick="ModelConfig.showModal()">模型参数设置</button>
+            <button onclick="openModelConfig(true)">模型参数设置</button>
             <h3></h3>
             <div id="history-list"></div>
         </ul>
         <ul id="list-dhdh" class="list-1"></ul>
         <main class="chat-area" id="chat-area">
             <div id="welcome">
-                <img src="img/model.png" alt="">
+                <img id="aaa3" src="img/model.png" alt="">
                 <h1>Gemini</h1>
-                <h2>获取创意灵感，提升工作效率</h2>
-                <h4>轻松对话，让 Google AI 帮你写作、规划、学习或处理其他事务</h4>
+                <h2 id="aaa1"></h2>
+                <h4 id="aaa2"></h4>
             </div>
             <div id="chat-window"></div>
             <div id="input-area" class="input-area">
@@ -72,14 +71,15 @@
             </div>
         </main>
     </div>
+
     <div id="tongzhi"></div>
-    <div id="setapikey">
-        <textarea id="yourapikey" placeholder="输入API..." rows="3"></textarea>
-        <button onclick="sendyouapikey()">确定</button>
-        <button onclick="sendyouapikey('close')">关闭</button>
-    </div>
+
     <dialog id="ModelConfig">
         <h2>AI 模型参数设置</h2>
+        <div class="setyourapikey">
+            <input type="text" id="yourapikey" placeholder="未设置API">
+            <button style="width: 60px;margin: 0;" onclick="sendyouapikey()">验证</button>
+        </div>
         <div class="param-group">
             <label for="temperatureSlider">Temperature: <span class="value-display"
                     id="temperatureValue">0.7</span></label>
@@ -98,12 +98,10 @@
             <label for="topKSlider">Top K: <span class="value-display" id="topKValue">50</span></label>
             <input type="range" id="topKSlider" min="0" max="100" step="1">
         </div>
-
-        <button onclick="getModelConfig()">确认</button>
-        <button onclick="RestoreDefaultsModelConfig()">默认</button>
-
-        <div class="result-display" id="resultDisplay">
-        </div>
+        <div class="ModelConfigbutton">
+            <button onclick="RestoreDefaultsModelConfig()">默认</button>
+            <button onclick="getModelConfig()">确认</button>
+            <button onclick="ModelConfig.close()">取消</button>
         </div>
     </dialog>
     <script src="/socket.io/socket.io.js"></script>
@@ -130,29 +128,65 @@
         const ModelConfig = document.getElementById('ModelConfig');
         // ModelConfig.showModal()
         const socket = io();
-        let sessionId = localStorage.getItem('sessionId');
+        let chatId;
         let accumulatedStreamText = ''; // 用于存储流式响应的原始文本
         let lastmessagebox = null;
         let sendinfobox = null;
         let modelmessage = null;
         let selectedFiles = []; // 用于存储选择的文件
         let SearchOn = false; // 搜索开关
+        let API = false;
         let model;
+        let allowHashChange = true;
+
+
+
+        function writeStringToElement() {
+            const text = '获取创意灵感，提升工作效率';
+            const element = document.getElementById('aaa1');
+            element.style.height = '32px';
+            let index = 0;
+            const intervalId = setInterval(() => {
+                if (index < text.length) {
+                    element.textContent += text[index];
+                    index++;
+                } else {
+                    writeStringToElement2()
+                    clearInterval(intervalId);
+                }
+            }, 60);
+
+        }
+        function writeStringToElement2() {
+            const text = '轻松对话，让 Google AI 帮你写作、规划、学习或处理其他事务';
+            const element = document.getElementById('aaa2');
+            const element2 = document.getElementById('aaa3');
+            element.style.height = '42px'
+            let index = 0;
+            const intervalId = setInterval(() => {
+                if (index < text.length) {
+                    element.textContent += text[index];
+                    index++;
+                } else {
+                    setTimeout(() => { element2.style.animation = 'none' }, 2000);
+                    ;
+                    clearInterval(intervalId);
+                }
+            }, 30);
+
+        }
+        writeStringToElement();
 
         // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
-            Connection.style.display = 'none';
-            sendBtn.disabled = false;
-            if (sessionId) {
-                socket.emit('loadHistory', { sessionId });
-            } else {
-                welcome.style.display = 'block';
-            }
+            // welcome.style.display = 'block';
         });
 
         socket.on('sessionCreated', (data) => {
-            sessionId = data.sessionId;
-            localStorage.setItem('sessionId', sessionId);
+            chatId = data.chatId;
+            allowHashChange = false;
+            window.location.hash = chatId;
+            setTimeout(() => { allowHashChange = true }, 1000);
         });
         socket.on('historyLoaded', (data) => {
             renderHistory(data.history);
@@ -167,6 +201,7 @@
             sendBtn.classList.add('loading');
         });
         socket.on('streamChunk', (data) => {
+            allowHashChange = false;
             appendStreamChunk(data.chunk);
         });
         socket.on('streamEnd', () => {
@@ -178,7 +213,7 @@
         });
         socket.on('historyerror', (data) => {
             console.error(data.message);
-            newChatBtn.click();
+            newChat();
         });
         socket.on('APIerror', (data) => {
             console.error('API错误:', data.message);
@@ -191,11 +226,10 @@
         });
         socket.on('tongzhi', (data) => {
             xstongzhi(data, 3000);
-            if (data === '账户没有配置API_KEY，请配置API_KEY') setapikeybox.style.display = 'block';
+            if (data === '账户没有配置API_KEY，请配置API_KEY') ModelConfig.showModal();
         });
         socket.on('APIKEY', (data) => {
             if (data) yourapikey.placeholder = data;
-            setapikeybox.style.display = 'none';
         });
         socket.on('error', (data) => {
             alert(`发生错误: ${data.message}`);
@@ -224,30 +258,17 @@
 
         function renderHistoriesList(list) {
             historyList.innerHTML = '';
-            list = list.sort((a, b) => parseInt(b.sessionId) - parseInt(a.sessionId));
+            list = list.sort((a, b) => parseInt(b.chatId) - parseInt(a.chatId));
             list.forEach((item, index) => {
-                const li = document.createElement('li');
-                const lidiv = document.createElement('div');
-                lidiv.textContent = `${index + 1}.${item.title}`;
-                li.appendChild(lidiv);
-                li.title = item.title;
-                li.dataset.sessionId = item.sessionId;
-                if (item.sessionId === sessionId) {
-                    li.classList.add('active');
-                }
-                li.addEventListener('click', (e) => {
-                    if (sessionId !== item.sessionId) {
-                        sessionId = item.sessionId;
-                        localStorage.setItem('sessionId', sessionId);
-                        socket.emit('loadHistory', { sessionId });
-                        closehislist();
-                        chatWindow.innerHTML = '<svg class="loader" viewBox="25 25 50 50"> <circle r="20" cy="50" cx="50"></circle></svg>';
-
-                        document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
-                        li.classList.add('active');
-                    }
-                });
-                li.addEventListener('contextmenu', (event) => {
+                const a = document.createElement('a');
+                const adiv = document.createElement('div');
+                adiv.textContent = `${index + 1}.${item.title}`;
+                a.appendChild(adiv);
+                a.href = '#' + item.chatId;
+                a.title = item.title;
+                a.dataset.chatId = item.chatId;
+                if (item.chatId === chatId) a.classList.add('active');
+                a.addEventListener('contextmenu', (event) => {
                     event.preventDefault();
                     removeAllContextMenu();
                     const contextMenu = document.createElement('div');
@@ -256,16 +277,22 @@
                     contextMenu.addEventListener('click', (e) => {
                         const userConfirmed = confirm(`您确定要删除 对话${index + 1} 吗？`);
                         if (!userConfirmed) { return };
-                        socket.emit('deleteHistory', { sessionId: item.sessionId });
-                        if (item.sessionId === sessionId) newChatBtn.click();
+                        socket.emit('deleteHistory', { chatId: item.chatId });
+                        if (item.chatId === chatId) newChat();
                     });
                     const mouseX = event.clientX;
                     const mouseY = event.clientY;
-                    contextMenu.style.top = `${mouseY}px`;
-                    contextMenu.style.left = `${mouseX}px`;
-                    document.body.appendChild(contextMenu)
+                    if (window.innerWidth > 500) {
+                        contextMenu.style.top = `${mouseY}px`;
+                        contextMenu.style.left = `${mouseX}px`;
+                    } else {
+                        contextMenu.style.top = `${mouseY - 30}px`;
+                        contextMenu.style.left = `${mouseX - 45}px`;
+                    }
+
+                    document.body.appendChild(contextMenu);
                 });
-                historyList.appendChild(li);
+                historyList.appendChild(a);
             });
         }
 
@@ -357,9 +384,8 @@
 
         async function sendMessage() {
             const prompt = promptInput.value.trim();
-            if (prompt === '' && selectedFiles.length === 0) { xstongzhi('请输入内容'); return }
+            if (prompt === '') { xstongzhi('请输入内容'); return }
             if (sendBtn.disabled) return;
-
             welcome.style.display = 'none';
             sendBtn.disabled = true;
             promptInput.blur();
@@ -379,10 +405,8 @@
             });
 
             const files = await Promise.all(filePromises);
-            // const model = document.getElementById('gemini-v').value;
-
             socket.emit('newMessage', {
-                sessionId,
+                chatId,
                 prompt,
                 files,
                 model,
@@ -393,14 +417,33 @@
         }
 
         // --- 新建对话 ---
-        newChatBtn.addEventListener('click', () => {
-            sessionId = null;
-            localStorage.removeItem('sessionId');
+        newChatBtn.addEventListener('click', () => newChat());
+        function newChat() {
+            window.location.hash = "";
+            chatId = null;
             chatWindow.innerHTML = '';
-            generateUserMessageIndex();
             welcome.style.display = 'block';
-            document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
-        });
+            document.querySelectorAll('#history-list a').forEach(el => el.classList.remove('active'));
+        }
+        // 监听hash变化
+        window.addEventListener('load', HashChange);
+        window.addEventListener('hashchange', HashChange);
+        function HashChange(text) {
+            if (!allowHashChange) return;
+            const hash = window.location.hash;
+            chatId = hash.slice(1);
+            if (chatId.length === 15) {
+                socket.emit('loadHistory', { chatId });
+                closehislist();
+                chatWindow.innerHTML = '<svg class="loader" viewBox="25 25 50 50"> <circle r="20" cy="50" cx="50"></circle></svg>';
+                document.querySelectorAll('#history-list a').forEach(el => {
+                    el.classList.toggle('active', el.dataset.chatId === chatId)
+                });
+            } else {
+                newChat();
+            };
+        };
+
     </script>
     <script src="script.js"></script>
     <script src="script2.js"></script>
