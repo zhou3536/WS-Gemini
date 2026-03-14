@@ -78,3 +78,41 @@
 #ModelConfig button:active {
     background: #006497;
 }
+
+#txtBox {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: #242424;
+    width: 100vw;
+    height: calc(100% - 30px);
+    max-width: 800px;
+    transform: translateX(-50%)translateY(-50%);
+    z-index: 1000;
+    padding: 20px;
+    padding-bottom: 40px;
+    color: #fff;
+    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+    font-size: 15px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+#txtBox button {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    font-size: 30px;
+    padding: 0px 20px;
+    color: #953535;
+    background: transparent;
+    border-radius: 100px;
+    border: 2px solid rgb(67, 50, 50);
+    cursor: pointer;
+}
+
+#txtBox button:hover {
+    color: #bf3e3e;
+}

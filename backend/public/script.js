@@ -435,7 +435,6 @@ async function gmmlogout() {
 //显示通知
 function xstongzhi(text, time) {
     if (!text) { return };
-    console.log(text);
     const tongzhi = document.getElementById('tongzhi');
     const p = document.createElement('p');
     p.innerText = text;

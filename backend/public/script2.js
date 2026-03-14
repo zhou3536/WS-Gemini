@@ -72,3 +72,20 @@ function saveModelConfigToCache() {
 };
 
 
+function DecodeFile(part) {
+    // console.log(part);
+    console.log(part.inlineData.mimeType);
+    if (part.inlineData.mimeType !== "text/plain") return;
+    let text = atob(part.inlineData.data)
+    // console.log(text)
+    txtBox.style.display = 'block';
+    const div = document.createElement('div');
+    div.innerText = text;
+    const button = document.createElement('button');
+    button.innerText = '×';
+    button.addEventListener('click', () => txtBox.style.display = 'none');
+    txtBox.innerText = '';
+    txtBox.appendChild(div);
+    txtBox.appendChild(button);
+
+}

@@ -12,7 +12,7 @@
     <link rel="manifest" href="/img/manifest.json">
     <script src="highlight.min.js"></script>
     <script src="marked.umd.js"></script>
-    <link rel="preload" href="img/5242.png" as="image">
+    <!-- <link rel="preload" href="img/5242.png" as="image"> -->
 
 </head>
 
@@ -105,7 +105,11 @@
             <button onclick="getModelConfig()">确认</button>
             <button onclick="ModelConfig.close()">取消</button>
         </div>
+
     </dialog>
+    <div id="txtBox">
+        <button>×</button>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const opbtn = document.getElementById("history-b");
@@ -128,6 +132,7 @@
         const setapikeybox = document.getElementById('setapikey');
         const yourapikey = document.getElementById('yourapikey');
         const ModelConfig = document.getElementById('ModelConfig');
+        const txtBox = document.getElementById('txtBox');
         // ModelConfig.showModal()
         const socket = io();
         let chatId;
@@ -179,9 +184,7 @@
         }
         writeStringToElement();
 
-        // --- Socket.IO 事件处理 ---
         socket.on('connect', () => {
-            // welcome.style.display = 'block';
             HashChange();
         });
 
@@ -192,14 +195,21 @@
             setTimeout(() => { allowHashChange = true }, 1000);
         });
         socket.on('historyLoaded', (data) => {
-            renderHistory(data.history);
+            // console.log(data)
+            if (data.status) {
+                renderHistory(data.history);
+            } else {
+                console.error(data.message);
+                xstongzhi('找不到会话ID，开始新的会话', 3000);
+                newChat();
+            }
         });
         socket.on('historiesListed', (data) => {
             renderHistoriesList(data.list);
             delHistories(data.list);
         });
         socket.on('userMessageEcho', (data) => {
-            appendMessage(data.prompt, 'user', data.fileCount);
+            appendMessage('user', data);
             createmodelmessagebox();
             sendBtn.classList.add('loading');
         });
@@ -213,10 +223,6 @@
             accumulatedStreamText = '';
             hljs.highlightAll();
             addcopy();
-        });
-        socket.on('historyerror', (data) => {
-            console.error(data.message);
-            newChat();
         });
         socket.on('APIerror', (data) => {
             console.error('API错误:', data.message);
@@ -250,9 +256,9 @@
             history.forEach(message => {
                 if (message.role === 'user') {
                     const fileCount = message.parts.length > 1 ? message.parts.length - 1 : 0;
-                    appendMessage(message.parts[0].text, 'user', fileCount);
+                    appendMessage('user', message.parts);
                 } else if (message.role === 'model') {
-                    appendMessage(message.parts[0].text, 'model');
+                    appendMessage('model', message.parts);
                 }
             });
             addcopy();
@@ -299,7 +305,8 @@
             });
         }
 
-        function appendMessage(text, sender, fileCount = 0) {
+        function appendMessage(sender, parts) {
+            // console.log(parts)
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-box');
             const message = document.createElement('div');
@@ -307,18 +314,37 @@
 
             if (sender === 'user') {
                 const messagep = document.createElement('p');
-                messagep.innerText = text;
+                messagep.innerText = parts[0].text;
                 message.appendChild(messagep);
+                // console.log(parts.length)
+
+                let i = 1;
+                while (i < parts.length) {
+                    const part = parts[i];
+                    if (part.text) {
+                        const span = document.createElement('span');
+                        span.innerText = part.text.slice(3);
+                        message.appendChild(span);
+                        const i2 = i + 1;
+                        const nextPart = parts[i + 1]
+                        // console.log(parts[i + 1])
+
+
+                        span.addEventListener('click', () => DecodeFile(nextPart));
+                        // const fileBase64 = parts[i + 1].inlineData.data;
+                        // if (fileBase64) console.log(fileBase64);
+                    }
+
+                    i++;
+                }
+
+
+
             } else {
-                message.innerHTML = marked.parse(text);
+                message.innerHTML = marked.parse(parts[0].text);
             };
 
-            if (fileCount > 0) {
-                const fileCountElement = document.createElement('i');
-                fileCountElement.classList.add('fileCount');
-                fileCountElement.textContent = `+${fileCount} 个文件`;
-                message.appendChild(fileCountElement);
-            }
+
 
             messageElement.appendChild(message);
             chatWindow.appendChild(messageElement);
@@ -398,6 +424,7 @@
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         resolve({
+                            name: file.name,
                             data: e.target.result.split(',')[1],
                             mimeType: file.type
                         });

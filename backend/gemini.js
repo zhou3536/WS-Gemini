@@ -216,7 +216,7 @@ async function handleNewMessage(socket, data) {
             await mkdir(userHistoriesDir);
         } else {
             console.error(`创建用户历史目录失败 ${userHistoriesDir} (用户: ${userId}):`, error);
-            socket.emit('historyerror', { message: '无法创建会话目录，请稍后再试。' });
+            socket.emit('historyLoaded', { message: '无法创建会话目录，请稍后再试。' });
             return;
         }
     }
@@ -235,12 +235,17 @@ async function handleNewMessage(socket, data) {
 
     const userMessage = { role: "user", parts: [{ text: prompt }] };
     if (files && files.length > 0) {
-        const fileParts = files.map(file => ({
-            inlineData: {
-                data: file.data,
-                mimeType: file.mimeType,
+        const fileParts = files.flatMap(file => ([
+            {
+                text: `文件：${file.name}`  // 在inlineData前加一个text说明
             },
-        }));
+            {
+                inlineData: {
+                    data: file.data,
+                    mimeType: file.mimeType,
+                }
+            }
+        ]));
         userMessage.parts.push(...fileParts);
     }
 
@@ -290,13 +295,13 @@ async function handleNewMessage(socket, data) {
             socket.emit("sessionCreated", { chatId });
             const title = prompt.length > 20 ? prompt.slice(0, 20) + "..." : prompt;
             let NewSessionhistory = { chatId, title };
-            if (prompt.length > 20 || files.length > 0) {
-                const historytext = [];
-                historytext.push(userMessage);
-                historytext.push({ role: "model", parts: [{ text: fullResponse }] });
-                const res = await shortmessage(socket, historytext);
-                if (res) NewSessionhistory = { chatId, title: res };
-            }
+            // if (prompt.length > 20 || files.length > 0) {
+            //     const historytext = [];
+            //     historytext.push(userMessage);
+            //     historytext.push({ role: "model", parts: [{ text: fullResponse }] });
+            //     const res = await shortmessage(socket, historytext);
+            //     if (res) NewSessionhistory = { chatId, title: res };
+            // }
             await updateHistoriesList(socket, 'add', NewSessionhistory);
         }
 
@@ -339,7 +344,7 @@ async function handleLoadHistory(socket, chatId) {
     const userId = socket.userId;
     if (!userId) {
         console.error('未认证用户尝试加载历史。');
-        socket.emit("historyerror", { message: "未认证，无法加载历史。" });
+        socket.emit("historyLoaded", { message: "未认证，无法加载历史。" });
         return;
     }
     const userHistoriesDir = path.join(historiesDir, userId);
@@ -348,14 +353,14 @@ async function handleLoadHistory(socket, chatId) {
         await access(historyPath);
         const historyData = await readFile(historyPath, "utf-8");
         const history = JSON.parse(historyData);
-        socket.emit("historyLoaded", { history: history });
+        socket.emit("historyLoaded", { status: true, history: history });
     } catch (error) {
         if (error.code === 'ENOENT') {
             console.log(`尝试加载不存在的历史文件: ${historyPath}`);
-            socket.emit("historyerror", { message: "找不到指定的会话历史, 请开始新的会话。" });
+            socket.emit("historyLoaded", { message: "找不到指定的会话历史, 请开始新的会话。" });
         } else {
             console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
-            socket.emit("historyerror", { message: `无法加载会话历史 (${chatId})，文件可能已损坏。` });
+            socket.emit("historyLoaded", { message: `无法加载会话历史 (${chatId})，文件可能已损坏。` });
         }
         await updateHistoriesList(socket, 'del', chatId);
         await listHistories(socket);
