@@ -126,10 +126,10 @@ async function shortmessage(socket, historydata) {
             message: "根据以上对话生成标题。要求：越短越好，只返回标题，不要解释，不要引号，不要任何额外文字，标题不超过20个字",
             config: { temperature: 0.2, maxOutputTokens: 20 }
         });
-        console.log('ai创建标题成功')
+        // console.log('ai创建标题成功');
         return response1.text;
     } catch (error) {
-        console.log('ai创建标题失败', `错误状态: ${error.status}`)
+        // console.log('ai创建标题失败', `错误状态: ${error.status}`);
         return '';
     }
 }
@@ -191,8 +191,7 @@ async function setapikey(socket, data) {
 async function handleNewMessage(socket, data) {
     const userId = socket.userId;
     const userApiKey = socket.userApiKey;
-    const fileCount = data.files ? data.files.length : 0;
-    socket.emit("userMessageEcho", { prompt: data.prompt, fileCount });
+    socket.emit("userMessageEcho", true);
     if (!userId || !userApiKey) {
         socket.emit("APIerror", { message: "未登录或未配置API_KEY" });
         return;
@@ -201,7 +200,7 @@ async function handleNewMessage(socket, data) {
         apiKey: userApiKey,
         httpOptions: { baseUrl: CUSTOM_BASE_URL }
     });
-    let { chatId, prompt, files, model, useWebSearch, defaultModelConfig } = data;
+    let { chatId, userMessage, model, useWebSearch, defaultModelConfig } = data;
     let isNewSession = false;
     const userHistoriesDir = path.join(historiesDir, userId);
     if (!chatId) {
@@ -233,21 +232,21 @@ async function handleNewMessage(socket, data) {
         }
     }
 
-    const userMessage = { role: "user", parts: [{ text: prompt }] };
-    if (files && files.length > 0) {
-        const fileParts = files.flatMap(file => ([
-            {
-                text: `文件：${file.name}`  // 在inlineData前加一个text说明
-            },
-            {
-                inlineData: {
-                    data: file.data,
-                    mimeType: file.mimeType,
-                }
-            }
-        ]));
-        userMessage.parts.push(...fileParts);
-    }
+    // const userMessage = { role: "user", parts: [{ text: prompt }] };
+    // if (files && files.length > 0) {
+    //     const fileParts = files.flatMap(file => ([
+    //         {
+    //             text: `文件：${file.name}`  // 在inlineData前加一个text说明
+    //         },
+    //         {
+    //             inlineData: {
+    //                 data: file.data,
+    //                 mimeType: file.mimeType,
+    //             }
+    //         }
+    //     ]));
+    //     userMessage.parts.push(...fileParts);
+    // }
 
     // 调用Gemini API
     try {
@@ -293,15 +292,16 @@ async function handleNewMessage(socket, data) {
         socket.emit("streamEnd");
         if (isNewSession) {
             socket.emit("sessionCreated", { chatId });
+            const prompt = userMessage.parts[0].text;
             const title = prompt.length > 20 ? prompt.slice(0, 20) + "..." : prompt;
             let NewSessionhistory = { chatId, title };
-            // if (prompt.length > 20 || files.length > 0) {
-            //     const historytext = [];
-            //     historytext.push(userMessage);
-            //     historytext.push({ role: "model", parts: [{ text: fullResponse }] });
-            //     const res = await shortmessage(socket, historytext);
-            //     if (res) NewSessionhistory = { chatId, title: res };
-            // }
+            if (prompt.length > 20 || userMessage.parts.length > 1) {
+                const historytext = [];
+                historytext.push(userMessage);
+                historytext.push({ role: "model", parts: [{ text: fullResponse }] });
+                const res = await shortmessage(socket, historytext);
+                if (res) NewSessionhistory = { chatId, title: res };
+            }
             await updateHistoriesList(socket, 'add', NewSessionhistory);
         }
 

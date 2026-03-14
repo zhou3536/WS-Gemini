@@ -145,6 +145,7 @@
         let API = false;
         let model;
         let allowHashChange = true;
+        let userMessage = null;
 
 
 
@@ -209,7 +210,7 @@
             delHistories(data.list);
         });
         socket.on('userMessageEcho', (data) => {
-            appendMessage('user', data);
+            appendMessage('user', userMessage.parts);
             createmodelmessagebox();
             sendBtn.classList.add('loading');
         });
@@ -307,6 +308,8 @@
 
         function appendMessage(sender, parts) {
             // console.log(parts)
+            // console.log(parts[0])
+            // console.log(parts[0].text)
             const messageElement = document.createElement('div');
             messageElement.classList.add('message-box');
             const message = document.createElement('div');
@@ -435,10 +438,27 @@
             });
 
             const files = await Promise.all(filePromises);
+
+            userMessage = { role: "user", parts: [{ text: prompt }] };
+
+            if (files && files.length > 0) {
+                const fileParts = files.flatMap(file => ([
+                    { text: `文件：${file.name}` },
+                    {
+                        inlineData: {
+                            data: file.data,
+                            mimeType: file.mimeType,
+                        }
+                    }
+                ]));
+                userMessage.parts.push(...fileParts);
+            }
+            //  console.log(userMessage)
+            // appendMessage('user', userMessage.parts);
+           
             socket.emit('newMessage', {
                 chatId,
-                prompt,
-                files,
+                userMessage,
                 model,
                 useWebSearch: SearchOn,
                 defaultModelConfig

@@ -90,13 +90,14 @@
     max-width: 800px;
     transform: translateX(-50%)translateY(-50%);
     z-index: 1000;
-    padding: 20px;
-    padding-bottom: 40px;
+    padding: 20px 0;
+    padding-bottom: 60px;
     color: #fff;
     font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
     font-size: 15px;
     border-radius: 15px;
     transition: all 0.3s ease;
+    overflow-y: auto;
 }
 
 #txtBox button {
@@ -115,4 +116,18 @@
 
 #txtBox button:hover {
     color: #bf3e3e;
+}
+
+#txtBox div {
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 0 15px;
+}
+
+@media (max-width: 800px) {
+    #txtBox {
+        height: 100vh;
+        border-radius: 0;
+        /* padding: 8px; */
+    }
 }
