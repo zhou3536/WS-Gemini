@@ -38,7 +38,7 @@ export function initializeGemini(usersArray, ioInstance) {
             activechat.set(socket.id, socket.userId);
             if (loginuser.API_KEY) {
                 socket.userApiKey = loginuser.API_KEY;
-                socket.userApiKeyCipher = '*'.repeat(30) + socket.userApiKey.slice(30);
+                socket.userApiKeyCipher = '*'.repeat(20) + socket.userApiKey.slice(35);
                 socket.emit("APIKEY", socket.userApiKeyCipher)
             } else {
                 socket.emit("tongzhi", "账户没有配置API_KEY，请配置API_KEY");
@@ -49,7 +49,7 @@ export function initializeGemini(usersArray, ioInstance) {
             socket.disconnect();
             return;
         }
-        console.log(`Socket.IO用户连接:${loginuser.username}`);
+        console.log(`用户连接:${loginuser.username}`);
         listHistories(socket, 'login');
 
         socket.on("newMessage", async (data) => {
