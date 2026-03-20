@@ -1,0 +1,163 @@
+/* ── Theme tokens ── */
+
+
+/* ── Shared styles ── */
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+}
+
+code.hljs {
+  padding: 3px 5px;
+}
+
+.hljs {
+  color: var(--hljs-fg);
+  background: var(--hljs-bg);
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  color: var(--hljs-keyword);
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  color: var(--hljs-title);
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-variable {
+  color: var(--hljs-attr);
+}
+
+.hljs-meta .hljs-string,
+.hljs-regexp,
+.hljs-string {
+  color: var(--hljs-string);
+}
+
+.hljs-built_in,
+.hljs-symbol {
+  color: var(--hljs-builtin);
+}
+
+.hljs-code,
+.hljs-comment,
+.hljs-formula {
+  color: var(--hljs-comment);
+}
+
+.hljs-name,
+.hljs-quote,
+.hljs-selector-pseudo,
+.hljs-selector-tag {
+  color: var(--hljs-tag);
+}
+
+.hljs-subst {
+  color: var(--hljs-fg);
+}
+
+.hljs-section {
+  color: var(--hljs-section);
+  font-weight: 700;
+}
+
+.hljs-bullet {
+  color: var(--hljs-bullet);
+}
+
+.hljs-emphasis {
+  color: var(--hljs-fg);
+  font-style: italic;
+}
+
+.hljs-strong {
+  color: var(--hljs-fg);
+  font-weight: 700;
+}
+
+.hljs-addition {
+  color: var(--hljs-addition-fg);
+  background-color: var(--hljs-addition-bg);
+}
+
+.hljs-deletion {
+  color: var(--hljs-deletion-fg);
+  background-color: var(--hljs-deletion-bg);
+}
+
+.pre-buttons-container {
+  /* height: 25px; */
+  padding: 10px 6px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0;
+  margin-top: 10px;
+  justify-content: end;
+  align-items: center;
+  background-color: var(--df-005);
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.pre-buttons-container p {
+  margin: 0;
+  margin-right: auto;
+  margin-left: 5px;
+  font-weight: 700;
+  font-size: 15px;
+  /* font-family: serif; */
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Sarasa Mono SC', 'Microsoft YaHei UI',
+    Courier, monospace;
+  color: var(--df-ziji);
+  /* font-style: italic; */
+}
+
+.pre-buttons-container button {
+  height: 16px;
+  display: block;
+  border: none;
+  border-radius: 3px;
+  padding: 1px;
+  position: relative;
+  z-index: 10;
+  background-color: transparent;
+  color: var(--df-ziji);
+  font-size: 12px;
+  gap: 1px;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+
+.pre-buttons-container button:hover {
+  background-color: var(--df-005);
+}
+
+.pre-buttons-container button:active {
+  background-color: var(--df-01);
+}
+
+.pre-buttons-container button svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+}

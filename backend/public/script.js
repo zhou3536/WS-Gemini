@@ -22,8 +22,8 @@ const ALLOWED_TEXT_EXTENSIONS = [
 // 允许的文件扩展名
 const ALLOWED_OTHER_EXTENSIONS = [
     'jpg', 'tiff', 'jpeg', 'png', 'bmp', 'svg', 'ico', 'webp',
-    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-    'pdf', 'zip', 'rar'
+    // 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+    // 'pdf', 'zip', 'rar'
 ];
 
 // 获取文件扩展名
@@ -374,11 +374,7 @@ function addcopy() {
 
 //删除历史
 function delHistories(list) {
-    list.sort((a, b) => {
-        const idA = Number(a.chatId.replace('.json', ''));
-        const idB = Number(b.chatId.replace('.json', ''));
-        return idA - idB;
-    });
+    list = list.sort((a, b) => parseInt(b.chatId) - parseInt(a.chatId));
     delhistorybox.innerHTML = '';
 
     const closebtn = document.createElement('button')

@@ -72,20 +72,36 @@ function saveModelConfigToCache() {
 };
 
 
-function DecodeFile(part) {
+function DecodeData(part, text) {
+    // console.log(text);
     // console.log(part);
-    console.log(part.inlineData.mimeType);
-    if (part.inlineData.mimeType !== "text/plain") return;
-    let text = atob(part.inlineData.data)
-    // console.log(text)
-    txtBox.style.display = 'block';
-    const div = document.createElement('div');
-    div.innerText = text;
+    // console.log(part.inlineData.mimeType);
+    txtBox.innerText = '';
     const button = document.createElement('button');
     button.innerText = '×';
     button.addEventListener('click', () => txtBox.style.display = 'none');
-    txtBox.innerText = '';
-    txtBox.appendChild(div);
     txtBox.appendChild(button);
+    txtBox.style.display = 'block';
 
+    if (part.inlineData.mimeType === "text/plain") {
+        // let text = atob(part.inlineData.data);
+        let text = base64Decode(part.inlineData.data);
+        const div = document.createElement('div');
+        div.innerText = text;
+        txtBox.appendChild(div);
+    } else if (part.inlineData.mimeType === "image/png") {
+        const img = document.createElement('img');
+        img.src = `data:image/png;base64,${part.inlineData.data}`;
+        txtBox.appendChild(img);
+    } else {
+        const p = document.createElement('p');
+        p.innerText = text + '\n没有预览';
+        txtBox.appendChild(p);
+    }
+}
+
+function base64Decode(str) {
+    const binary = atob(str);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
 }

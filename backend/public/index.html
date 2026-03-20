@@ -5,10 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyGemini</title>
+    <link rel="stylesheet" href="color.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style2.css">
-    <link rel="stylesheet" href="md.css">
-    <link rel="stylesheet" href="color.css">
+    <link rel="stylesheet" href="github-md.css">
+    <link rel="stylesheet" href="hl.css">
     <link rel="manifest" href="/img/manifest.json">
     <script src="highlight.min.js"></script>
     <script src="marked.umd.js"></script>
@@ -49,7 +50,7 @@
         <main class="chat-area" id="chat-area">
             <div id="welcome">
                 <img id="aaa3" src="img/model.png" alt="">
-                <h1>Gemini</h1>
+                <h1>AIChat</h1>
                 <h2 id="aaa1"></h2>
                 <h4 id="aaa2"></h4>
             </div>
@@ -107,9 +108,7 @@
         </div>
 
     </dialog>
-    <div id="txtBox">
-        <button>×</button>
-    </div>
+    <div id="txtBox"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const opbtn = document.getElementById("history-b");
@@ -166,7 +165,7 @@
 
         }
         function writeStringToElement2() {
-            const text = '轻松对话，让 Google AI 帮你写作、规划、学习或处理其他事务';
+            const text = '轻松对话，让 AI 帮你写作、规划、学习或处理其他事务';
             const element = document.getElementById('aaa2');
             const element2 = document.getElementById('aaa3');
             element.style.height = '42px'
@@ -192,8 +191,8 @@
         socket.on('sessionCreated', (data) => {
             chatId = data.chatId;
             allowHashChange = false;
-            window.location.hash = chatId;
-            setTimeout(() => { allowHashChange = true }, 1000);
+            window.location.hash = data.chatId;
+            setTimeout(() => { allowHashChange = true }, 500);
         });
         socket.on('historyLoaded', (data) => {
             // console.log(data)
@@ -213,14 +212,15 @@
             appendMessage('user', userMessage.parts);
             createmodelmessagebox();
             sendBtn.classList.add('loading');
+            allowHashChange = false;
         });
         socket.on('streamChunk', (data) => {
-            allowHashChange = false;
             appendStreamChunk(data.chunk);
         });
         socket.on('streamEnd', () => {
             sendBtn.disabled = false;
             sendBtn.classList.remove('loading');
+            allowHashChange = true;
             accumulatedStreamText = '';
             hljs.highlightAll();
             addcopy();
@@ -228,6 +228,7 @@
         socket.on('APIerror', (data) => {
             console.error('API错误:', data.message);
             sendBtn.classList.remove('loading');
+            allowHashChange = true;
             sendBtn.disabled = false;
             appenderror(data.message);
         });
@@ -254,14 +255,7 @@
         function renderHistory(history) {
             welcome.style.display = 'none';
             chatWindow.innerHTML = '';
-            history.forEach(message => {
-                if (message.role === 'user') {
-                    const fileCount = message.parts.length > 1 ? message.parts.length - 1 : 0;
-                    appendMessage('user', message.parts);
-                } else if (message.role === 'model') {
-                    appendMessage('model', message.parts);
-                }
-            });
+            history.forEach(message => appendMessage(message.role, message.parts));
             addcopy();
             hljs.highlightAll();
         }
@@ -320,30 +314,19 @@
                 messagep.innerText = parts[0].text;
                 message.appendChild(messagep);
                 // console.log(parts.length)
-
-                let i = 1;
-                while (i < parts.length) {
-                    const part = parts[i];
-                    if (part.text) {
-                        const span = document.createElement('span');
-                        span.innerText = part.text.slice(3);
-                        message.appendChild(span);
-                        const i2 = i + 1;
-                        const nextPart = parts[i + 1]
-                        // console.log(parts[i + 1])
+                parts.forEach((part, index) => {
+                    const nextPart = parts[index + 1];
+                    if (index < 1 || !part.text || !nextPart.inlineData.data) return;
+                    const span = document.createElement('span');
+                    const text = part.text.split(':')[1] || part.text.split('：')[1] || '文件';
+                    span.innerText = text;
+                    message.appendChild(span);
+                    span.addEventListener('click', () => DecodeData(nextPart, text));
+                })
 
 
-                        span.addEventListener('click', () => DecodeFile(nextPart));
-                        // const fileBase64 = parts[i + 1].inlineData.data;
-                        // if (fileBase64) console.log(fileBase64);
-                    }
-
-                    i++;
-                }
-
-
-
-            } else {
+            } else if (sender === 'model') {
+                message.classList.add('markdown-body')
                 message.innerHTML = marked.parse(parts[0].text);
             };
 
@@ -358,7 +341,7 @@
             messagebox.classList.add('message-box');
 
             const message = document.createElement('div');
-            message.classList.add('message', 'model-message');
+            message.classList.add('message', 'model-message','markdown-body');
             const status = SearchOn ? 'Searching...' : 'Thinking...';
             message.innerHTML = `<img src="img/gemini.png" alt="" class="mimg"><span class="mspan">${status}</span>`;
 
@@ -443,7 +426,7 @@
 
             if (files && files.length > 0) {
                 const fileParts = files.flatMap(file => ([
-                    { text: `文件：${file.name}` },
+                    { text: `file name:${file.name}` },
                     {
                         inlineData: {
                             data: file.data,
@@ -455,7 +438,7 @@
             }
             //  console.log(userMessage)
             // appendMessage('user', userMessage.parts);
-           
+
             socket.emit('newMessage', {
                 chatId,
                 userMessage,
@@ -479,7 +462,9 @@
         // window.addEventListener('load', HashChange);
         window.addEventListener('hashchange', HashChange);
         function HashChange() {
+            // console.log('hashchange');
             if (!allowHashChange) return;
+            // console.log('allowHashChange');
             const hash = window.location.hash;
             chatId = hash.slice(1);
             if (chatId.length === 15) {

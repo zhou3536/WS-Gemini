@@ -229,24 +229,8 @@ async function handleNewMessage(socket, data) {
             console.error(`加载或解析历史记录失败 ${historyPath} (用户: ${userId}):`, error);
             socket.emit("APIerror", { message: `无法加载会话历史 (${chatId})，文件可能已损坏。请尝试新的会话。` });
             return;
-        }
-    }
-
-    // const userMessage = { role: "user", parts: [{ text: prompt }] };
-    // if (files && files.length > 0) {
-    //     const fileParts = files.flatMap(file => ([
-    //         {
-    //             text: `文件：${file.name}`  // 在inlineData前加一个text说明
-    //         },
-    //         {
-    //             inlineData: {
-    //                 data: file.data,
-    //                 mimeType: file.mimeType,
-    //             }
-    //         }
-    //     ]));
-    //     userMessage.parts.push(...fileParts);
-    // }
+        };
+    };
 
     // 调用Gemini API
     try {
@@ -294,15 +278,15 @@ async function handleNewMessage(socket, data) {
             socket.emit("sessionCreated", { chatId });
             const prompt = userMessage.parts[0].text;
             const title = prompt.length > 20 ? prompt.slice(0, 20) + "..." : prompt;
-            let NewSessionhistory = { chatId, title };
+            let NewSessionTitle = { chatId, title };
             if (prompt.length > 20 || userMessage.parts.length > 1) {
                 const historytext = [];
                 historytext.push(userMessage);
                 historytext.push({ role: "model", parts: [{ text: fullResponse }] });
                 const res = await shortmessage(socket, historytext);
-                if (res) NewSessionhistory = { chatId, title: res };
+                if (res) NewSessionTitle = { chatId, title: res };
             }
-            await updateHistoriesList(socket, 'add', NewSessionhistory);
+            await updateHistoriesList(socket, 'add', NewSessionTitle);
         }
 
         // 保存历史记录
